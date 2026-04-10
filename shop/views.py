@@ -18,21 +18,30 @@ import uuid
 
 
 def home(request):
-    zones = Zone.objects.filter(is_active=True)
-    selected_zone = request.GET.get('zone')
+    try:
+        zones = Zone.objects.filter(is_active=True)
+    except Exception as e:
+        zones = []
     
-    if selected_zone:
-        products = Product.objects.filter(zone_id=selected_zone, is_available=True)[:12]
-    else:
-        products = Product.objects.filter(is_available=True)[:12]
+    try:
+        selected_zone = request.GET.get('zone')
+        if selected_zone:
+            products = Product.objects.filter(zone_id=selected_zone, is_available=True)[:12]
+        else:
+            products = Product.objects.filter(is_available=True)[:12]
+    except Exception as e:
+        products = []
     
-    categories = Category.objects.all()
+    try:
+        categories = Category.objects.all()
+    except Exception as e:
+        categories = []
     
     context = {
         'categories': categories,
         'products': products,
         'zones': zones,
-        'selected_zone': selected_zone,
+        'selected_zone': selected_zone if selected_zone else None,
         'title': 'ZoneDelivery - তোমার জোনের ডেলিভারি'
     }
     return render(request, 'shop/home.html', context)

@@ -87,17 +87,28 @@ WSGI_APPLICATION = 'zonedelivery.wsgi.application'
 
 # Database Configuration
 if IS_RENDER:
-    # Render Deployment with PostgreSQL
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME', default='zonedelivery_db'),
-            'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
+    # Render Deployment - Check if PostgreSQL is configured, otherwise use SQLite
+    if os.getenv('DB_HOST'):
+        # PostgreSQL configured
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': config('DB_NAME', default='zonedelivery_db'),
+                'USER': config('DB_USER', default='postgres'),
+                'PASSWORD': config('DB_PASSWORD', default=''),
+                'HOST': config('DB_HOST'),
+                'PORT': config('DB_PORT', default='5432'),
+            }
         }
-    }
+    else:
+        # No PostgreSQL - use SQLite (Render free tier)
+        # Note: Database resets on redeploy without persistent disk
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 else:
     # Local Development with SQLite
     DATABASES = {
