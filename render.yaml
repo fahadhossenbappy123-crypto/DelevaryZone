@@ -7,11 +7,13 @@ services:
       pip install -r requirements.txt
       python manage.py migrate
       python manage.py collectstatic --no-input
-    startCommand: gunicorn zonedelivery.wsgi:application --timeout 30
+    startCommand: gunicorn zonedelivery.wsgi:application --timeout 30 --workers 2
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10
+        value: '3.10'
       - key: DEBUG
         value: 'False'
-      - key: ALLOWED_HOSTS
-        value: 'zonedelivery.onrender.com'
+      - key: RENDER
+        value: 'True'
+      - key: DJANGO_SETTINGS_MODULE
+        value: 'zonedelivery.settings'
