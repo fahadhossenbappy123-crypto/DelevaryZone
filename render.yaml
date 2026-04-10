@@ -6,6 +6,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       python manage.py migrate
+      python manage.py create_admin_user
       python manage.py collectstatic --no-input
     startCommand: gunicorn zonedelivery.wsgi:application --workers 3 --worker-class sync --timeout 60 --max-requests 1000 --max-requests-jitter 100 --keep-alive 5 --access-logfile - --error-logfile -
     
