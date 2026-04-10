@@ -17,3 +17,5 @@ services:
         value: 'True'
       - key: DJANGO_SETTINGS_MODULE
         value: 'zonedelivery.settings'
+      - key: ALLOWED_HOSTS
+        value: 'delevaryzone-1.onrender.com,localhost,127.0.0.1'
