@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -7,13 +8,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-SECRET_KEY = 'django-insecure-z!8xq%j2k9@p_x+f*v&h^d-c$e=r!t@u^&*(d%j^&*('
+# Environment Detection
+IS_RENDER = os.getenv('RENDER') == 'True'
+IS_PRODUCTION = IS_RENDER or os.getenv('ENVIRONMENT') == 'production'
 
-DEBUG = True
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-z!8xq%j2k9@p_x+f*v&h^d-c$e=r!t@u^&*(d%j^&*(')
 
-# Allow all hosts for development (ngrok, localhost, etc)
-# For production, specify exact domains
-# ALLOWED_HOSTS is defined in NGROK CONFIGURATION section below
+DEBUG = config('DEBUG', default=True, cast=bool)
+
+# Allowed Hosts Configuration
+if IS_PRODUCTION:
+    # Render production
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+else:
+    # Development (ngrok, localhost)
+    ALLOWED_HOSTS = [
+        'shan-nondecorative-timothy.ngrok-free.dev',
+        'localhost',
+        '127.0.0.1',
+        '*.ngrok-free.dev',
+        '*.ngrok.io',
+    ]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -59,13 +74,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'zonedelivery.wsgi.application'
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database Configuration
+if IS_RENDER:
+    # Render Deployment with PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='zonedelivery_db'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
     }
-}
+else:
+    # Local Development with SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -101,46 +130,42 @@ LOCALE_PATHS = [
 ]
 
 # ============ SECURITY & HTTPS CONFIGURATION ============
-# Geolocation API requires HTTPS (or localhost exception)
-# NGROK provides HTTPS, so we enable secure flags
-SECURE_SSL_REDIRECT = True  # ngrok provides HTTPS
-SECURE_HSTS_SECONDS = 0  # Set to 31536000 in production
-
-# Allow localhost and 127.0.0.1 for development
-# For phone testing, use HTTPS (ngrok) or test from localhost
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-SECURE_HSTS_PRELOAD = False
-
-# ============ NGROK CONFIGURATION ============
-ALLOWED_HOSTS = [
-    'shan-nondecorative-timothy.ngrok-free.dev',
-    'localhost',
-    '127.0.0.1',
-    '*.ngrok-free.dev',  # Allow all ngrok-free subdomains
-    '*.ngrok.io',        # Allow old ngrok domains too
-]
-
-# For testing with ngrok, configure session and CSRF cookies
-# ngrok provides HTTPS, so secure cookies work properly
-SESSION_COOKIE_DOMAIN = '.ngrok-free.dev'  # For ngrok-free service
-CSRF_COOKIE_DOMAIN = '.ngrok-free.dev'     # For ngrok-free service
-SESSION_COOKIE_SAMESITE = 'Lax'            # 'Lax' works better with redirects than 'None'
-SESSION_COOKIE_SECURE = True               # HTTPS required (ngrok provides this)
-CSRF_COOKIE_SAMESITE = 'Lax'               # 'Lax' for better compatibility
-CSRF_COOKIE_SECURE = True                  # HTTPS required (ngrok provides this)
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.ngrok-free.dev',   # ngrok-free service
-    'http://*.ngrok-free.dev',
-    'https://*.ngrok.io',         # older ngrok free service
-    'http://*.ngrok.io',
-
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-]
-
-# Optional: If using a specific ngrok domain instead, use:
-# SESSION_COOKIE_DOMAIN = 'abcd1234.ngrok.io'  # Your specific ngrok URL
-# CSRF_COOKIE_DOMAIN = 'abcd1234.ngrok.io'
+if IS_PRODUCTION:
+    # Production (Render)
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    
+    # CSRF Trusted Origins for Render
+    csrf_origins = config('ALLOWED_HOSTS', default='localhost', cast=Csv())
+    CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in csrf_origins]
+else:
+    # Development (ngrok, localhost)
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+    SESSION_COOKIE_DOMAIN = '.ngrok-free.dev'
+    CSRF_COOKIE_DOMAIN = '.ngrok-free.dev'
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SECURE = True
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.ngrok-free.dev',
+        'http://*.ngrok-free.dev',
+        'https://*.ngrok.io',
+        'http://*.ngrok.io',
+        'http://127.0.0.1:8000',
+        'http://localhost:8000',
+    ]
 
 # Static & Media
 STATIC_URL = '/static/'
@@ -153,14 +178,4 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ============ GOOGLE MAPS API CONFIGURATION ============
-# Get your API key from: https://console.cloud.google.com
-# Steps:
-# 1. Create a new project
-# 2. Enable: Maps JavaScript API, Places API, Directions API
-# 3. Create an API key and restrict to HTTP referrers
-# 4. Add your key below or use environment variable
-import os
-GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', 'AIzaSyAMu1dHt5cxLWaKH11uffQPDaOTozs__O8')
-
-# For development, you can also add it directly (not recommended for production!)
-# GOOGLE_MAPS_API_KEY = 'AIzaSyD...'  # আপনার key এখানে যোগ করুন
+GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='AIzaSyAMu1dHt5cxLWaKH11uffQPDaOTozs__O8')
