@@ -2,15 +2,7 @@ Django==5.1.7
 Pillow==11.1.0
 django-bootstrap5==24.3
 gunicorn==23.0.0
-psycopg2-binary==2.9.9
+psycopg[binary]==3.3.3
 python-decouple==3.8
-psycopg2-binary==2.9.9 
-psycopg[binary]==3.1.20
-# Development tools (optional কিন্তু ভালো)
-django-debug-toolbar==4.4.6
 whitenoise==6.7.0
-
-# পরে যখন live location যোগ করব তখন এগুলো যোগ হবে
-# channels
-# daphne
-# redis
+django-debug-toolbar==4.4.6
