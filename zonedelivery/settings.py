@@ -18,8 +18,19 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Allowed Hosts Configuration
 if IS_PRODUCTION:
-    # Render production
-    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='delevaryzone-1.onrender.com,localhost,127.0.0.1', cast=Csv())
+    # Render production - accept common Render domains
+    render_hosts = [
+        'delevaryzone-1.onrender.com',
+        'deleveryzone.onrender.com',
+        'zonedelivery.onrender.com',
+        'localhost',
+        '127.0.0.1',
+    ]
+    # Try to read from environment, else use defaults
+    env_hosts = os.getenv('ALLOWED_HOSTS', '')
+    if env_hosts:
+        render_hosts = env_hosts.split(',')
+    ALLOWED_HOSTS = render_hosts
 else:
     # Development (ngrok, localhost)
     ALLOWED_HOSTS = [
@@ -144,8 +155,11 @@ if IS_PRODUCTION:
     CSRF_COOKIE_SAMESITE = 'Lax'
     
     # CSRF Trusted Origins for Render
-    csrf_origins = config('ALLOWED_HOSTS', default='delevaryzone-1.onrender.com,localhost,127.0.0.1', cast=Csv())
-    CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in csrf_origins] + [f'http://{host}' for host in csrf_origins]
+    csrf_hosts = os.getenv('ALLOWED_HOSTS', 'delevaryzone-1.onrender.com,localhost,127.0.0.1').split(',')
+    CSRF_TRUSTED_ORIGINS = [f'https://{host.strip()}' for host in csrf_hosts] + [f'http://{host.strip()}' for host in csrf_hosts]
+    
+    # Handle proxy headers from Render
+    SECURE_PROXY_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 else:
     # Development (ngrok, localhost)
     SECURE_SSL_REDIRECT = True
