@@ -144,81 +144,45 @@ else:
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 # Database Configuration
-# Render PostgreSQL Setup - Built-in credentials  
-if IS_RENDER:
-    # Render এ PostgreSQL automat set করা আছে
-    # Direct hardcoded values - না .env থেকে, না config() থেকে
-    database_url = os.getenv('DATABASE_URL')  # Render automatic
+# All database settings from environment variables (safe for production)
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL and dj_database_url:
+    # Use Render's automatic DATABASE_URL if available
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_health_checks=True,
+            conn_max_age=600,
+        )
+    }
+else:
+    # Fallback to manual configuration from environment
+    db_engine = os.getenv('DB_ENGINE', 'django.db.backends.sqlite3')
     
-    if database_url and dj_database_url:
-        # Use Render's automatic DATABASE_URL (if available)
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=database_url,
-                conn_health_checks=True,
-                conn_max_age=600,
-                atomic_requests=True,
-            )
-        }
-    elif os.getenv('DB_HOST'):
-        # Manual PostgreSQL configuration from environment
+    if 'postgresql' in db_engine:
+        # PostgreSQL configuration
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
                 'NAME': os.getenv('DB_NAME', 'zonedelivery_db'),
                 'USER': os.getenv('DB_USER', 'postgres'),
                 'PASSWORD': os.getenv('DB_PASSWORD', ''),
-                'HOST': os.getenv('DB_HOST'),
+                'HOST': os.getenv('DB_HOST', 'localhost'),
                 'PORT': os.getenv('DB_PORT', '5432'),
                 'CONN_MAX_AGE': 600,
                 'OPTIONS': {
                     'connect_timeout': 10,
+                    'sslmode': 'require' if IS_PRODUCTION else 'disable',
                 }
             }
         }
     else:
-        # Fallback: Built-in Render PostgreSQL credentials
-        # Hardcoded here - not reading from .env or config()
-        # Render এ যখন deploy হয় .env থাকে না, তাই এই values ব্যবহার হয়
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'delevaryzone',
-                'USER': 'delevaryzone_user',
-                'PASSWORD': 's1cbP1j6fXTrRvxKyssdRZywuLIww6a8',
-                'HOST': 'dpg-d7c7hfjbc2fs73ep6ci0-a.oregon-postgres.render.com',
-                'PORT': '5432',
-                'CONN_MAX_AGE': 600,
-                'OPTIONS': {
-                    'connect_timeout': 10,
-                    'sslmode': 'require',
-                }
-            }
-        }
-else:
-    # Local Development - read from .env file
-    db_engine = config('DB_ENGINE', default='django.db.backends.sqlite3')
-    
-    if 'postgresql' in db_engine:
-        # PostgreSQL for local development
-        DATABASES = {
-            'default': {
-                'ENGINE': db_engine,
-                'NAME': config('DB_NAME', default='zonedelivery_db'),
-                'USER': config('DB_USER', default='postgres'),
-                'PASSWORD': config('DB_PASSWORD', default=''),
-                'HOST': config('DB_HOST', default='localhost'),
-                'PORT': config('DB_PORT', default='5432'),
-                'CONN_MAX_AGE': 600,
-            }
-        }
-    else:
-        # SQLite for local development
+        # SQLite (Local Development)
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
                 'NAME': BASE_DIR / 'db.sqlite3',
-                'CONN_MAX_AGE': 600,
             }
         }
 
