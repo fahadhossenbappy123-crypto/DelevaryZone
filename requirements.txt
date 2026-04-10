@@ -8,3 +8,4 @@ whitenoise==6.7.0
 django-debug-toolbar==4.4.6
 django-redis==5.4.0
 redis==5.0.1
+dj-database-url==2.1.0

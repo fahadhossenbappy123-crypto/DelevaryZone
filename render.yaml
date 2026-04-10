@@ -8,6 +8,11 @@ services:
       python manage.py migrate
       python manage.py collectstatic --no-input
     startCommand: gunicorn zonedelivery.wsgi:application --workers 3 --worker-class sync --timeout 60 --max-requests 1000 --max-requests-jitter 100 --keep-alive 5 --access-logfile - --error-logfile -
+    
+    # PostgreSQL Database Credentials - Built-in (Hard-coded in settings.py)
+    # No need to set these in Render Dashboard
+    # Database Connection: pgConnectionString - automatic
+    
     envVars:
       - key: PYTHON_VERSION
         value: '3.10'
@@ -19,3 +24,7 @@ services:
         value: 'zonedelivery.settings'
       - key: ALLOWED_HOSTS
         value: 'delevaryzone-1.onrender.com,localhost,127.0.0.1'
+      # Database credentials already hardcoded in zonedelivery/settings.py
+      # PostgreSQL: delevaryzone database
+      # User: delevaryzone_user
+      # Host: dpg-d7c7hfjbc2fs73ep6ci0-a.oregon-postgres.render.com

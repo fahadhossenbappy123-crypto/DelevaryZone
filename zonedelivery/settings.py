@@ -2,6 +2,12 @@ from pathlib import Path
 import os
 from decouple import config, Csv
 
+# Conditional import for dj-database-url
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -12,13 +18,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 IS_RENDER = os.getenv('RENDER') == 'True'
 IS_PRODUCTION = IS_RENDER or os.getenv('ENVIRONMENT') == 'production'
 
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-z!8xq%j2k9@p_x+f*v&h^d-c$e=r!t@u^&*(d%j^&*(')
+# Render এ কোন environment variable add করতে হবে না - সব default values built-in আছে
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-zonedelivery-render-deployment-key-2024-secure')
 
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False if IS_PRODUCTION else True, cast=bool)
 
 # Allowed Hosts Configuration
 if IS_PRODUCTION:
-    # Render production - accept common Render domains
+    # Render production - accept common Render domains with defaults built-in
     render_hosts = [
         'delevaryzone-1.onrender.com',
         'deleveryzone.onrender.com',
@@ -26,7 +33,7 @@ if IS_PRODUCTION:
         'localhost',
         '127.0.0.1',
     ]
-    # Try to read from environment, else use defaults
+    # Try to read from environment, else use defaults above
     env_hosts = os.getenv('ALLOWED_HOSTS', '')
     if env_hosts:
         render_hosts = env_hosts.split(',')
@@ -34,11 +41,7 @@ if IS_PRODUCTION:
 else:
     # Development (ngrok, localhost)
     ALLOWED_HOSTS = [
-        'shan-nondecorative-timothy.ngrok-free.dev',
-        'localhost',
-        '127.0.0.1',
-        '*.ngrok-free.dev',
-        '*.ngrok.io',
+        '',
     ]
 
 INSTALLED_APPS = [
@@ -141,42 +144,83 @@ else:
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 # Database Configuration
+# Render PostgreSQL Setup - Built-in credentials  
 if IS_RENDER:
-    # Render Deployment - Check if PostgreSQL is configured, otherwise use SQLite
-    if os.getenv('DB_HOST'):
-        # PostgreSQL configured with connection pooling
+    # Render এ PostgreSQL automat set করা আছে
+    # Direct hardcoded values - না .env থেকে, না config() থেকে
+    database_url = os.getenv('DATABASE_URL')  # Render automatic
+    
+    if database_url and dj_database_url:
+        # Use Render's automatic DATABASE_URL (if available)
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=database_url,
+                conn_health_checks=True,
+                conn_max_age=600,
+                atomic_requests=True,
+            )
+        }
+    elif os.getenv('DB_HOST'):
+        # Manual PostgreSQL configuration from environment
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
-                'NAME': config('DB_NAME', default='zonedelivery_db'),
-                'USER': config('DB_USER', default='postgres'),
-                'PASSWORD': config('DB_PASSWORD', default=''),
-                'HOST': config('DB_HOST'),
-                'PORT': config('DB_PORT', default='5432'),
-                'CONN_MAX_AGE': 600,  # Connection pooling
+                'NAME': os.getenv('DB_NAME', 'zonedelivery_db'),
+                'USER': os.getenv('DB_USER', 'postgres'),
+                'PASSWORD': os.getenv('DB_PASSWORD', ''),
+                'HOST': os.getenv('DB_HOST'),
+                'PORT': os.getenv('DB_PORT', '5432'),
+                'CONN_MAX_AGE': 600,
                 'OPTIONS': {
                     'connect_timeout': 10,
                 }
             }
         }
     else:
-        # No PostgreSQL - use SQLite (Render free tier)
-        # Note: Database resets on redeploy without persistent disk
+        # Fallback: Built-in Render PostgreSQL credentials
+        # Hardcoded here - not reading from .env or config()
+        # Render এ যখন deploy হয় .env থাকে না, তাই এই values ব্যবহার হয়
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'delevaryzone',
+                'USER': 'delevaryzone_user',
+                'PASSWORD': 's1cbP1j6fXTrRvxKyssdRZywuLIww6a8',
+                'HOST': 'dpg-d7c7hfjbc2fs73ep6ci0-a.oregon-postgres.render.com',
+                'PORT': '5432',
+                'CONN_MAX_AGE': 600,
+                'OPTIONS': {
+                    'connect_timeout': 10,
+                    'sslmode': 'require',
+                }
+            }
+        }
+else:
+    # Local Development - read from .env file
+    db_engine = config('DB_ENGINE', default='django.db.backends.sqlite3')
+    
+    if 'postgresql' in db_engine:
+        # PostgreSQL for local development
+        DATABASES = {
+            'default': {
+                'ENGINE': db_engine,
+                'NAME': config('DB_NAME', default='zonedelivery_db'),
+                'USER': config('DB_USER', default='postgres'),
+                'PASSWORD': config('DB_PASSWORD', default=''),
+                'HOST': config('DB_HOST', default='localhost'),
+                'PORT': config('DB_PORT', default='5432'),
+                'CONN_MAX_AGE': 600,
+            }
+        }
+    else:
+        # SQLite for local development
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
                 'NAME': BASE_DIR / 'db.sqlite3',
+                'CONN_MAX_AGE': 600,
             }
         }
-else:
-    # Local Development with SQLite
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-            'CONN_MAX_AGE': 600,
-        }
-    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -212,8 +256,9 @@ LOCALE_PATHS = [
 ]
 
 # ============ SECURITY & HTTPS CONFIGURATION ============
+# Render এ কোন environment variable add করতে হবে না - সব default আছে
 if IS_PRODUCTION:
-    # Production (Render)
+    # Production (Render) - সব built-in defaults এ কাজ করবে
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -225,7 +270,7 @@ if IS_PRODUCTION:
     SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SAMESITE = 'Lax'
     
-    # CSRF Trusted Origins for Render
+    # CSRF Trusted Origins for Render with built-in defaults
     csrf_hosts = os.getenv('ALLOWED_HOSTS', 'delevaryzone-1.onrender.com,localhost,127.0.0.1').split(',')
     CSRF_TRUSTED_ORIGINS = [f'https://{host.strip()}' for host in csrf_hosts] + [f'http://{host.strip()}' for host in csrf_hosts]
     
@@ -261,6 +306,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ============ GOOGLE MAPS API CONFIGURATION ============
+# Render এ কোন environment variable set করতে হবে না - default API key built-in আছে
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='AIzaSyAMu1dHt5cxLWaKH11uffQPDaOTozs__O8')
 
 # ============ PERFORMANCE OPTIMIZATION ============
