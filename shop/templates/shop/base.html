@@ -773,10 +773,16 @@
                     {% if user.is_authenticated %}
                         <!-- Admin Dashboard -->
                         {% if user.is_staff or user.is_superuser %}
-                            <li class="nav-item">
-                                <a class="nav-link btn-auth btn-auth-register" href="{% url 'admin_dashboard' %}" style="background: #6366f1; color: white; margin-right: 0.5rem;">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link btn-auth btn-auth-register dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" style="background: #6366f1; color: white; margin-right: 0.5rem;">
                                     <i class="fas fa-crown"></i> Admin Panel
                                 </a>
+                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}"><i class="fas fa-sliders-h"></i> Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin_register' %}"><i class="fas fa-user-shield"></i> Admin Registration</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-database"></i> Django Admin</a></li>
+                                </ul>
                             </li>
                         <!-- Manager Dashboard -->
                         {% elif user.profile.role == 'manager' %}
@@ -877,6 +883,7 @@
                 {% if user.is_authenticated %}
                     {% if user.is_staff or user.is_superuser %}
                         <li><a href="{% url 'admin_dashboard' %}" class="nav-link text-dark" style="color: #6366f1 !important;"><i class="fas fa-crown"></i> Admin Panel</a></li>
+                        <li><a href="{% url 'admin_register' %}" class="nav-link text-dark" style="color: #6366f1 !important;"><i class="fas fa-user-shield"></i> Admin Registration</a></li>
                     {% elif user.profile.role == 'manager' %}
                         <li><a href="{% url 'manager_dashboard' %}" class="nav-link text-dark" style="color: #fd7e14 !important;"><i class="fas fa-user-tie"></i> Manager Panel</a></li>
                     {% elif user.profile.role == 'rider' %}
