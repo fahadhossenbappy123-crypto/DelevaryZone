@@ -1,0 +1,12 @@
+Django==5.1.7
+Pillow==11.1.0
+django-bootstrap5==24.3
+
+# Development tools (optional কিন্তু ভালো)
+django-debug-toolbar==4.4.6
+whitenoise==6.7.0
+
+# পরে যখন live location যোগ করব তখন এগুলো যোগ হবে
+# channels
+# daphne
+# redis

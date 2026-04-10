@@ -1,0 +1,95 @@
+{% extends 'shop/base.html' %}
+{% block title %}আমার অর্ডার - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mt-md-5 mb-5">
+    <h2 class="mb-4 fw-bold">
+        <i class="fas fa-receipt"></i> আমার সব অর্ডার
+    </h2>
+
+    {% if orders %}
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <tr>
+                        <th>অর্ডার #</th>
+                        <th>জোন</th>
+                        <th>টাকা</th>
+                        <th>স্থিতি</th>
+                        <th>তারিখ</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td><strong>#{{ order.order_id }}</strong></td>
+                            <td>{{ order.zone.name }}</td>
+                            <td><strong>৳{{ order.total_amount }}</strong></td>
+                            <td>
+                                <span style="background: {% if order.status == 'delivered' %}#28a745{% elif order.status == 'picked' %}#007bff{% elif order.status == 'confirmed' %}#17a2b8{% else %}#ffc107{% endif %}; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.85rem;">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ order.created_at|date:"d M, Y" }}</td>
+                            <td>
+                                <a href="{% url 'order_detail' order.order_id %}" class="btn btn-sm btn-primary">
+                                    বিস্তারিত
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none">
+            <div class="row g-3">
+                {% for order in orders %}
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0" style="border-radius: 12px; border-left: 5px solid {% if order.status == 'delivered' %}#28a745{% elif order.status == 'picked' %}#007bff{% elif order.status == 'confirmed' %}#17a2b8{% else %}#ffc107{% endif %};">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="fw-bold mb-0">অর্ডার #{{ order.order_id }}</h6>
+                                    <span style="background: {% if order.status == 'delivered' %}#28a745{% elif order.status == 'picked' %}#007bff{% elif order.status == 'confirmed' %}#17a2b8{% else %}#ffc107{% endif %}; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem;">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+                                
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">জোন</small>
+                                        <p class="mb-0 fw-bold">{{ order.zone.name }}</p>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <small class="text-muted">টাকা</small>
+                                        <p class="mb-0 fw-bold text-success">৳{{ order.total_amount }}</p>
+                                    </div>
+                                </div>
+
+                                <small class="text-muted d-block mb-3">
+                                    <i class="fas fa-calendar"></i> {{ order.created_at|date:"d M, Y H:i" }}
+                                </small>
+
+                                <a href="{% url 'order_detail' order.order_id %}" class="btn btn-sm btn-primary w-100">
+                                    <i class="fas fa-eye"></i> বিস্তারিত দেখুন
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <h5 class="mb-2"><i class="fas fa-info-circle"></i> কোনো অর্ডার নেই</h5>
+            <p class="mb-3">আপনি এখনও কোনো অর্ডার করেননি। এখনই শপিং শুরু করুন!</p>
+            <a href="{% url 'home' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-shopping-bag"></i> শপিং করুন
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

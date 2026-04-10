@@ -1,0 +1,119 @@
+{% extends 'shop/admin/base.html' %}
+{% block title %}ভূমিকা পরিবর্তন করুন - ZoneDelivery{% endblock %}
+
+{% block admin_content %}
+    <style>
+        .role-badge {
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        .role-badge.role-rider {
+            color: #0dcaf0;
+        }
+        .role-badge.role-manager {
+            color: #fd7e14;
+        }
+        .role-badge.role-customer {
+            color: #198754;
+        }
+    </style>
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow-sm" style="border-radius: 15px; border: none;">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-edit"></i> ভূমিকা পরিবর্তন করুন
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info mb-4">
+                        <h6 class="fw-bold mb-2">ব্যবহারকারী: <span class="text-primary">{{ user.username }}</span></h6>
+                        <p class="mb-0">বর্তমান ভূমিকা: <strong class="role-badge role-{{ user.profile.role }}">{{ user.profile.get_role_display }}</strong></p>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">নতুন ভূমিকা নির্বাচন করুন *</label>
+                            <select name="role" id="roleSelect" class="form-select form-select-lg" required>
+                                <option value="">নির্বাচন করুন</option>
+                                {% for value, label in ROLE_CHOICES %}
+                                    <option value="{{ value }}" {% if user.profile.role == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted d-block mt-2">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>গ্রাহক:</strong> সাধারণ ক্রেতা | 
+                                <strong>রাইডার:</strong> ডেলিভারি ব্যক্তি | 
+                                <strong>ম্যানেজার:</strong> জোন পরিচালক
+                            </small>
+                        </div>
+
+                        <!-- Zone Selection (Only for Manager) -->
+                        <div id="zoneSection" class="mb-4" style="display: none;">
+                            <label class="form-label fw-bold">জোন নির্বাচন করুন *</label>
+                            <select name="zone" id="zoneSelect" class="form-select form-select-lg">
+                                <option value="">-- জোন নির্বাচন করুন --</option>
+                                {% for zone in zones %}
+                                    <option value="{{ zone.id }}" {% if user.profile.zone_assigned.id == zone.id %}selected{% endif %}>
+                                        {{ zone.name }} ({{ zone.postal_code }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted d-block mt-2">
+                                <i class="fas fa-map-marker-alt"></i> ম্যানেজার এই জোনের সব পণ্য ও অর্ডার পরিচালনা করবে।
+                            </small>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="alert alert-warning">
+                            <h6 class="fw-bold mb-2"><i class="fas fa-clipboard-list"></i> ভূমিকার বৈশিষ্ট্য:</h6>
+                            <ul class="mb-0" style="font-size: 0.9rem;">
+                                <li><strong>গ্রাহক:</strong> পণ্য কিনতে পারে এবং অর্ডার ট্র্যাক করতে পারে</li>
+                                <li><strong>রাইডার:</strong> ডেলিভারি অর্ডার নিতে পারে এবং স্ট্যাটাস আপডেট করতে পারে</li>
+                                <li><strong>ম্যানেজার:</strong> তাদের জোনের পণ্য, ক্যাটেগরি এবং অর্ডার পরিচালনা করতে পারে</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                <i class="fas fa-check"></i> পরিবর্তন সংরক্ষণ করুন
+                            </button>
+                            <a href="{% url 'admin_users' %}" class="btn btn-secondary btn-lg fw-bold">
+                                <i class="fas fa-arrow-left"></i> ফিরে যান
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const roleSelect = document.getElementById('roleSelect');
+        const zoneSection = document.getElementById('zoneSection');
+        const zoneSelect = document.getElementById('zoneSelect');
+
+        // Show/hide zone section based on role
+        function updateZoneSection() {
+            if (roleSelect.value === 'manager') {
+                zoneSection.style.display = 'block';
+                zoneSelect.required = true;
+            } else {
+                zoneSection.style.display = 'none';
+                zoneSelect.required = false;
+            }
+        }
+
+        // On page load
+        updateZoneSection();
+
+        // On change
+        roleSelect.addEventListener('change', updateZoneSection);
+    </script>
+</div>
+{% endblock %}

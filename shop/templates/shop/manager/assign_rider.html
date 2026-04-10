@@ -1,0 +1,100 @@
+{% extends 'shop/base.html' %}
+{% block title %}রাইডার নির্ধারণ - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Order Summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cubes"></i> অর্ডার: {{ order.order_id }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p>
+                                <strong>গ্রাহক:</strong> {{ order.customer_phone }}<br>
+                                <strong>ফোন:</strong> {{ order.customer_phone }}<br>
+                                <strong>জোন:</strong> <span class="badge bg-primary">{{ order.zone.name }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>
+                                <strong>মূল্য:</strong> ৳{{ order.total_amount }}<br>
+                                <strong>ডেলিভারি চার্জ:</strong> ৳{{ order.delivery_charge }}<br>
+                                <strong>মোট:</strong> <span class="fw-bold text-success">৳{{ order.total_amount|add:order.delivery_charge }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold">অর্ডার আইটেম:</h6>
+                    <ul class="mb-0">
+                        {% for item in items %}
+                        <li>{{ item.product.title }} x{{ item.quantity }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rider Selection -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top">
+                <div class="card-body">
+                    <h5 class="mb-4 fw-bold">
+                        <i class="fas fa-motorcycle"></i> রাইডার নির্বাচন করুন
+                    </h5>
+
+                    {% if riders %}
+                        <form method="POST">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">উপলব্ধ রাইডার</label>
+                                <div class="list-group">
+                                    {% for rider in riders %}
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="rider_id" 
+                                               value="{{ rider.id }}" id="rider_{{ rider.id }}" required>
+                                        <label class="form-check-label w-100" for="rider_{{ rider.id }}">
+                                            <div class="d-flex justify-content-between w-100">
+                                                <strong>{{ rider.username }}</strong>
+                                                {% if rider.profile %}
+                                                    <span class="badge bg-success">সক্রিয়</span>
+                                                {% endif %}
+                                            </div>
+                                            <small class="text-muted">
+                                                {% if rider.profile.phone %}
+                                                    <i class="fas fa-phone"></i> {{ rider.profile.phone }}
+                                                {% endif %}
+                                            </small>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mb-2">
+                                <i class="fas fa-check"></i> রাইডার নির্ধারণ করুন
+                            </button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>কোনো সক্রিয় রাইডার নেই</strong>
+                            <p class="mb-0 mt-2">এই মুহূর্তে কোনো সক্রিয় রাইডার উপলব্ধ নেই। পরে চেষ্টা করুন।</p>
+                        </div>
+                    {% endif %}
+
+                    <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary w-100 mt-3">
+                        <i class="fas fa-arrow-left"></i> ফিরুন
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

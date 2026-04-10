@@ -1,0 +1,100 @@
+{% extends 'shop/base.html' %}
+{% block title %}পণ্য ফর্ম - ম্যানেজার প্যানেল{% endblock %}
+
+{% block content %}
+<div class="row" style="margin: 0; min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="col-lg-2 p-0">
+        {% include 'shop/manager/sidebar.html' %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-10 p-4">
+        <div class="mb-4">
+            <h2 class="fw-bold">
+                {% if product %}
+                    <i class="fas fa-edit"></i> পণ্য সম্পাদনা
+                {% else %}
+                    <i class="fas fa-plus"></i> নতুন পণ্য যোগ করুন
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="card" style="max-width: 800px;">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Category -->
+                    <div class="mb-3">
+                        <label class="form-label">ক্যাটেগরি *</label>
+                        <select name="category" class="form-select" required>
+                            <option value="">নির্বাচন করুন</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if product.category.id == cat.id %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label">পণ্যের নাম *</label>
+                        <input type="text" name="title" class="form-control" placeholder="পণ্যের নাম" value="{{ product.title }}" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label">বিবরণ *</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="পণ্যের বিস্তারিত বর্ণনা" required>{{ product.description }}</textarea>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">মূল্য (৳) *</label>
+                            <input type="number" name="price" class="form-control" step="0.01" placeholder="0.00" value="{{ product.price }}" required>
+                        </div>
+
+                        <!-- Stock -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">স্টক পরিমাণ *</label>
+                            <input type="number" name="stock" class="form-control" placeholder="০" value="{{ product.stock }}" required>
+                        </div>
+                    </div>
+
+                    <!-- Image -->
+                    <div class="mb-3">
+                        <label class="form-label">ছবি</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        {% if product.image %}
+                            <small class="text-muted">বর্তমান ছবি: <img src="{{ product.image.url }}" style="max-width: 100px; margin-top: 5px;"></small>
+                        {% endif %}
+                    </div>
+
+                    {% if product %}
+                    <!-- Availability -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_available" class="form-check-input" id="isAvailable" {% if product.is_available %}checked{% endif %}>
+                        <label class="form-check-label" for="isAvailable">
+                            এই পণ্য পাওয়া যায়
+                        </label>
+                    </div>
+                    {% endif %}
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> সংরক্ষণ করুন
+                        </button>
+                        <a href="{% url 'manager_products' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> ফিরে যান
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

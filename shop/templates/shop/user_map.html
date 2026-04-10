@@ -1,0 +1,182 @@
+{% extends 'shop/base.html' %}
+{% block title %}Service Zone Map - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div style="height: 100vh; display: flex; flex-direction: column; margin: -4rem -4rem -2rem -4rem;">
+    
+    <!-- Top Bar -->
+    <div style="padding: 15px; background: white; border-bottom: 1px solid #ddd; flex-shrink: 0;">
+        <h5 class="mb-0">📍 Service Zone Checker</h5>
+        <small class="text-muted">Get your location and check delivery availability</small>
+    </div>
+
+    <!-- Google Map -->
+    <div id="map" style="flex: 1; width: 100%;"></div>
+
+    <!-- Status Panel -->
+    <div id="statusPanel" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        padding: 20px;
+        min-width: 300px;
+        z-index: 1000;
+    ">
+        <div class="text-center">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+            <p class="mt-2 mb-0 text-muted small">Getting your location...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
+
+<script>
+let map;
+let userMarker = null;
+let zoneCircles = [];
+let infoWindows = [];
+
+function initMap() {
+    const dhaka = {lat: 23.8103, lng: 90.2506};
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: dhaka,
+        mapTypeId: 'roadmap',
+        fullscreenControl: true,
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false
+    });
+    
+    fetchZones();
+    checkLocation();
+}
+
+function fetchZones() {
+    fetch('/api/zones/')
+        .then(res => res.json())
+        .then(data => {
+            drawZones(data.zones || []);
+        })
+        .catch(err => console.error('Error fetching zones:', err));
+}
+
+function drawZones(zones) {
+    zones.forEach(zone => {
+        const circle = new google.maps.Circle({
+            map: map,
+            center: {lat: zone.latitude, lng: zone.longitude},
+            radius: zone.radius,
+            fillColor: '#667eea',
+            fillOpacity: 0.1,
+            strokeColor: '#667eea',
+            strokeWeight: 2,
+            clickable: true
+        });
+        
+        const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="padding: 10px;"><strong>${zone.name}</strong><br><small>Delivery: ৳${zone.delivery_charge}</small></div>`
+        });
+        
+        circle.addListener('click', () => {
+            infoWindows.forEach(iw => iw.close());
+            infoWindow.setPosition({lat: zone.latitude, lng: zone.longitude});
+            infoWindow.open(map);
+        });
+        
+        zoneCircles.push(circle);
+        infoWindows.push(infoWindow);
+    });
+}
+
+function checkLocation() {
+    if (!navigator.geolocation) {
+        showStatus('❌ Geolocation not supported', 'danger');
+        return;
+    }
+    
+    showStatus('📍 Getting your location...', 'info');
+    
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            const {latitude, longitude} = position.coords;
+            updateMap(latitude, longitude);
+            checkServiceZone(latitude, longitude);
+        },
+        error => {
+            showStatus('❌ Location access denied', 'danger');
+            console.error(error);
+        },
+        {enableHighAccuracy: true, timeout: 10000}
+    );
+}
+
+function updateMap(lat, lng) {
+    const userLocation = {lat, lng};
+    
+    if (userMarker) userMarker.setMap(null);
+    
+    userMarker = new google.maps.Marker({
+        map: map,
+        position: userLocation,
+        title: 'Your Location',
+        icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+    });
+    
+    map.setCenter(userLocation);
+}
+
+function checkServiceZone(latitude, longitude) {
+    const payload = JSON.stringify({latitude, longitude});
+    
+    fetch('/api/check-location/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: payload
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.is_in_service) {
+            const zone = data.zones.find(z => z.is_inside);
+            showStatus(`✅ You are in <strong>${zone.zone_name}</strong> zone! Delivery: ৳${zone.delivery_charge}`, 'success');
+        } else {
+            showStatus('❌ Outside all service zones', 'warning');
+        }
+    })
+    .catch(err => console.error('Error checking location:', err));
+}
+
+function showStatus(message, type = 'info') {
+    const panel = document.getElementById('statusPanel');
+    panel.innerHTML = `
+        <div class="alert alert-${type} mb-0">
+            <div style="font-size: 16px;">${message}</div>
+        </div>
+        <hr class="my-2">
+        <button class="btn btn-sm btn-primary w-100" onclick="checkLocation()">
+            <i class="fas fa-sync"></i> Re-check Location
+        </button>
+    `;
+}
+
+window.addEventListener('load', initMap);
+</script>
+
+<style>
+    @media (max-width: 576px) {
+        #statusPanel {
+            bottom: 10px !important;
+            right: 10px !important;
+            left: 10px !important;
+            width: auto !important;
+            min-width: auto !important;
+        }
+    }
+</style>
+{% endblock %}

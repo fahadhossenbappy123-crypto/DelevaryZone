@@ -1,0 +1,708 @@
+{% extends 'shop/base.html' %}
+{% block title %}চেকআউট - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mt-md-5">
+    <h1 class="mb-4 fw-bold">
+        <i class="fas fa-check-circle"></i> অর্ডার চেকআউট
+    </h1>
+
+    <div class="row g-4">
+        <!-- Checkout Form -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <h5 class="mb-4 fw-bold">আপনার ডেলিভারি তথ্য</h5>
+
+                    <form method="POST" novalidate id="checkoutForm">
+                        {% csrf_token %}
+
+                        <!-- Personal Information -->
+                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #667eea;">
+                            <h6 class="fw-bold mb-3">ব্যক্তিগত তথ্য</h6>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    {{ form.full_name }}
+                                    {% if form.full_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.full_name.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.email.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.phone.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Address -->
+                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #764ba2;">
+                            <h6 class="fw-bold mb-3">ডেলিভারি ঠিকানা</h6>
+
+                            {{ form.delivery_address }}
+                            {% if form.delivery_address.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.delivery_address.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Zone Selection (FIRST - REQUIRED) -->
+                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #ff6b6b;">
+                            <h6 class="fw-bold mb-3">📍 ডেলিভারি জোন নির্বাচন করুন *</h6>
+
+                            {{ form.zone }}
+                            {% if form.zone.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.zone.errors.0 }}
+                                </div>
+                            {% endif %}
+
+                            <small class="text-muted d-block mt-2">
+                                <i class="fas fa-info-circle"></i> <strong>নোট:</strong> প্রথমে জোন নির্বাচন করুন, তারপর আপনার অবস্থান নির্বাচন করুন।
+                            </small>
+                        </div>
+
+                        <!-- Location Selection (CONDITIONAL - ONLY IF ZONE SELECTED) -->
+                        <div id="locationSection" class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #11998e; display: none;">
+                            <h6 class="fw-bold mb-3">📍 ডেলিভারি অবস্থান</h6>
+                            
+                            <p class="text-muted small mb-3">আপনার সঠিক অবস্থান নির্বাচন করুন যাতে রাইডার সহজে খুঁজে পায়:</p>
+                            
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="button" class="btn btn-success btn-lg" id="liveLocationBtn" onclick="useLiveLocation()">
+                                    <i class="fas fa-location-dot"></i> আমার বর্তমান অবস্থান ব্যবহার করুন
+                                </button>
+                                <button type="button" class="btn btn-outline-info" id="requestPermissionBtn" onclick="requestLocationPermission()" style="display: none;">
+                                    <i class="fas fa-sync"></i> অনুমতি পুনরায় অনুরোধ করুন
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="selectMapBtn" onclick="toggleMapMode()">
+                                    <i class="fas fa-map"></i> ম্যাপে অবস্থান নির্বাচন করুন
+                                </button>
+                            </div>
+
+                            <!-- Map Container (Hidden by default) -->
+                            <div id="mapContainer" style="display: none; margin-bottom: 15px;">
+                                <div id="checkoutMap" style="height: 350px; border-radius: 10px; border: 2px solid #667eea;"></div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="fas fa-info-circle"></i> ম্যাপে ক্লিক করে আপনার ডেলিভারি অবস্থান নির্বাচন করুন
+                                </small>
+                            </div>
+
+                            <!-- Location Status -->
+                            <div id="locationStatus" style="display: none;" class="alert alert-success mb-0">
+                                <i class="fas fa-check-circle"></i> <span id="locationText"></span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #f2994e;">
+                            <h6 class="fw-bold mb-3">পেমেন্ট পদ্ধতি</h6>
+
+                            {% if form.payment_method.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.payment_method.errors.0 }}
+                                </div>
+                            {% endif %}
+
+                            <div class="mt-3">
+                                {% for radio in form.payment_method %}
+                                    <div class="form-check mb-2">
+                                        {{ radio.tag }}
+                                        <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                            {{ radio.choice_label }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Hidden Location Fields -->
+                        <input type="hidden" name="latitude" id="latitude" value="">
+                        <input type="hidden" name="longitude" id="longitude" value="">
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold" id="submitBtn" onclick="return validateCheckout()">
+                                <i class="fas fa-shopping-bag"></i> অর্ডার নিশ্চিত করুন
+                            </button>
+                            <a href="{% url 'view_cart' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> কার্টে ফিরুন
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm position-sticky" style="border-radius: 15px; top: 20px;">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-4 fw-bold">অর্ডার বিস্তারিত</h5>
+
+                    <!-- Cart Items Preview -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">প্রোডাক্ট ({{ cart_items|length }})</h6>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            {% for item in cart_items %}
+                                <div class="d-flex justify-content-between mb-2 pb-2 {% if not forloop.last %}border-bottom{% endif %}" >
+                                    <div>
+                                        <small class="d-block">{{ item.title }}</small>
+                                        <small class="text-muted">{{ item.quantity }}x ৳{{ item.price }}</small>
+                                    </div>
+                                    <small class="fw-bold">৳{{ item.total }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Price Breakdown -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>সাবটোটাল:</span>
+                            <span class="fw-bold">৳{{ total_price }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Charge Info -->
+                    <div class="alert alert-info p-2 mb-3" role="alert">
+                        <small>
+                            <i class="fas fa-truck"></i>
+                            <strong>ডেলিভারি চার্জ:</strong><br>
+                            <span class="text-muted">আপনার নির্বাচিত জোনের উপর নির্ভর করে</span>
+                        </small>
+                    </div>
+
+                    <div class="card-body p-3 bg-light rounded" style="border-left: 4px solid #667eea;">
+                        <div class="d-flex justify-content-between">
+                            <strong>জোন অনুযায়ী ডেলিভারি চার্জ:</strong>
+                        </div>
+                        <div class="mt-2">
+                            {% for zone in zones %}
+                                <small class="d-block mb-1">
+                                    {{ zone.name }}: <span class="text-success">৳{{ zone.delivery_charge }}</span>
+                                </small>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="d-flex justify-content-between">
+                        <strong>মোট (সাবটোটাল + ডেলিভারি):</strong>
+                        <div>
+                            <small class="text-muted d-block">গণনা করা হবে চেকআউটে</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+
+<style>
+    .form-select, .form-control {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    }
+
+    .form-check-input {
+        margin-top: 4px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+    }
+    
+    /* Disabled button styling */
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .btn-outline-primary:disabled,
+    .btn-outline-success:disabled {
+        background-color: transparent;
+        color: #ccc;
+        border-color: #ccc;
+    }
+    
+    /* Location button styles */
+    .btn-success.btn-lg {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        font-weight: 600;
+    }
+    
+    .btn-success.btn-lg:hover {
+        background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+    }
+</style>
+
+<script>
+// ==================== MAP-BASED LOCATION SELECTION ====================
+let checkoutMap = null;
+let userMarker = null;
+let selectedMarker = null;
+let currentSelectedZone = null;
+
+// Zone data from Django (JSON)
+const zonesData = JSON.parse('{{ zones_json|escapejs }}') || [];
+
+// Calculate distance between two coordinates (in meters)
+function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371000; // Earth's radius in meters
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lng2 - lng1) * Math.PI / 180;
+    
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    
+    return R * c;
+}
+
+// Check if location is within selected zone
+function isLocationInZone(lat, lng, zone) {
+    if (!zone || !zone.latitude || !zone.longitude) return false;
+    
+    const distance = calculateDistance(lat, lng, zone.latitude, zone.longitude);
+    return distance <= zone.radius;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const locationStatus = document.getElementById('locationStatus');
+    const locationText = document.getElementById('locationText');
+    const mapContainer = document.getElementById('mapContainer');
+    const locationSection = document.getElementById('locationSection');
+    const selectMapBtn = document.getElementById('selectMapBtn');
+    const liveLocationBtn = document.getElementById('liveLocationBtn');
+    
+    // Setup phone location tracking
+    setupPhoneLocationTracking();
+    
+    // Zone select handler
+    const zoneSelect = document.querySelector('select[name="zone"]');
+    if (zoneSelect) {
+        // Show/hide location section based on zone selection
+        function toggleLocationSection() {
+            const selectedZoneId = zoneSelect.value;
+            
+            if (selectedZoneId) {
+                // Zone selected - show location section and enable buttons
+                locationSection.style.display = 'block';
+                selectMapBtn.disabled = false;
+                liveLocationBtn.disabled = false;
+                
+                // Update current selected zone
+                currentSelectedZone = zonesData.find(z => z.id == selectedZoneId);
+                
+                // AGGRESSIVE: Auto-request location when zone is selected
+                if (!latitudeInput.value || !longitudeInput.value) {
+                    if (navigator.geolocation) {
+                        showLocationStatus('📍 জোন নির্বাচিত হয়েছে। আপনার অবস্থান অনুরোধ করছি...', 'info');
+                        requestLocationWithRetry(latitudeInput, longitudeInput, 1, 2);
+                    }
+                }
+            } else {
+                // No zone selected - hide location section and disable buttons
+                locationSection.style.display = 'none';
+                selectMapBtn.disabled = true;
+                liveLocationBtn.disabled = true;
+                mapContainer.style.display = 'none';
+                
+                // Clear location inputs and status
+                latitudeInput.value = '';
+                longitudeInput.value = '';
+                locationStatus.style.display = 'none';
+                currentSelectedZone = null;
+            }
+        }
+        
+        zoneSelect.addEventListener('change', toggleLocationSection);
+        
+        // Initial check
+        toggleLocationSection();
+    }
+});
+
+// Toggle Map Mode
+function toggleMapMode() {
+    const mapContainer = document.getElementById('mapContainer');
+    const btn = document.getElementById('selectMapBtn');
+    
+    if (mapContainer.style.display === 'none') {
+        mapContainer.style.display = 'block';
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="fas fa-times"></i> ম্যাপ বন্ধ করুন';
+        
+        // Initialize map if not already done
+        if (!checkoutMap) {
+            initCheckoutMap();
+        }
+    } else {
+        mapContainer.style.display = 'none';
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-map"></i> ম্যাপে অবস্থান নির্বাচন করুন';
+    }
+}
+
+// Initialize Checkout Map
+function initCheckoutMap() {
+    const dhaka = {lat: 23.8103, lng: 90.4125};
+    
+    checkoutMap = new google.maps.Map(document.getElementById('checkoutMap'), {
+        zoom: 12,
+        center: dhaka,
+        mapTypeId: 'roadmap'
+    });
+    
+    // Draw selected zone circle if available
+    if (currentSelectedZone && currentSelectedZone.latitude && currentSelectedZone.longitude) {
+        const zoneBoundary = new google.maps.Circle({
+            map: checkoutMap,
+            center: {lat: currentSelectedZone.latitude, lng: currentSelectedZone.longitude},
+            radius: currentSelectedZone.radius,
+            fillColor: '#667eea',
+            fillOpacity: 0.15,
+            strokeColor: '#667eea',
+            strokeWeight: 2,
+            editable: false
+        });
+        
+        checkoutMap.setCenter({lat: currentSelectedZone.latitude, lng: currentSelectedZone.longitude});
+        checkoutMap.setZoom(14);
+    }
+    
+    // Click handler on map
+    checkoutMap.addListener('click', function(e) {
+        selectLocationFromMap(e.latLng);
+    });
+}
+
+// Select Location from Map Click
+function selectLocationFromMap(latLng) {
+    const lat = latLng.lat();
+    const lng = latLng.lng();
+    
+    // Remove old marker
+    if (selectedMarker) {
+        selectedMarker.setMap(null);
+    }
+    
+    // Add new marker
+    selectedMarker = new google.maps.Marker({
+        position: latLng,
+        map: checkoutMap,
+        title: 'নির্বাচিত অবস্থান'
+    });
+    
+    // Update hidden inputs
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+    
+    // Validate against zone
+    if (currentSelectedZone) {
+        const inZone = isLocationInZone(lat, lng, currentSelectedZone);
+        if (inZone) {
+            showLocationStatus(`✅ আপনার অবস্থান সফলভাবে নির্বাচিত হয়েছে (জোন: ${currentSelectedZone.name})`, 'success');
+        } else {
+            const distance = calculateDistance(lat, lng, currentSelectedZone.latitude, currentSelectedZone.longitude);
+            const distanceKm = (distance / 1000).toFixed(1);
+            showLocationStatus(`⚠️ সতর্কতা: আপনার অবস্থান "${currentSelectedZone.name}" জোনের বাইরে আছে (দূরত্ব: ${distanceKm}km)`, 'warning');
+        }
+    } else {
+        showLocationStatus('✅ আপনি ম্যাপে আপনার অবস্থান নির্বাচন করেছেন', 'success');
+    }
+    
+    // Center map on marker
+    checkoutMap.setCenter(latLng);
+}
+
+// Handle Location Errors (Mobile-friendly)
+function handleLocationError(error) {
+    const requestPermissionBtn = document.getElementById('requestPermissionBtn');
+    let errorMsg = 'অবস্থান নির্ধারণে ত্রুটি';
+    let showRetplyBtn = false;
+    
+    if (error.code === 1) { // PERMISSION_DENIED
+        errorMsg = '❌ লোকেশন অনুমতি অস্বীকার করা হয়েছে। দয়া করে সেটিংস থেকে অনুমতি দিন এবং পুনরায় চেষ্টা করুন।';
+        showRetplyBtn = true;
+    } else if (error.code === 2) { // POSITION_UNAVAILABLE
+        errorMsg = '❌ আপনার ডিভাইসে অবস্থান পাওয়া যায়নি। শক্তিশালী GPS সিগন্যাল খুঁজুন বা ম্যাপ ব্যবহার করুন।';
+        showRetplyBtn = true;
+    } else if (error.code === 3) { // TIMEOUT
+        errorMsg = '❌ অবস্থান নির্ধারণের সময় প্রয়োজন অতিক্রম করেছে। দুর্বল নেটওয়ার্ক হতে পারে। পুনরায় চেষ্টা করুন।';
+        showRetplyBtn = true;
+    } else {
+        errorMsg = '❌ ' + error.message;
+    }
+    
+    showLocationStatus(errorMsg, 'danger');
+    
+    // Show retry button if error is retryable
+    if (showRetplyBtn && requestPermissionBtn) {
+        requestPermissionBtn.style.display = 'block';
+    }
+    
+    console.error('Location error:', error);
+}
+
+// Request Location Permission (AGGRESSIVE with retries)
+function requestLocationPermission() {
+    if (!navigator.geolocation) {
+        showLocationStatus('❌ আপনার ব্রাউজার Geolocation সাপোর্ট করে না।', 'danger');
+        return;
+    }
+    
+    const requestPermissionBtn = document.getElementById('requestPermissionBtn');
+    requestPermissionBtn.disabled = true;
+    requestPermissionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> অনুরোধ করছি...';
+    
+    showLocationStatus('📍 আপনার অবস্থান অনুরোধ করছি... অনুমতি দিতে আপনার স্ক্রিনের উপরে তাকান।', 'info');
+    
+    // AGGRESSIVE options: multiple retries with extended timeout
+    const options = {
+        enableHighAccuracy: false,
+        timeout: 40000, // 40 seconds - very long for mobile
+        maximumAge: 0 // Always get fresh position
+    };
+    
+    let attemptCount = 0;
+    const maxAttempts = 2;
+    
+    function attemptGetPosition() {
+        attemptCount++;
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+                
+                document.getElementById('latitude').value = lat.toFixed(6);
+                document.getElementById('longitude').value = lng.toFixed(6);
+                
+                if (currentSelectedZone) {
+                    const inZone = isLocationInZone(lat, lng, currentSelectedZone);
+                    if (inZone) {
+                        showLocationStatus(`✅ আপনার বর্তমান অবস্থান সফলভাবে নির্ধারণ করা হয়েছে\\n(নির্ভুলতা: ${accuracy.toFixed(0)}m, জোন: ${currentSelectedZone.name})`, 'success');
+                    } else {
+                        const distance = calculateDistance(lat, lng, currentSelectedZone.latitude, currentSelectedZone.longitude);
+                        const distanceKm = (distance / 1000).toFixed(1);
+                        showLocationStatus(`⚠️ সতর্কতা: আপনার অবস্থান "${currentSelectedZone.name}" জোনের বাইরে\\n(দূরত্ব: ${distanceKm}km, নির্ভুলতা: ±${accuracy.toFixed(0)}m)`, 'warning');
+                    }
+                } else {
+                    showLocationStatus(`✅ আপনার অবস্থান পাওয়া গেছে (নির্ভুলতা: ±${accuracy.toFixed(0)}m)`, 'success');
+                }
+                
+                // Hide retry button on success
+                requestPermissionBtn.style.display = 'none';
+                requestPermissionBtn.disabled = false;
+                requestPermissionBtn.innerHTML = '<i class="fas fa-sync"></i> অনুমতি পুনরায় অনুরোধ করুন';
+                
+                // Update map if open
+                if (checkoutMap) {
+                    const latLng = new google.maps.LatLng(lat, lng);
+                    selectLocationFromMap(latLng);
+                }
+            },
+            function(error) {
+                if (attemptCount < maxAttempts && (error.code === 3 || error.code === 2)) {
+                    // Retry for TIMEOUT or POSITION_UNAVAILABLE
+                    setTimeout(attemptGetPosition, 2000);
+                } else {
+                    handleLocationError(error);
+                    requestPermissionBtn.disabled = false;
+                    requestPermissionBtn.innerHTML = '<i class="fas fa-sync"></i> অনুমতি পুনরায় অনুরোধ করুন';
+                }
+            },
+            options
+        );
+    }
+    
+    attemptGetPosition();
+}
+
+// Use Live Location (calls requestLocationPermission)
+function useLiveLocation() {
+    requestLocationPermission();
+}
+
+// Show Location Status
+function showLocationStatus(message, type = 'success') {
+    const locationStatus = document.getElementById('locationStatus');
+    const locationText = document.getElementById('locationText');
+    
+    locationStatus.style.display = 'block';
+    locationStatus.className = `alert alert-${type} mb-0`;
+    locationText.innerHTML = message;
+}
+
+// Validate Checkout Form
+function validateCheckout() {
+    const zoneSelect = document.querySelector('select[name="zone"]');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    const phoneInput = document.querySelector('input[name="phone"]');
+    
+    // Check if zone is selected
+    if (!zoneSelect.value) {
+        alert('দয়া করে অর্ডার করার আগে একটি জোন নির্বাচন করুন।');
+        return false;
+    }
+    
+    // Check if location is selected
+    if (!latitudeInput.value || !longitudeInput.value) {
+        alert('দয়া করে অর্ডার করার আগে আপনার ডেলিভারি অবস্থান নির্বাচন করুন।');
+        return false;
+    }
+    
+    // Validate phone number format
+    const phoneValue = phoneInput.value.trim();
+    const phoneRegex = /^[0-9\+\-\s\(\)]{10,15}$/;
+    if (!phoneRegex.test(phoneValue)) {
+        alert('দয়া করে একটি সঠিক ফোন নম্বর প্রবেশ করুন।');
+        return false;
+    }
+    
+    return true;
+}
+
+// Auto-capture location when phone field is interacted
+function setupPhoneLocationTracking() {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    const latitudeInput = document.getElementById('latitude');
+    const longitudeInput = document.getElementById('longitude');
+    
+    if (phoneInput) {
+        // When user leaves phone field, auto-capture location if not already set
+        phoneInput.addEventListener('blur', function() {
+            if (!latitudeInput.value || !longitudeInput.value) {
+                if (navigator.geolocation) {
+                    // Request with auto-retry logic
+                    requestLocationWithRetry(latitudeInput, longitudeInput, 1);
+                }
+            }
+        });
+    }
+}
+
+// Request location with retry logic
+function requestLocationWithRetry(latInput, lngInput, retryCount = 1, maxRetries = 3) {
+    if (!navigator.geolocation) return;
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            latInput.value = position.coords.latitude.toFixed(6);
+            lngInput.value = position.coords.longitude.toFixed(6);
+            showLocationStatus('✅ অবস্থান সফলভাবে সংরক্ষিত', 'success');
+        },
+        function(error) {
+            console.log(`Location request attempt ${retryCount} failed:`, error);
+            // Auto-retry if failed and retries remaining
+            if (retryCount < maxRetries && (error.code === 3 || error.code === 2)) {
+                // Retry after 2 seconds (TIMEOUT or POSITION_UNAVAILABLE)
+                setTimeout(function() {
+                    requestLocationWithRetry(latInput, lngInput, retryCount + 1, maxRetries);
+                }, 2000);
+            }
+        },
+        {enableHighAccuracy: false, timeout: 15000, maximumAge: 0}
+    );
+}
+
+// Optional: Pre-fill with live location on page load
+window.addEventListener('load', function() {
+    // Check HTTPS requirement
+    const isHTTPS = window.location.protocol === 'https:';
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isExempted = isLocalhost || isHTTPS;
+    
+    if (!isExempted && navigator.geolocation) {
+        console.warn('⚠️ Geolocation Warning:');
+        console.warn('Location access requires HTTPS or localhost');
+        console.warn('Current: ' + window.location.protocol + '//' + window.location.hostname);
+        console.warn('For phone testing, use: HTTPS or Ngrok tunnel');
+    }
+    
+    // Auto-capture location on page load (AGGRESSIVE)
+    if (navigator.geolocation && !document.getElementById('latitude').value) {
+        // First request - immediate
+        requestLocationWithRetry(
+            document.getElementById('latitude'),
+            document.getElementById('longitude'),
+            1,
+            3
+        );
+        
+        // Second request after 3 seconds - ensure permission popup shows
+        setTimeout(function() {
+            if (!document.getElementById('latitude').value && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = document.getElementById('latitude');
+                        const lng = document.getElementById('longitude');
+                        if (!lat.value) {
+                            lat.value = position.coords.latitude.toFixed(6);
+                            lng.value = position.coords.longitude.toFixed(6);
+                        }
+                    },
+                    function(error) {
+                        console.log('Secondary location request failed:', error);
+                        
+                        // Provide helpful debugging info
+                        if (error.code === 1 && !isLocalhost) {
+                            console.warn('📍 Permission denied. If testing on phone:');
+                            console.warn('  1. Use HTTPS (Production)');
+                            console.warn('  2. Use Ngrok tunnel: ngrok http 8000');
+                            console.warn('  3. Test from localhost on PC');
+                        }
+                    },
+                    {enableHighAccuracy: false, timeout: 20000, maximumAge: 0}
+                );
+            }
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,258 @@
+{% extends 'shop/base.html' %}
+{% block title %}ম্যানেজার ড্যাশবোর্ড - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="row" style="margin: 0; min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="col-lg-2 p-0">
+        {% include 'shop/manager/sidebar.html' %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-10 p-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h1 class="fw-bold">
+                    <i class="fas fa-tasks"></i> ম্যানেজার ড্যাশবোর্ড
+                </h1>
+                <p class="text-muted">
+                    জোন: 
+                    {% if manager.zone_assigned %}
+                        <strong>{{ manager.zone_assigned.name }}</strong>
+                    {% else %}
+                        <strong class="text-danger">জোন নির্ধারিত নয়</strong>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-calendar-check"></i> আজ সম্পূর্ণ: <strong>{{ today_completed }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card border-left border-primary">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">নতুন অর্ডার</h6>
+                        <h3 class="mb-0 text-primary">{{ pending_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left border-warning">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">চলমান ডেলিভারি</h6>
+                        <h3 class="mb-0 text-warning">{{ active_count }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left border-success">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">আজ সম্পূর্ণ</h6>
+                        <h3 class="mb-0 text-success">{{ today_completed }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-left border-info">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">মোট সম্পূর্ণ</h6>
+                        <h3 class="mb-0 text-info">{{ completed_orders.count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Management Tabs -->
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs mb-0" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#pending" role="tab">
+                            <i class="fas fa-hourglass-start"></i> নতুন ({{ pending_count }})
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#approved" role="tab">
+                            <i class="fas fa-check-circle"></i> অনুমোদিত ({{ approved_orders.count }})
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#active" role="tab">
+                            <i class="fas fa-truck"></i> চলমান ({{ active_count }})
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#completed" role="tab">
+                            <i class="fas fa-check"></i> সম্পূর্ণ
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <!-- Pending Orders -->
+                    <div id="pending" class="tab-pane fade show active">
+                        {% if pending_orders %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>অর্ডার #</th>
+                                            <th>ফোন</th>
+                                            <th>মূল্য</th>
+                                            <th>সময়</th>
+                                            <th>অ্যাকশন</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in pending_orders %}
+                                        <tr>
+                                            <td><strong>#{{ order.order_id }}</strong></td>
+                                            <td>{{ order.customer_phone }}</td>
+                                            <td>৳{{ order.total_amount }}</td>
+                                            <td>{{ order.created_at|date:"d M, H:i" }}</td>
+                                            <td>
+                                                <a href="{% url 'manager_approve_order' order.id %}" class="btn btn-sm btn-primary">
+                                                    দেখুন
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">কোনো নতুন অর্ডার নেই</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Approved Orders -->
+                    <div id="approved" class="tab-pane fade">
+                        {% if approved_orders %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>অর্ডার #</th>
+                                            <th>ফোন</th>
+                                            <th>মূল্য</th>
+                                            <th>অ্যাকশন</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in approved_orders %}
+                                        <tr>
+                                            <td><strong>#{{ order.order_id }}</strong></td>
+                                            <td>{{ order.customer_phone }}</td>
+                                            <td>৳{{ order.total_amount }}</td>
+                                            <td>
+                                                <a href="{% url 'manager_assign_rider' order.id %}" class="btn btn-sm btn-info">
+                                                    রাইডার নির্ধারণ
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">কোনো অনুমোদিত অর্ডার নেই</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Active Deliveries -->
+                    <div id="active" class="tab-pane fade">
+                        {% if active_orders %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>অর্ডার #</th>
+                                            <th>ফোন</th>
+                                            <th>রাইডার</th>
+                                            <th>স্থিতি</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in active_orders %}
+                                        <tr>
+                                            <td><strong>#{{ order.order_id }}</strong></td>
+                                            <td>{{ order.customer_phone }}</td>
+                                            <td>{{ order.rider.username }}</td>
+                                            <td>
+                                                {% if order.status == 'confirmed' %}
+                                                    <span class="badge bg-info">নিশ্চিত</span>
+                                                {% elif order.status == 'picked' %}
+                                                    <span class="badge bg-warning">পিক আপ</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">কোনো চলমান ডেলিভারি নেই</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Completed Orders -->
+                    <div id="completed" class="tab-pane fade">
+                        {% if completed_orders %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>অর্ডার #</th>
+                                            <th>ফোন</th>
+                                            <th>মূল্য</th>
+                                            <th>রাইডার</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in completed_orders %}
+                                        <tr>
+                                            <td><strong>#{{ order.order_id }}</strong></td>
+                                            <td>{{ order.customer_phone }}</td>
+                                            <td>৳{{ order.total_amount }}</td>
+                                            <td>{{ order.rider.username }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">এখনো কোনো অর্ডার ডেলিভার হয়নি</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left {
+        border-left: 4px solid #ddd !important;
+        padding-left: 12px;
+    }
+    .border-primary {
+        border-left-color: #667eea !important;
+    }
+    .border-warning {
+        border-left-color: #f2994e !important;
+    }
+    .border-success {
+        border-left-color: #28a745 !important;
+    }
+    .border-info {
+        border-left-color: #17a2b8 !important;
+    }
+</style>
+{% endblock %}

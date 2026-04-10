@@ -1,0 +1,205 @@
+{% extends 'shop/admin/base.html' %}
+{% block title %}জোন যোগ করুন - ZoneDelivery{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="">
+<style>
+    #map {
+        height: 400px;
+        border-radius: 10px;
+        border: 2px solid #ddd;
+    }
+    .map-instructions {
+        background-color: #e7f3ff;
+        border-left: 4px solid #2196F3;
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm" style="border-radius: 15px; border: none;">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus"></i> {% if zone %}জোন সম্পাদনা করুন{% else %}নতুন জোন যোগ করুন{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="zoneForm">
+                        {% csrf_token %}
+
+                        <!-- Basic Info -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">জোনের নাম</label>
+                            <input type="text" name="name" class="form-control" placeholder="যেমন: ধানমন্ডি, গুলশান" value="{% if zone %}{{ zone.name }}{% endif %}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">পোস্টাল কোড</label>
+                            <input type="text" name="postal_code" class="form-control" placeholder="পোস্টাল কোড" value="{% if zone %}{{ zone.postal_code }}{% endif %}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">ডেলিভারি চার্জ (৳)</label>
+                            <input type="number" name="delivery_charge" class="form-control" placeholder="ডেলিভারি চার্জ" step="0.01" value="{% if zone %}{{ zone.delivery_charge }}{% else %}50{% endif %}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">বর্ণনা</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="জোনের বর্ণনা">{% if zone %}{{ zone.description }}{% endif %}</textarea>
+                        </div>
+
+                        <!-- Geolocation Section -->
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3">📍 সেবা এলাকা (Service Zone)</h6>
+
+                        <div class="map-instructions">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>ম্যাপ থেকে সেবা এলাকার কেন্দ্র নির্বাচন করুন।</strong> ম্যাপে ক্লিক করে জিপিএস অবস্থান নির্ধারণ করুন। তারপর বৃত্তের ব্যাসার্ধ (রেডিয়াস) নির্ধারণ করুন।
+                        </div>
+
+                        <!-- Map -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">সেবা এলাকা ম্যাপ</label>
+                            <div id="map"></div>
+                        </div>
+
+                        <!-- Coordinates -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">অক্ষাংশ (Latitude)</label>
+                                    <input type="number" name="latitude" id="latitude" class="form-control" placeholder="23.8103" step="0.0001" value="{% if zone and zone.latitude %}{{ zone.latitude }}{% else %}23.8103{% endif %}">
+                                    <small class="text-muted">যেমন: 23.8103 (ঢাকার জন্য)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">দ্রাঘিমাংশ (Longitude)</label>
+                                    <input type="number" name="longitude" id="longitude" class="form-control" placeholder="90.2506" step="0.0001" value="{% if zone and zone.longitude %}{{ zone.longitude }}{% else %}90.2506{% endif %}">
+                                    <small class="text-muted">যেমন: 90.2506 (ঢাকার জন্য)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Radius -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">সেবা ব্যাসার্ধ (মিটারে)</label>
+                            <div class="input-group">
+                                <input type="number" name="radius" id="radius" class="form-control" placeholder="2000" value="{% if zone and zone.radius %}{{ zone.radius }}{% else %}2000{% endif %}" required step="100">
+                                <span class="input-group-text">মিটার</span>
+                            </div>
+                            <small class="text-muted">1000 = 1 কিমি, 2000 = 2 কিমি</small>
+                        </div>
+
+                        {% if zone %}
+                        <div class="mb-3">
+                            <label class="form-check-label">
+                                <input type="checkbox" name="is_active" class="form-check-input" {% if zone.is_active %}checked{% endif %}>
+                                <strong>সক্রিয়</strong>
+                            </label>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                <i class="fas fa-save"></i> সংরক্ষণ করুন
+                            </button>
+                            <a href="{% url 'admin_zones' %}" class="btn btn-secondary btn-lg fw-bold">
+                                <i class="fas fa-arrow-left"></i> ফিরে যান
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map
+    const defaultLat = parseFloat(document.getElementById('latitude').value) || 23.8103;
+    const defaultLng = parseFloat(document.getElementById('longitude').value) || 90.2506;
+    const defaultRadius = parseFloat(document.getElementById('radius').value) || 2000;
+
+    const map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: {lat: defaultLat, lng: defaultLng},
+        mapTypeId: 'roadmap'
+    });
+
+    // Marker and circle
+    let marker = null;
+    let circle = null;
+
+    // Function to update marker and circle
+    function updateMap(lat, lng, radius) {
+        const latInput = document.getElementById('latitude');
+        const lngInput = document.getElementById('longitude');
+        const radiusInput = document.getElementById('radius');
+
+        latInput.value = lat.toFixed(4);
+        lngInput.value = lng.toFixed(4);
+        radiusInput.value = Math.round(radius);
+
+        // Remove old marker and circle
+        if (marker) marker.setMap(null);
+        if (circle) circle.setMap(null);
+
+        // Add new marker (draggable)
+        marker = new google.maps.Marker({
+            position: {lat: lat, lng: lng},
+            map: map,
+            draggable: true,
+            title: 'জোন কেন্দ্র (অন্য স্থানতে খতি দেই' 
+        });
+
+        // Add circle for radius
+        circle = new google.maps.Circle({
+            map: map,
+            center: {lat: lat, lng: lng},
+            radius: radius,
+            fillColor: '#667eea',
+            fillOpacity: 0.2,
+            strokeColor: '#667eea',
+            strokeWeight: 2
+        });
+
+        // Update map bounds
+        map.setCenter({lat: lat, lng: lng});
+
+        // Update on marker drag
+        marker.addListener('drag', function() {
+            const pos = marker.getPosition();
+            updateMap(pos.lat(), pos.lng(), radiusInput.value);
+        });
+    }
+
+    // Click on map to set location
+    map.addListener('click', function(e) {
+        const radius = parseFloat(document.getElementById('radius').value) || 2000;
+        updateMap(e.latLng.lat(), e.latLng.lng(), radius);
+    });
+
+    // Update radius based on input change
+    document.getElementById('radius').addEventListener('change', function() {
+        const lat = parseFloat(document.getElementById('latitude').value);
+        const lng = parseFloat(document.getElementById('longitude').value);
+        const radius = parseFloat(this.value);
+        updateMap(lat, lng, radius);
+    });
+
+    // Initial map setup
+    updateMap(defaultLat, defaultLng, defaultRadius);
+});
+</script>
+{% endblock %}

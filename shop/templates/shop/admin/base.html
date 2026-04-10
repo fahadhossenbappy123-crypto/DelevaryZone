@@ -1,0 +1,17 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="row" style="margin: 0; min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="col-lg-2 p-0">
+        {% include 'shop/admin/sidebar.html' %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-10 p-4">
+        {% block admin_content %}
+        <!-- Admin pages will override this block -->
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,522 @@
+{% extends 'shop/base.html' %}
+{% block title %}রাইডার Management Panel - ZoneDelivery{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Enhanced Button Styling for Rider Dashboard */
+    .btn-am {
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        color: white !important;
+        text-decoration: none;
+        display: inline-block;
+        width: 100%;
+    }
+    
+    .btn-am:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        color: white !important;
+    }
+    
+    .btn-am:active {
+        transform: translateY(-1px);
+    }
+    
+    /* Green Success Button */
+    .btn-success-vibrant {
+        background: linear-gradient(135deg, #00b894 0%, #00ff00 100%) !important;
+        box-shadow: 0 6px 20px rgba(0, 184, 148, 0.5) !important;
+    }
+    
+    .btn-success-vibrant:hover {
+        background: linear-gradient(135deg, #009967 0%, #00cc00 100%) !important;
+        box-shadow: 0 8px 25px rgba(0, 184, 148, 0.6) !important;
+        transform: translateY(-4px);
+    }
+    
+    /* Blue Info Button */
+    .btn-info-vibrant {
+        background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%) !important;
+        box-shadow: 0 6px 20px rgba(0, 153, 255, 0.5) !important;
+    }
+    
+    .btn-info-vibrant:hover {
+        background: linear-gradient(135deg, #00a8cc 0%, #0077cc 100%) !important;
+        box-shadow: 0 8px 25px rgba(0, 153, 255, 0.6) !important;
+        transform: translateY(-4px);
+    }
+    
+    /* Orange Primary Button */
+    .btn-primary-vibrant {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff9f1c 100%) !important;
+        box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5) !important;
+    }
+    
+    .btn-primary-vibrant:hover {
+        background: linear-gradient(135deg, #e54a23 0%, #e68a0b 100%) !important;
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6) !important;
+        transform: translateY(-4px);
+    }
+    
+    /* Danger Button */
+    .btn-danger-vibrant {
+        background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%) !important;
+        box-shadow: 0 6px 20px rgba(255, 71, 87, 0.5) !important;
+    }
+    
+    .btn-danger-vibrant:hover {
+        background: linear-gradient(135deg, #ff2d3b 0%, #ff4835 100%) !important;
+        box-shadow: 0 8px 25px rgba(255, 71, 87, 0.6) !important;
+        transform: translateY(-4px);
+    }
+</style>
+
+<div class="container-fluid mt-4 px-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 15px;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h2 class="mb-1"><i class="fas fa-motorcycle"></i> Rider Management Panel</h2>
+                        <p class="mb-0">স্বাগতম, {{ user.username }}! আপনার সব ডেলিভারি এখানে পরিচালনা করুন।</p>
+                    </div>
+                    <div class="text-end">
+                        <p class="mb-1" style="font-size: 0.9rem;">আজকের তারিখ: <strong>{{ today|date:"d-m-Y" }}</strong></p>
+                        <p class="mb-0" style="opacity: 0.9;">Zone: <strong>{{ user.profile.city }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1" style="opacity: 0.9;">অপেক্ষমাণ অর্ডার</p>
+                            <h3 class="mb-0 fw-bold">{{ pending_orders.count }}</h3>
+                        </div>
+                        <i class="fas fa-hourglass-start fa-2x" style="opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 1.5rem;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1" style="opacity: 0.9;">সক্রিয় ডেলিভারি</p>
+                            <h3 class="mb-0 fw-bold">{{ active_deliveries.count }}</h3>
+                        </div>
+                        <i class="fas fa-box fa-2x" style="opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 1.5rem;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1" style="opacity: 0.9;">সম্পন্ন ডেলিভারি</p>
+                            <h3 class="mb-0 fw-bold">{{ completed_count }}</h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x" style="opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm" style="border-radius: 15px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 1.5rem;">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="mb-1" style="opacity: 0.9;">মোট আয়</p>
+                            <h3 class="mb-0 fw-bold">৳{{ total_earnings }}</h3>
+                        </div>
+                        <i class="fas fa-money-bill fa-2x" style="opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4 border-0" id="riderTabs" role="tablist" style="background: white; border-radius: 15px; padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="map-tab" data-bs-toggle="tab" data-bs-target="#map" type="button" role="tab">
+                <i class="fas fa-map"></i> ম্যাপ ভিউ
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="available-tab" data-bs-toggle="tab" data-bs-target="#available" type="button" role="tab">
+                <i class="fas fa-list"></i> উপলব্ধ অর্ডার
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab">
+                <i class="fas fa-truck"></i> সক্রিয় ডেলিভারি
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+                <i class="fas fa-history"></i> সম্পন্ন অর্ডার
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="riderTabsContent">
+        <!-- Map View -->
+        <div class="tab-pane fade show active" id="map" role="tabpanel">
+            <div id="riderMap" style="height: 600px; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></div>
+            <div class="mt-3 p-3" style="background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h6 class="fw-bold mb-2"><i class="fas fa-lightbulb text-warning"></i> ম্যাপ ইঙ্গিত:</h6>
+                <div class="row g-2">
+                    <div class="col-auto">
+                        <span class="badge" style="background: #ffc107; color: #000;">🟡</span> উপলব্ধ অর্ডার
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge" style="background: #007bff;">🔵</span> সক্রিয় ডেলিভারি
+                    </div>
+                    <div class="col-auto text-muted small">
+                        <i class="fas fa-info-circle"></i> মার্কারে ক্লিক করলে বিস্তারিত দেখবেন
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Orders -->
+        <div class="tab-pane fade" id="available" role="tabpanel">
+            <div class="row">
+                {% if pending_orders %}
+                    {% for order in pending_orders %}
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm" style="border-radius: 15px; border-left: 5px solid #28a745; overflow: hidden;">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="card-title fw-bold mb-0">অর্ডার #{{ order.order_id }}</h6>
+                                    <span class="badge bg-warning text-dark">নতুন</span>
+                                </div>
+                                
+                                <div class="customer-info mb-3">
+                                    <p class="mb-2"><i class="fas fa-user text-primary"></i> <strong>{{ order.customer.username }}</strong></p>
+                                    <p class="mb-2"><i class="fas fa-phone text-success"></i> {{ order.customer_phone }}</p>
+                                    <p class="mb-2"><i class="fas fa-envelope text-info"></i> {{ order.customer_email }}</p>
+                                    <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> {{ order.customer_address }}, {{ order.customer_city }}</p>
+                                </div>
+
+                                <div class="order-summary mb-3 p-3" style="background: #f8f9fa; border-radius: 10px;">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>অর্ডার মূল্য:</strong><br> ৳{{ order.total_amount }}
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <strong>ডেলিভারি চার্জ:</strong><br> ৳{{ order.delivery_charge }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button class="btn fw-bold" onclick="acceptOrder({{ order.id }})" style="background: linear-gradient(135deg, #00b894 0%, #00ff00 100%); border: none; padding: 0.85rem; font-size: 1rem; color: white; box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4); border-radius: 10px;">
+                                        <i class="fas fa-check-circle"></i> এই অর্ডার নিন
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center py-5" style="border-radius: 15px;">
+                            <i class="fas fa-inbox fa-2x mb-3"></i>
+                            <p class="mb-0"><strong>কোনো উপলব্ধ অর্ডার নেই</strong></p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Active Deliveries -->
+        <div class="tab-pane fade" id="active" role="tabpanel">
+            <div class="row">
+                {% if active_deliveries %}
+                    {% for order in active_deliveries %}
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm" style="border-radius: 15px; border-left: 5px solid #007bff; overflow: hidden;">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="card-title fw-bold mb-0">অর্ডার #{{ order.order_id }}</h6>
+                                    <span style="background: {% if order.status == 'picked' %}#0dcaf0{% else %}#007bff{% endif %}; color: white; padding: 5px 10px; border-radius: 10px; font-size: 0.85rem;">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </div>
+
+                                <div class="customer-info mb-3">
+                                    <p class="mb-2"><i class="fas fa-user text-primary"></i> <strong>{{ order.customer.username }}</strong></p>
+                                    <p class="mb-2"><i class="fas fa-phone text-success"></i> {{ order.customer_phone }}</p>
+                                    <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> <strong>{{ order.customer_address }}, {{ order.customer_city }}</strong></p>
+                                    {% if order.customer_latitude and order.customer_longitude %}
+                                        <p class="mb-0"><i class="fas fa-location-dot"></i> 
+                                            <a href="https://maps.google.com/?q={{ order.customer_latitude }},{{ order.customer_longitude }}" target="_blank" class="text-decoration-none">
+                                                গুগল ম্যাপে দেখুন
+                                            </a>
+                                        </p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="order-items mb-3">
+                                    <strong>অর্ডার আইটেম:</strong>
+                                    <ul class="mb-0 mt-2" style="font-size: 0.9rem;">
+                                        {% for item in order.items.all %}
+                                            <li>{{ item.product.title }} (x{{ item.quantity }}) - ৳{{ item.price }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'rider_order_detail' order.id %}" class="btn mb-2 fw-bold" style="background: linear-gradient(135deg, #00d4ff 0%, #0099ff 100%); border: none; padding: 0.85rem; font-size: 0.95rem; color: white; box-shadow: 0 6px 20px rgba(0, 153, 255, 0.4); border-radius: 10px; text-decoration: none; display: inline-block;">
+                                        <i class="fas fa-map"></i> বিস্তারিত ও ম্যাপ দেখুন
+                                    </a>
+                                    {% if order.status == 'confirmed' %}
+                                        <button class="btn fw-bold" onclick="updateOrderStatus({{ order.id }}, 'picked')" style="background: linear-gradient(135deg, #ff6b35 0%, #ff9f1c 100%); border: none; padding: 0.85rem; font-size: 0.95rem; color: white; box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4); border-radius: 10px;">
+                                            <i class="fas fa-box"></i> পণ্য সংগ্রহ সম্পূর্ণ
+                                        </button>
+                                    {% elif order.status == 'picked' %}
+                                        <button class="btn fw-bold" onclick="updateOrderStatus({{ order.id }}, 'delivered')" style="background: linear-gradient(135deg, #00b894 0%, #00ff00 100%); border: none; padding: 0.85rem; font-size: 0.95rem; color: white; box-shadow: 0 6px 20px rgba(0, 184, 148, 0.4); border-radius: 10px;">
+                                            <i class="fas fa-check-circle"></i> ডেলিভারি সম্পূর্ণ করুন
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center py-5" style="border-radius: 15px;">
+                            <i class="fas fa-truck fa-2x mb-3"></i>
+                            <p class="mb-0"><strong>কোনো সক্রিয় ডেলিভারি নেই</strong></p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Completed Orders -->
+        <div class="tab-pane fade" id="completed" role="tabpanel">
+            <div class="row">
+                {% if completed_orders %}
+                    {% for order in completed_orders %}
+                    <div class="col-lg-6 mb-4">
+                        <div class="card border-0 shadow-sm" style="border-radius: 15px; border-left: 5px solid #28a745; overflow: hidden;">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="card-title fw-bold mb-0">অর্ডার #{{ order.order_id }}</h6>
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> সম্পন্ন</span>
+                                </div>
+
+                                <p class="mb-2"><i class="fas fa-user"></i> {{ order.customer.username }}</p>
+                                <p class="mb-2"><i class="fas fa-map-marker-alt"></i> {{ order.customer_address }}</p>
+                                
+                                <div class="order-summary p-3" style="background: #f8f9fa; border-radius: 10px;">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <strong>অর্ডার মূল্য:</strong><br> ৳{{ order.total_amount }}
+                                        </div>
+                                        <div class="col-6 text-end">
+                                            <strong>ডেলিভারি চার্জ:</strong><br> ৳{{ order.delivery_charge }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <small class="text-muted d-block mt-3">
+                                    <i class="fas fa-calendar"></i> {{ order.created_at|date:"d-m-Y H:i" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center py-5" style="border-radius: 15px;">
+                            <i class="fas fa-history fa-2x mb-3"></i>
+                            <p class="mb-0"><strong>কোনো সম্পন্ন ডেলিভারি নেই</strong></p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for actions -->
+<script>
+function acceptOrder(orderId) {
+    if (confirm('এই অর্ডার গ্রহণ করতে চান?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `<input type="hidden" name="order_id" value="${orderId}">
+                         <input type="hidden" name="action" value="accept">
+                         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function updateOrderStatus(orderId, status) {
+    const statusText = status === 'picked' ? 'পণ্য সংগ্রহ' : 'ডেলিভারি সম্পূর্ণ';
+    if (confirm(statusText + ' চিহ্নিত করতে চান?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `<input type="hidden" name="order_id" value="${orderId}">
+                         <input type="hidden" name="action" value="update_status">
+                         <input type="hidden" name="status" value="${status}">
+                         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize rider map
+    const riderMap = new google.maps.Map(document.getElementById('riderMap'), {
+        zoom: 12,
+        center: {lat: 23.8103, lng: 90.4125}, // Default to Dhaka center
+        mapTypeId: 'roadmap'
+    });
+    
+    // Define order markers
+    const allOrders = [
+        {% for order in pending_orders %}
+        {
+            id: '{{ order.order_id }}',
+            lat: {{ order.latitude|default:"null" }},
+            lng: {{ order.longitude|default:"null" }},
+            status: 'pending',
+            address: '{{ order.customer_address }}',
+            phone: '{{ order.customer_phone }}',
+            type: 'available'
+        },
+        {% endfor %}
+        {% for order in active_deliveries %}
+        {
+            id: '{{ order.order_id }}',
+            lat: {{ order.latitude|default:"null" }},
+            lng: {{ order.longitude|default:"null" }},
+            status: '{{ order.status }}',
+            address: '{{ order.customer_address }}',
+            phone: '{{ order.customer_phone }}',
+            type: 'active'
+        },
+        {% endfor %}
+    ];
+    
+    // Filter orders with valid coordinates
+    const validOrders = allOrders.filter(order => order.lat && order.lng);
+    
+    if (validOrders.length === 0) {
+        // Show message if no orders
+        const mapDiv = document.getElementById('riderMap');
+        mapDiv.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;"><div class="text-center"><i class="fas fa-map fa-3x text-muted mb-3"></i><p class="text-muted mt-3">কোনো অর্ডার মার্কার উপলব্ধ নেই</p></div></div>';
+        return;
+    }
+    
+    // Add markers to map and fit bounds
+    const markers = [];
+    const bounds = new google.maps.LatLngBounds();
+    
+    validOrders.forEach(order => {
+        const markerColor = order.type === 'active' ? '#007bff' : '#ffc107';
+        
+        const marker = new google.maps.Marker({
+            position: {lat: order.lat, lng: order.lng},
+            map: riderMap,
+            title: `অর্ডার #${order.id}`,
+            icon: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+        });
+        
+        if (order.type === 'active') {
+            marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
+        }
+        
+        const infoWindow = new google.maps.InfoWindow({
+            content: `<div style="min-width: 250px; padding: 10px;">
+                <h6 class="fw-bold mb-2">অর্ডার #${order.id}</h6>
+                <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> <strong>${order.address}</strong></p>
+                <p class="mb-2"><i class="fas fa-phone text-success"></i> ${order.phone}</p>
+                <p class="mb-2">
+                    <span class="badge" style="background: ${markerColor};">${order.type === 'active' ? 'সক্রিয় ডেলিভারি' : 'উপলব্ধ অর্ডার'}</span>
+                </p>
+                <a href="https://maps.google.com/?q=${order.lat},${order.lng}" target="_blank" class="btn btn-sm btn-primary w-100">
+                    <i class="fas fa-route"></i> রুট দেখুন
+                </a>
+            </div>`
+        });
+        
+        marker.addListener('click', () => {
+            infoWindow.open(riderMap, marker);
+        });
+        
+        bounds.extend(marker.getPosition());
+        markers.push(marker);
+    });
+    
+    // Fit map to all markers
+    if (markers.length > 0) {
+        riderMap.fitBounds(bounds);
+    }
+});
+</script>
+
+<style>
+    .tab-content {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .nav-tabs .nav-link {
+        color: #666;
+        border: none;
+        border-bottom: 3px solid transparent;
+        margin-right: 1rem;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: var(--primary);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    }
+
+    .nav-tabs .nav-link.active {
+        color: white;
+        border-bottom-color: transparent;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px 10px 0 0;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+</style>
+
+{% endblock %}

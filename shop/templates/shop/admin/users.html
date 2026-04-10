@@ -1,0 +1,98 @@
+{% extends 'shop/admin/base.html' %}
+{% block title %}ব্যবহারকারী পরিচালনা - ZoneDelivery{% endblock %}
+
+{% block admin_content %}
+<div>
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold"><i class="fas fa-users"></i> ব্যবহারকারী পরিচালনা</h2>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4" style="border-radius: 10px; border: none;">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <select name="role" class="form-select" onchange="this.form.submit();">
+                        <option value="">সব ভূমিকা</option>
+                        <option value="customer" {% if request.GET.role == 'customer' %}selected{% endif %}>গ্রাহক</option>
+                        <option value="rider" {% if request.GET.role == 'rider' %}selected{% endif %}>রাইডার</option>
+                        <option value="manager" {% if request.GET.role == 'manager' %}selected{% endif %}>ম্যানেজার</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="ইউজারনেম বা ইমেইল খুঁজুন..." value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> খুঁজুন
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card shadow-sm" style="border-radius: 10px; border: none;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <tr>
+                        <th>ইউজারনেম</th>
+                        <th>ই-মেইল</th>
+                        <th>ভূমিকা</th>
+                        <th>জোন (যদি ম্যানেজার)</th>
+                        <th>ফোন</th>
+                        <th>যোগদান</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <strong>{{ user.username }}</strong>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.profile.role == 'rider' %}
+                                <span class="badge bg-info"><i class="fas fa-motorcycle"></i> রাইডার</span>
+                            {% elif user.profile.role == 'manager' %}
+                                <span class="badge bg-warning text-dark"><i class="fas fa-user-tie"></i> ম্যানেজার</span>
+                            {% else %}
+                                <span class="badge bg-success"><i class="fas fa-user"></i> গ্রাহক</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.profile.role == 'manager' and user.profile.zone_assigned %}
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-map-marker-alt"></i> {{ user.profile.zone_assigned.name }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.profile.phone|default:"N/A" }}</td>
+                        <td>{{ user.date_joined|date:"d M, Y" }}</td>
+                        <td>
+                            <a href="{% url 'admin_user_role' user.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> পরিবর্তন
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-inbox text-muted fa-2x"></i>
+                            <p class="text-muted mt-2">কোনো ব্যবহারকারী পাওয়া যায়নি</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

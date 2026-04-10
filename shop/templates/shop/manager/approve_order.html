@@ -1,0 +1,146 @@
+{% extends 'shop/base.html' %}
+{% block title %}অর্ডার অনুমোদন - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Order Details Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box"></i> অর্ডার: {{ order.order_id }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Customer Info -->
+                    <h6 class="fw-bold mb-3">গ্রাহক তথ্য</h6>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p>
+                                <strong>নাম:</strong> {{ order.customer_phone }}<br>
+                                <strong>ফোন:</strong> {{ order.customer_phone }}<br>
+                                <strong>ই-মেইল:</strong> {{ order.customer_email }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p>
+                                <strong>শহর:</strong> {{ order.customer_city }}<br>
+                                <strong>জোন:</strong> <span class="badge bg-info">{{ order.zone.name }}</span><br>
+                                <strong>অর্ডার সময়:</strong> {{ order.created_at|date:"j M, Y H:i" }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Address -->
+                    <h6 class="fw-bold mb-2">ডেলিভারি ঠিকানা</h6>
+                    <div class="alert alert-light">
+                        <i class="fas fa-map-marker-alt"></i> {{ order.customer_address }}
+                    </div>
+
+                    <!-- Order Items -->
+                    <h6 class="fw-bold mb-3">অর্ডার আইটেম</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>পণ্য</th>
+                                    <th>পরিমাণ</th>
+                                    <th>মূল্য</th>
+                                    <th>মোট</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>{{ item.product.title }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>৳{{ item.price }}</td>
+                                    <td>৳{{ item.item_total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold">
+                                    <td colspan="2"></td>
+                                    <td>সাবটোটাল:</td>
+                                    <td>৳{{ order.total_amount }}</td>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td colspan="2"></td>
+                                    <td>ডেলিভারি চার্জ:</td>
+                                    <td>৳{{ order.delivery_charge }}</td>
+                                </tr>
+                                <tr class="table-info fw-bold">
+                                    <td colspan="2"></td>
+                                    <td>মোট:</td>
+                                    <td>৳{{ order.total_amount|add:order.delivery_charge }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decision Panel -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm sticky-top">
+                <div class="card-body">
+                    <h5 class="mb-4 fw-bold">
+                        <i class="fas fa-clipboard-check"></i> সিদ্ধান্ত নিন
+                    </h5>
+
+                    <!-- Approve -->
+                    <form method="POST" class="mb-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve">
+                        <button type="submit" class="btn btn-success btn-lg w-100 mb-2">
+                            <i class="fas fa-check-circle"></i> অনুমোদন করুন
+                        </button>
+                        <small class="text-muted d-block text-center">
+                            রাইডার নির্ধারণের জন্য এটি প্রস্তুত করবে
+                        </small>
+                    </form>
+
+                    <hr>
+
+                    <!-- Reject Form -->
+                    <form method="POST" id="rejectForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">প্রত্যাখ্যানের কারণ (অপশনাল)</label>
+                            <textarea name="reason" class="form-control" rows="4" 
+                                      placeholder="প্রত্যাখ্যানের কারণ লিখুন..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger btn-lg w-100">
+                            <i class="fas fa-times-circle"></i> প্রত্যাখ্যান করুন
+                        </button>
+                        <small class="text-muted d-block text-center mt-2">
+                            এটি অর্ডার বাতিল করবে
+                        </small>
+                    </form>
+
+                    <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary w-100 mt-3">
+                        <i class="fas fa-arrow-left"></i> ফিরুন
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add confirmation for reject
+document.getElementById('rejectForm').addEventListener('submit', function(e) {
+    if (!confirm('আপনি কি নিশ্চিত যে এই অর্ডার প্রত্যাখ্যান করতে চান?')) {
+        e.preventDefault();
+    }
+});
+</script>
+
+{% load custom_filters %}
+{% endblock %}

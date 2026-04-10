@@ -1,0 +1,113 @@
+{% extends 'shop/base.html' %}
+{% block title %}রেজিস্টার - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mt-md-5">
+    <div class="row justify-content-center align-items-center" style="min-height: calc(100vh - 150px);">
+        <div class="col-sm-10 col-md-7 col-lg-6 col-xl-5">
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem 1rem; color: white;">
+                    <h4 class="text-center mb-0">
+                        <i class="fas fa-user-plus"></i> অ্যাকাউন্ট তৈরি করুন
+                    </h4>
+                </div>
+
+                <!-- Body -->
+                <div class="card-body p-3 p-md-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <small>{{ message }}</small>
+                                <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">ইউজারনেম</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">ই-মেইল</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">পাসওয়ার্ড</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password1.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">পাসওয়ার্ড নিশ্চিতকরণ</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password2.errors %}
+                                        {{ error }}<br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-info small" style="font-size: 0.8rem;">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>পাসওয়ার্ড প্রয়োজনীয়তা:</strong>
+                            <ul class="mb-0 mt-2 ps-4">
+                                <li>কমপক্ষে ৮ অক্ষর হতে হবে</li>
+                                <li>সম্পূর্ণ সংখ্যা হতে পারে না</li>
+                                <li>সাধারণ পাসওয়ার্ড এড়িয়ে চলুন</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary fw-bold" style="padding: 0.6rem;">
+                                <i class="fas fa-user-plus"></i> অ্যাকাউন্ট তৈরি করুন
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-3">
+
+                    <p class="text-center text-muted mb-0 small">
+                        ইতিমধ্যে সদস্য? 
+                        <a href="{% url 'login' %}" class="text-primary fw-bold">লগইন করুন</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="mt-3 mt-md-4 text-center text-muted small">
+                <p class="mb-2"><i class="fas fa-check-circle text-success"></i> বিনামূল্যে অ্যাকাউন্ট</p>
+                <p class="mb-2"><i class="fas fa-lock text-success"></i> সম্পূর্ণ সুরক্ষিত</p>
+                <p class="mb-0"><i class="fas fa-star text-success"></i> বিশেষ অফার পান</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

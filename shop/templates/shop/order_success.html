@@ -1,0 +1,85 @@
+{% extends 'shop/base.html' %}
+{% block title %}অর্ডার সফল - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg" style="border-radius: 15px; text-align: center;">
+                <div class="card-body p-5">
+                    <!-- Success Icon -->
+                    <div style="font-size: 4rem; color: #28a745; margin-bottom: 1.5rem;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+
+                    <!-- Success Message -->
+                    <h2 class="fw-bold mb-2" style="color: #28a745;">অর্ডার সফল!</h2>
+                    <p class="text-muted mb-4">আপনার অর্ডার সফলভাবে গ্রহণ করা হয়েছে।</p>
+
+                    <!-- Order ID -->
+                    <div class="alert alert-info" role="alert">
+                        <small class="text-muted d-block">অর্ডার আইডি</small>
+                        <h4 class="fw-bold mb-0" style="color: #667eea;">{{ order_id }}</h4>
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <div class="mb-3">
+                            <small class="text-muted d-block">মোট অর্ডার মূল্য</small>
+                            <h3 class="fw-bold">৳{{ total_amount }}</h3>
+                        </div>
+
+                        <div>
+                            <small class="text-muted d-block">ডেলিভারি জোন</small>
+                            <p class="fw-bold mb-0">{{ zone_name }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="mt-4 p-3 bg-warning bg-opacity-10 rounded">
+                        <h6 class="fw-bold mb-2">পরবর্তী ধাপ:</h6>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                                <strong>অর্ডার কনফার্ম:</strong> আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                                <strong>ডেলিভারি:</strong> আপনার পণ্য {{ zone_name }} এলাকায় ডেলিভারি হবে।
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                                <strong>ট্র্যাক করুন:</strong> অ্যাপ দিয়ে রিয়েল টাইমে ট্র্যাক করুন।
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Contact Info Alert -->
+                    <div class="alert alert-info mt-4 mb-4" role="alert">
+                        <small>
+                            <i class="fas fa-phone"></i>
+                            আমাদের সাথে যোগাযোগ করুন: <strong>015XXXXXXXX</strong>
+                        </small>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'home' %}" class="btn btn-primary btn-lg fw-bold">
+                            <i class="fas fa-home"></i> হোমে ফিরুন
+                        </a>
+                        <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg fw-bold">
+                            <i class="fas fa-user-plus"></i> অ্যাকাউন্ট তৈরি করুন এবং আপনার অর্ডার ট্র্যাক করুন
+                        </a>
+                    </div>
+
+                    <!-- Note -->
+                    <small class="text-muted d-block mt-4">
+                        <i class="fas fa-info-circle"></i>
+                        অ্যাকাউন্ট তৈরি করলে আপনি আপনার সকল অর্ডার ট্র্যাক এবং ম্যানেজ করতে পারবেন।
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends 'shop/admin/base.html' %}
+{% block title %}অর্ডার বিস্তারিত - ZoneDelivery{% endblock %}
+
+{% block admin_content %}
+
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Order Info -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 15px;">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0;">
+                    <h5 class="mb-0">অর্ডার #{{ order.order_id }}</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">গ্রাহক তথ্য</h6>
+                    <p><strong>নাম:</strong> {{ order.customer.username }}</p>
+                    <p><strong>ফোন:</strong> {{ order.customer_phone }}</p>
+                    <p><strong>ই-মেইল:</strong> {{ order.customer_email }}</p>
+                    <p><strong>ঠিকানা:</strong> {{ order.customer_address }}, {{ order.customer_city }}</p>
+                    <hr>
+                    
+                    <h6 class="fw-bold mb-3">অর্ডার আইটেম</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>পণ্য</th>
+                                <th>পরিমাণ</th>
+                                <th>মূল্য</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ item.product.title }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>৳{{ item.price }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Status -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-3" style="border-radius: 15px;">
+                <div class="card-header" style="background: #007bff; color: white; border-radius: 15px 15px 0 0;">
+                    <h6 class="mb-0">অর্ডার আপডেট করুন</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">স্ট্যাটাস</label>
+                            <select name="status" class="form-select">
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">রাইডার নির্বাচন করুন</label>
+                            <select name="rider" class="form-select">
+                                <option value="">কোনো রাইডার নেই</option>
+                                {% for rider in riders %}
+                                    <option value="{{ rider.id }}" {% if order.rider_id == rider.id %}selected{% endif %}>
+                                        {{ rider.username }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> আপডেট করুন
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="card shadow-sm border-0" style="border-radius: 15px;">
+                <div class="card-header" style="background: #6f42c1; color: white; border-radius: 15px 15px 0 0;">
+                    <h6 class="mb-0">মূল্য সারসংক্ষেপ</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">পণ্য মূল্য: <strong>৳{{ order.total_amount }}</strong></p>
+                    <p class="mb-2">ডেলিভারি চার্জ: <strong>৳{{ order.delivery_charge }}</strong></p>
+                    <hr>
+                    <p class="mb-0">মোট: <strong style="font-size: 1.2rem; color: #28a745;">৳{{ order.total_amount|add:order.delivery_charge }}</strong></p>
+                </div>
+            </div>
+
+            <!-- Location Map -->
+            {% if order.latitude and order.longitude %}
+            <div class="card shadow-sm border-0 mt-3" style="border-radius: 15px;">
+                <div class="card-header" style="background: #17a2b8; color: white; border-radius: 15px 15px 0 0;">
+                    <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> অর্ডার অবস্থান</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="orderMap" style="height: 300px; border-radius: 0 0 15px 15px;"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+
+<script>
+    // Initialize map if location data exists
+    {% if order.latitude and order.longitude %}
+    document.addEventListener('DOMContentLoaded', function() {
+        const map = new google.maps.Map(document.getElementById('orderMap'), {
+            zoom: 14,
+            center: {lat: {{ order.latitude }}, lng: {{ order.longitude }}},
+            mapTypeId: 'roadmap'
+        });
+        
+        const bounds = new google.maps.LatLngBounds();
+        
+        // Add customer location marker
+        const customerMarker = new google.maps.Marker({
+            position: {lat: {{ order.latitude }}, lng: {{ order.longitude }}},
+            map: map,
+            title: 'গ্রাহক অবস্থান'
+        });
+        
+        const customerWindow = new google.maps.InfoWindow({
+            content: '<strong>গ্রাহক অবস্থান</strong><br>(' + {{ order.latitude }} .toFixed(6) + ', ' + {{ order.longitude }} .toFixed(6) + ')'
+        });
+        
+        customerMarker.addListener('click', () => {
+            customerWindow.open(map, customerMarker);
+        });
+        customerWindow.open(map, customerMarker);
+        bounds.extend(customerMarker.getPosition());
+        
+        // Add zone center marker and radius circle if zone data exists
+        {% if zone_data.latitude and zone_data.longitude %}
+        const zoneCenter = new google.maps.Marker({
+            position: {lat: {{ zone_data.latitude }}, lng: {{ zone_data.longitude }}},
+            map: map,
+            title: '{{ zone_data.name }} (জোন সেন্টার)'
+        });
+        
+        const zoneWindow = new google.maps.InfoWindow({
+            content: '<strong>{{ zone_data.name }} (জোন সেন্টার)</strong><br>(' + {{ zone_data.latitude }} .toFixed(6) + ', ' + {{ zone_data.longitude }} .toFixed(6) + ')'
+        });
+        
+        zoneCenter.addListener('click', () => {
+            zoneWindow.open(map, zoneCenter);
+        });
+        bounds.extend(zoneCenter.getPosition());
+        
+        // Add delivery zone radius circle
+        const radiusCircle = new google.maps.Circle({
+            map: map,
+            center: {lat: {{ zone_data.latitude }}, lng: {{ zone_data.longitude }}},
+            radius: {{ zone_data.radius }},
+            fillColor: '#28a745',
+            fillOpacity: 0.1,
+            strokeColor: '#28a745',
+            strokeWeight: 2
+        });
+        
+        const radiusWindow = new google.maps.InfoWindow({
+            content: '<strong>{{ zone_data.name }}<br>ডেলিভারি জোন</strong><br>রেডিয়াস: {{ zone_data.radius }}m'
+        });
+        
+        radiusCircle.addListener('click', () => {
+            radiusWindow.open(map);
+        });
+        
+        // Fit map bounds to show all markers and circle
+        map.fitBounds(bounds);
+        map.setZoom(14);
+        {% else %}
+        // Fit map to customer location only
+        map.fitBounds(bounds);
+        {% endif %}
+    });
+    {% endif %}
+</script>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+<style>
+    .manager-sidebar {
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+        padding: 20px 0;
+        position: sticky;
+        top: 0;
+    }
+
+    .manager-sidebar .sidebar-header {
+        padding: 20px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .manager-sidebar h5 {
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .manager-sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.85);
+        padding: 12px 20px;
+        border-left: 3px solid transparent;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .manager-sidebar .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-left-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .manager-sidebar .nav-link.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-left-color: white;
+        font-weight: bold;
+    }
+
+    .manager-sidebar .nav-link i {
+        width: 20px;
+        text-align: center;
+    }
+
+    .manager-sidebar .divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.2);
+        margin: 15px 0;
+    }
+</style>
+
+<div class="manager-sidebar">
+    <div class="sidebar-header">
+        <h5><i class="fas fa-cogs"></i> ম্যানেজার প্যানেল</h5>
+        <small style="color: rgba(255, 255, 255, 0.7); margin-top: 5px;">
+            জোন: 
+            {% if manager.zone_assigned %}
+                {{ manager.zone_assigned.name }}
+            {% else %}
+                <span class="badge bg-danger">জোন নির্ধারিত নয়</span>
+            {% endif %}
+        </small>
+    </div>
+
+    <nav class="nav flex-column">
+        <!-- Dashboard -->
+        <a href="{% url 'manager_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'manager_dashboard' %}active{% endif %}">
+            <i class="fas fa-home"></i> ড্যাশবোর্ড
+        </a>
+
+        <div class="divider"></div>
+
+        <!-- Management Section -->
+        <div style="padding: 0 20px; font-size: 0.85rem; font-weight: bold; color: rgba(255, 255, 255, 0.6); text-transform: uppercase;">জোন পরিচালনা</div>
+
+        <!-- Products -->
+        <a href="{% url 'manager_products' %}" class="nav-link {% if 'manager_product' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-shopping-bag"></i> পণ্য
+        </a>
+
+        <!-- Categories -->
+        <a href="{% url 'manager_categories' %}" class="nav-link {% if 'manager_categor' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-layer-group"></i> ক্যাটেগরি
+        </a>
+
+        <div class="divider"></div>
+
+        <!-- Home Link -->
+        <a href="{% url 'home' %}" class="nav-link">
+            <i class="fas fa-arrow-left"></i> ওয়েবসাইটে ফিরুন
+        </a>
+    </nav>
+</div>

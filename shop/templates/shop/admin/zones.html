@@ -1,0 +1,68 @@
+{% extends 'shop/admin/base.html' %}
+{% block title %}জোন পরিচালনা - ZoneDelivery{% endblock %}
+
+{% block admin_content %}
+<div>
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold"><i class="fas fa-map-marker-alt"></i> জোন পরিচালনা</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'admin_zone_add' %}" class="btn btn-info">
+                <i class="fas fa-plus"></i> নতুন জোন যোগ করুন
+            </a>
+        </div>
+    </div>
+
+    <!-- Zones Table -->
+    <div class="card shadow-sm" style="border-radius: 10px; border: none;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <tr>
+                        <th>জোনের নাম</th>
+                        <th>পোস্টাল কোড</th>
+                        <th>ডেলিভারি চার্জ</th>
+                        <th>পণ্য</th>
+                        <th>স্ট্যাটাস</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for zone in zones %}
+                    <tr>
+                        <td><strong>{{ zone.name }}</strong></td>
+                        <td>{{ zone.postal_code|default:"N/A" }}</td>
+                        <td>৳{{ zone.delivery_charge }}</td>
+                        <td><span class="badge bg-primary">{{ zone.products.count }}</span></td>
+                        <td>
+                            {% if zone.is_active %}
+                                <span class="badge bg-success">সক্রিয়</span>
+                            {% else %}
+                                <span class="badge bg-danger">নিষ্ক্রিয়</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_zone_edit' zone.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'admin_zone_delete' zone.id %}" class="btn btn-sm btn-danger" onclick="return confirm('নিশ্চিত?');">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <i class="fas fa-inbox text-muted fa-2x"></i>
+                            <p class="text-muted mt-2">কোনো জোন পাওয়া যায়নি</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

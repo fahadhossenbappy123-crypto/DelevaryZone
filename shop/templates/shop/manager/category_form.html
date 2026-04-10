@@ -1,0 +1,64 @@
+{% extends 'shop/base.html' %}
+{% block title %}ক্যাটেগরি ফর্ম - ম্যানেজার প্যানেল{% endblock %}
+
+{% block content %}
+<div class="row" style="margin: 0; min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="col-lg-2 p-0">
+        {% include 'shop/manager/sidebar.html' %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-10 p-4">
+        <div class="mb-4">
+            <h2 class="fw-bold">
+                {% if category %}
+                    <i class="fas fa-edit"></i> ক্যাটেগরি সম্পাদনা
+                {% else %}
+                    <i class="fas fa-plus"></i> নতুন ক্যাটেগরি যোগ করুন
+                {% endif %}
+            </h2>
+        </div>
+
+        <div class="card" style="max-width: 600px;">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label class="form-label">ক্যাটেগরির নাম *</label>
+                        <input type="text" name="name" class="form-control" placeholder="ক্যাটেগরির নাম" value="{{ category.name }}" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label">বিবরণ</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="ক্যাটেগরির বিবরণ">{{ category.description }}</textarea>
+                    </div>
+
+                    <!-- Image -->
+                    <div class="mb-3">
+                        <label class="form-label">ছবি</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        {% if category.image %}
+                            <small class="text-muted">বর্তমান ছবি:</small>
+                            <img src="{{ category.image.url }}" style="max-width: 200px; margin-top: 5px;" class="img-thumbnail">
+                        {% endif %}
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> সংরক্ষণ করুন
+                        </button>
+                        <a href="{% url 'manager_categories' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> ফিরে যান
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
