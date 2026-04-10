@@ -85,11 +85,42 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'zonedelivery.wsgi.application'
 
+# ============ CACHING CONFIGURATION ============
+if IS_PRODUCTION and os.getenv('REDIS_URL'):
+    # Production with Redis
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': os.getenv('REDIS_URL'),
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True},
+                'SOCKET_CONNECT_TIMEOUT': 5,
+                'SOCKET_TIMEOUT': 5,
+                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            }
+        }
+    }
+else:
+    # Development or no Redis - use local memory cache
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+            'TIMEOUT': 300,
+        }
+    }
+
+# Session caching in Redis/Memory
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+
 # Database Configuration
 if IS_RENDER:
     # Render Deployment - Check if PostgreSQL is configured, otherwise use SQLite
     if os.getenv('DB_HOST'):
-        # PostgreSQL configured
+        # PostgreSQL configured with connection pooling
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.postgresql',
@@ -98,6 +129,10 @@ if IS_RENDER:
                 'PASSWORD': config('DB_PASSWORD', default=''),
                 'HOST': config('DB_HOST'),
                 'PORT': config('DB_PORT', default='5432'),
+                'CONN_MAX_AGE': 600,  # Connection pooling
+                'OPTIONS': {
+                    'connect_timeout': 10,
+                }
             }
         }
     else:
@@ -115,6 +150,7 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
+            'CONN_MAX_AGE': 600,
         }
     }
 
@@ -173,16 +209,14 @@ if IS_PRODUCTION:
     SECURE_PROXY_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 else:
     # Development (ngrok, localhost)
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
     SECURE_HSTS_SECONDS = 0
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_PRELOAD = False
-    SESSION_COOKIE_DOMAIN = '.ngrok-free.dev'
-    CSRF_COOKIE_DOMAIN = '.ngrok-free.dev'
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SAMESITE = 'Lax'
-    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = False
     CSRF_TRUSTED_ORIGINS = [
         'https://*.ngrok-free.dev',
         'http://*.ngrok-free.dev',
@@ -204,3 +238,49 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ============ GOOGLE MAPS API CONFIGURATION ============
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='AIzaSyAMu1dHt5cxLWaKH11uffQPDaOTozs__O8')
+
+# ============ PERFORMANCE OPTIMIZATION ============
+# Use atomic database transactions for better performance
+ATOMIC_REQUESTS = IS_PRODUCTION
+
+# Optimize queries in templates
+if IS_PRODUCTION:
+    # Use cached templates
+    TEMPLATES[0]['OPTIONS']['loaders'] = [
+        ('django.template.loaders.cached.Loader', [
+            'django.template.loaders.filesystem.Loader',
+            'django.template.loaders.app_directories.Loader',
+        ]),
+    ]
+
+# Logging for production monitoring
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': not DEBUG,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING' if IS_PRODUCTION else 'INFO',
+        },
+        'shop': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
+
+# Optimize ORM queries
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB

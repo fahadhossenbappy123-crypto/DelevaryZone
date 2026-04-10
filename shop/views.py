@@ -19,21 +19,21 @@ import uuid
 
 def home(request):
     try:
-        zones = Zone.objects.filter(is_active=True)
+        zones = Zone.objects.filter(is_active=True).only('id', 'name', 'description')
     except Exception as e:
         zones = []
     
     try:
         selected_zone = request.GET.get('zone')
         if selected_zone:
-            products = Product.objects.filter(zone_id=selected_zone, is_available=True)[:12]
+            products = Product.objects.filter(zone_id=selected_zone, is_available=True).select_related('category', 'zone')[:12]
         else:
-            products = Product.objects.filter(is_available=True)[:12]
+            products = Product.objects.filter(is_available=True).select_related('category', 'zone')[:12]
     except Exception as e:
         products = []
     
     try:
-        categories = Category.objects.all()
+        categories = Category.objects.all().only('id', 'name', 'slug', 'image')
     except Exception as e:
         categories = []
     
@@ -132,7 +132,7 @@ def profile(request):
 
 @login_required(login_url='login')
 def my_orders(request):
-    orders = Order.objects.filter(customer=request.user).order_by('-created_at')
+    orders = Order.objects.filter(customer=request.user).select_related('zone').prefetch_related('items').order_by('-created_at')
     
     context = {
         'orders': orders,
@@ -392,7 +392,7 @@ def view_cart(request):
         item['total'] = item_total
         cart_items.append(item)
     
-    zones = Zone.objects.filter(is_active=True)
+    zones = Zone.objects.filter(is_active=True).only('id', 'name', 'delivery_charge')
     
     context = {
         'cart_items': cart_items,
