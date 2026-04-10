@@ -19,7 +19,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 # Allowed Hosts Configuration
 if IS_PRODUCTION:
     # Render production
-    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='delevaryzone-1.onrender.com,localhost,127.0.0.1', cast=Csv())
 else:
     # Development (ngrok, localhost)
     ALLOWED_HOSTS = [
