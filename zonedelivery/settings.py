@@ -19,13 +19,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 # Allowed Hosts Configuration
 if IS_PRODUCTION:
     # Render production - accept common Render domains
-    render_hosts = [
-        'delevaryzone-1.onrender.com',
-        'deleveryzone.onrender.com',
-        'zonedelivery.onrender.com',
-        'localhost',
-        '127.0.0.1',
-    ]
+    render_hosts = ""
     # Try to read from environment, else use defaults
     env_hosts = os.getenv('ALLOWED_HOSTS', '')
     if env_hosts:
@@ -33,13 +27,7 @@ if IS_PRODUCTION:
     ALLOWED_HOSTS = render_hosts
 else:
     # Development (ngrok, localhost)
-    ALLOWED_HOSTS = [
-        'shan-nondecorative-timothy.ngrok-free.dev',
-        'localhost',
-        '127.0.0.1',
-        '*.ngrok-free.dev',
-        '*.ngrok.io',
-    ]
+    ALLOWED_HOSTS = ""
 
 INSTALLED_APPS = [
     'django.contrib.admin',
