@@ -86,34 +86,58 @@ TEMPLATES = [
 WSGI_APPLICATION = 'zonedelivery.wsgi.application'
 
 # ============ CACHING CONFIGURATION ============
-if IS_PRODUCTION and os.getenv('REDIS_URL'):
+redis_url = os.getenv('REDIS_URL')
+if IS_PRODUCTION and redis_url:
     # Production with Redis
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': os.getenv('REDIS_URL'),
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True},
-                'SOCKET_CONNECT_TIMEOUT': 5,
-                'SOCKET_TIMEOUT': 5,
-                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+    try:
+        CACHES = {
+            'default': {
+                'BACKEND': 'django_redis.cache.RedisCache',
+                'LOCATION': redis_url,
+                'OPTIONS': {
+                    'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                    'CONNECTION_POOL_KWARGS': {'max_connections': 50, 'retry_on_timeout': True},
+                    'SOCKET_CONNECT_TIMEOUT': 5,
+                    'SOCKET_TIMEOUT': 5,
+                    'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+                }
             }
         }
-    }
-else:
-    # Development or no Redis - use local memory cache
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
-            'TIMEOUT': 300,
+    except Exception as e:
+        # Fallback to database cache if Redis fails
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+                'LOCATION': 'django_cache_table',
+            }
         }
-    }
+else:
+    # Development or no Redis - use appropriate cache backend
+    if IS_PRODUCTION:
+        # Production without Redis - use database cache
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+                'LOCATION': 'django_cache_table',
+            }
+        }
+    else:
+        # Development - use local memory cache
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+                'LOCATION': 'unique-snowflake',
+                'TIMEOUT': 300,
+            }
+        }
 
-# Session caching in Redis/Memory
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+# Session caching - use database for production without Redis
+if IS_PRODUCTION and not redis_url:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+else:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
+
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
 # Database Configuration
