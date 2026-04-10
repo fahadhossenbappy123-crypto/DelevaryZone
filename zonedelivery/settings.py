@@ -144,8 +144,8 @@ if IS_PRODUCTION:
     CSRF_COOKIE_SAMESITE = 'Lax'
     
     # CSRF Trusted Origins for Render
-    csrf_origins = config('ALLOWED_HOSTS', default='localhost', cast=Csv())
-    CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in csrf_origins]
+    csrf_origins = config('ALLOWED_HOSTS', default='delevaryzone-1.onrender.com,localhost,127.0.0.1', cast=Csv())
+    CSRF_TRUSTED_ORIGINS = [f'https://{host}' for host in csrf_origins] + [f'http://{host}' for host in csrf_origins]
 else:
     # Development (ngrok, localhost)
     SECURE_SSL_REDIRECT = True
