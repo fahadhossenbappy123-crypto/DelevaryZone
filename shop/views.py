@@ -97,6 +97,47 @@ def user_logout(request):
     return redirect('home')
 
 
+@login_required(login_url='admin:login')
+def admin_register(request):
+    """Admin registration page - Only for existing admins"""
+    # Check if user is superuser/admin
+    if not request.user.is_superuser:
+        messages.error(request, 'আপনার এই পেজ এক্সেস করার অনুমতি নেই।')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        from .forms import AdminRegisterForm
+        form = AdminRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            # Make the new user a superuser/admin
+            user.is_admin = True
+            user.is_staff = True
+            user.is_superuser = True
+            user.is_active = True
+            user.save()
+            
+            messages.success(request, f'Admin ইউজার "{user.username}" সফলভাবে তৈরি হয়েছে!')
+            return redirect('admin_register')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{error}')
+    else:
+        from .forms import AdminRegisterForm
+        form = AdminRegisterForm()
+    
+    # Get all admin users
+    admin_users = User.objects.filter(is_superuser=True).values('username', 'email', 'date_joined')
+    
+    context = {
+        'form': form,
+        'admin_users': admin_users,
+        'title': 'Admin Registration'
+    }
+    return render(request, 'shop/admin_register.html', context)
+
+
 @login_required(login_url='login')
 def profile(request):
     try:

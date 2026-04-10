@@ -115,3 +115,45 @@ class CheckoutForm(forms.Form):
         label='পেমেন্ট পদ্ধতি',
         initial='cash'
     )
+
+
+class AdminRegisterForm(UserCreationForm):
+    """Form for creating new admin users"""
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Admin ই-মেইল'
+    }))
+    username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Admin ইউজারনেম'
+    }))
+    password1 = forms.CharField(
+        label='পাসওয়ার্ড',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)'
+        })
+    )
+    password2 = forms.CharField(
+        label='পাসওয়ার্ড নিশ্চিতকরণ',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'পাসওয়ার্ড আবার লিখুন'
+        })
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('এই ইউজারনেম ইতিমধ্যে ব্যবহৃত হয়েছে।')
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError('এই ই-মেইল ইতিমধ্যে ব্যবহৃত হয়েছে।')
+        return email
