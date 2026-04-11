@@ -18,26 +18,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 IS_RENDER = os.getenv('RENDER') == 'True'
 IS_PRODUCTION = IS_RENDER or os.getenv('ENVIRONMENT') == 'production'
 
-# Render এ কোন environment variable add করতে হবে না - সব default values built-in আছে
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-zonedelivery-render-deployment-key-2024-secure')
+# ============ SECRET KEY CONFIGURATION ============
+# Set SECRET_KEY in environment variables for production
+SECRET_KEY = config('SECRET_KEY', default='')
 
 DEBUG = config('DEBUG', default=False if IS_PRODUCTION else True, cast=bool)
 
 # Allowed Hosts Configuration
 if IS_PRODUCTION:
-    # Render production - accept common Render domains with defaults built-in
-    render_hosts = [
-        'delevaryzone-1.onrender.com',
-        'deleveryzone.onrender.com',
-        'zonedelivery.onrender.com',
-        'localhost',
-        '127.0.0.1',
-    ]
-    # Try to read from environment, else use defaults above
-    env_hosts = os.getenv('ALLOWED_HOSTS', '')
-    if env_hosts:
-        render_hosts = env_hosts.split(',')
-    ALLOWED_HOSTS = render_hosts
+    # Render production - read from environment variables
+    env_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+    ALLOWED_HOSTS = env_hosts.split(',')
 else:
     # Development (ngrok, localhost)
     ALLOWED_HOSTS = [
@@ -148,12 +139,13 @@ else:
 
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
-# Database Configuration
-# All database settings from environment variables (safe for production)
+# ============ DATABASE CONFIGURATION ============
+# For Render: Set DATABASE_URL environment variable (auto-configured by Render)
+# For Local Development: Uses SQLite automatically
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL and dj_database_url:
-    # Use Render's automatic DATABASE_URL if available
+    # Use DATABASE_URL if available (Render production)
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -162,34 +154,13 @@ if DATABASE_URL and dj_database_url:
         )
     }
 else:
-    # Fallback to manual configuration from environment
-    db_engine = os.getenv('DB_ENGINE', 'django.db.backends.sqlite3')
-    
-    if 'postgresql' in db_engine:
-        # PostgreSQL configuration
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.getenv('DB_NAME', 'zonedelivery_db'),
-                'USER': os.getenv('DB_USER', 'postgres'),
-                'PASSWORD': os.getenv('DB_PASSWORD', ''),
-                'HOST': os.getenv('DB_HOST', 'localhost'),
-                'PORT': os.getenv('DB_PORT', '5432'),
-                'CONN_MAX_AGE': 600,
-                'OPTIONS': {
-                    'connect_timeout': 10,
-                    'sslmode': 'require' if IS_PRODUCTION else 'disable',
-                }
-            }
+    # Local development - use SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
-    else:
-        # SQLite (Local Development)
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -239,9 +210,9 @@ if IS_PRODUCTION:
     SESSION_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SAMESITE = 'Lax'
     
-    # CSRF Trusted Origins for Render with built-in defaults
-    csrf_hosts = os.getenv('ALLOWED_HOSTS', 'delevaryzone-1.onrender.com,localhost,127.0.0.1').split(',')
-    CSRF_TRUSTED_ORIGINS = [f'https://{host.strip()}' for host in csrf_hosts] + [f'http://{host.strip()}' for host in csrf_hosts]
+    # CSRF Trusted Origins for Render - read from environment
+    csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://localhost')
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',')]
     
     # Handle proxy headers from Render
     SECURE_PROXY_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -255,14 +226,8 @@ else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SECURE = False
-    CSRF_TRUSTED_ORIGINS = [
-        'https://*.ngrok-free.dev',
-        'http://*.ngrok-free.dev',
-        'https://*.ngrok.io',
-        'http://*.ngrok.io',
-        'http://127.0.0.1:8000',
-        'http://localhost:8000',
-    ]
+    csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,https://*.ngrok-free.dev,http://*.ngrok-free.dev')
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',')]
 
 # Static & Media
 STATIC_URL = '/static/'
@@ -275,8 +240,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ============ GOOGLE MAPS API CONFIGURATION ============
-# Render এ কোন environment variable set করতে হবে না - default API key built-in আছে
-GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='AIzaSyAMu1dHt5cxLWaKH11uffQPDaOTozs__O8')
+# Set GOOGLE_MAPS_API_KEY in environment variables
+GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='')
 
 # ============ PERFORMANCE OPTIMIZATION ============
 # Use atomic database transactions for better performance
