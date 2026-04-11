@@ -33,35 +33,35 @@ urlpatterns = [
     path('api/zones/', views.api_zones, name='api_zones'),
     path('api/check-location/', views.api_check_location, name='api_check_location'),
     
-    # ============ ADMIN URLS ============
+    # ============ ADMIN PANEL (CUSTOM) ============
     # Admin Dashboard
-    path('admin/', admin_views.admin_dashboard, name='admin_dashboard'),
+    path('dashboard/', admin_views.admin_dashboard, name='admin_dashboard'),
     
     # Zone Management
-    path('admin/zones/', admin_views.admin_zones, name='admin_zones'),
-    path('admin/zone/add/', admin_views.admin_zone_add, name='admin_zone_add'),
-    path('admin/zone/<int:zone_id>/edit/', admin_views.admin_zone_edit, name='admin_zone_edit'),
-    path('admin/zone/<int:zone_id>/delete/', admin_views.admin_zone_delete, name='admin_zone_delete'),
+    path('dashboard/zones/', admin_views.admin_zones, name='admin_zones'),
+    path('dashboard/zone/add/', admin_views.admin_zone_add, name='admin_zone_add'),
+    path('dashboard/zone/<int:zone_id>/edit/', admin_views.admin_zone_edit, name='admin_zone_edit'),
+    path('dashboard/zone/<int:zone_id>/delete/', admin_views.admin_zone_delete, name='admin_zone_delete'),
     
     # Category Management
-    path('admin/categories/', admin_views.admin_categories, name='admin_categories'),
-    path('admin/category/add/', admin_views.admin_category_add, name='admin_category_add'),
-    path('admin/category/<int:cat_id>/edit/', admin_views.admin_category_edit, name='admin_category_edit'),
-    path('admin/category/<int:cat_id>/delete/', admin_views.admin_category_delete, name='admin_category_delete'),
+    path('dashboard/categories/', admin_views.admin_categories, name='admin_categories'),
+    path('dashboard/category/add/', admin_views.admin_category_add, name='admin_category_add'),
+    path('dashboard/category/<int:cat_id>/edit/', admin_views.admin_category_edit, name='admin_category_edit'),
+    path('dashboard/category/<int:cat_id>/delete/', admin_views.admin_category_delete, name='admin_category_delete'),
     
     # Product Management
-    path('admin/products/', admin_views.admin_products, name='admin_products'),
-    path('admin/product/add/', admin_views.admin_product_add, name='admin_product_add'),
-    path('admin/product/<int:prod_id>/edit/', admin_views.admin_product_edit, name='admin_product_edit'),
-    path('admin/product/<int:prod_id>/delete/', admin_views.admin_product_delete, name='admin_product_delete'),
+    path('dashboard/products/', admin_views.admin_products, name='admin_products'),
+    path('dashboard/product/add/', admin_views.admin_product_add, name='admin_product_add'),
+    path('dashboard/product/<int:prod_id>/edit/', admin_views.admin_product_edit, name='admin_product_edit'),
+    path('dashboard/product/<int:prod_id>/delete/', admin_views.admin_product_delete, name='admin_product_delete'),
     
     # User Management
-    path('admin/users/', admin_views.admin_users, name='admin_users'),
-    path('admin/user/<int:user_id>/role/', admin_views.admin_user_role_change, name='admin_user_role'),
+    path('dashboard/users/', admin_views.admin_users, name='admin_users'),
+    path('dashboard/user/<int:user_id>/role/', admin_views.admin_user_role_change, name='admin_user_role'),
     
     # Order Management
-    path('admin/orders/', admin_views.admin_orders, name='admin_orders'),
-    path('admin/order/<str:order_id>/', admin_views.admin_order_detail, name='admin_order_detail'),
+    path('dashboard/orders/', admin_views.admin_orders, name='admin_orders'),
+    path('dashboard/order/<str:order_id>/', admin_views.admin_order_detail, name='admin_order_detail'),
     
     # ============ MANAGER PANEL ============
     path('manager/', admin_views.manager_dashboard, name='manager_dashboard'),
