@@ -97,7 +97,7 @@ def user_logout(request):
     return redirect('home')
 
 
-@login_required(login_url='admin:login')
+@login_required(login_url='login')
 def admin_register(request):
     """Admin registration page - Only for existing admins"""
     # Check if user is admin (custom role or superuser)

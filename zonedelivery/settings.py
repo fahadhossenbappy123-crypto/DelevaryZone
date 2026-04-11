@@ -79,9 +79,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'zonedelivery.wsgi.application'
 
 # ============ AUTHENTICATION CONFIGURATION ============
-# Django Admin Login URLs - prevent redirect to custom login
-LOGIN_URL = 'admin:login'  # Use Django admin login page
-LOGIN_REDIRECT_URL = 'admin:index'  # Redirect to admin after login
+# Custom admin login and redirect URLs
+LOGIN_URL = 'login'  # Use shop login page
+LOGIN_REDIRECT_URL = 'home'  # Redirect to home after login
 
 # ============ CACHING CONFIGURATION ============
 redis_url = os.getenv('REDIS_URL')
