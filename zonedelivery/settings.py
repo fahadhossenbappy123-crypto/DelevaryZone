@@ -130,14 +130,20 @@ else:
             }
         }
 
-# Session caching - use database for production without Redis
-if IS_PRODUCTION and not redis_url:
-    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-else:
+# Session configuration - use database for reliability
+# Production with Redis: use cache, Production without Redis: database, Development: database
+if IS_PRODUCTION and redis_url:
+    # Production with Redis - cache sessions for speed
     SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
     SESSION_CACHE_ALIAS = 'default'
+else:
+    # Development and Production without Redis - use database (most reliable)
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+SESSION_COOKIE_SECURE = IS_PRODUCTION  # HTTPS only in production
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
 
 # ============ DATABASE CONFIGURATION ============
 # For Render: Set DATABASE_URL environment variable (auto-configured by Render)
