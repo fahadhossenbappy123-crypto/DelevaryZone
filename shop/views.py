@@ -100,8 +100,9 @@ def user_logout(request):
 @login_required(login_url='admin:login')
 def admin_register(request):
     """Admin registration page - Only for existing admins"""
-    # Check if user is superuser/admin
-    if not request.user.is_superuser:
+    # Check if user is admin (custom role or superuser)
+    is_admin = request.user.is_superuser or (hasattr(request.user, 'profile') and request.user.profile.role == 'admin')
+    if not is_admin:
         messages.error(request, 'আপনার এই পেজ এক্সেস করার অনুমতি নেই।')
         return redirect('home')
     
@@ -110,12 +111,16 @@ def admin_register(request):
         form = AdminRegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            # Make the new user a superuser/admin
-            user.is_admin = True
+            # Make the new user a admin
             user.is_staff = True
             user.is_superuser = True
             user.is_active = True
             user.save()
+            
+            # Create or update UserProfile with admin role
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile.role = 'admin'
+            profile.save()
             
             messages.success(request, f'Admin ইউজার "{user.username}" সফলভাবে তৈরি হয়েছে!')
             return redirect('admin_register')
@@ -127,7 +132,7 @@ def admin_register(request):
         from .forms import AdminRegisterForm
         form = AdminRegisterForm()
     
-    # Get all admin users
+    # Get all admin users (both Django superusers and custom admin role)
     admin_users = User.objects.filter(is_superuser=True).values('username', 'email', 'date_joined')
     
     context = {

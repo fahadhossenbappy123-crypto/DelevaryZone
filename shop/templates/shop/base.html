@@ -772,7 +772,7 @@
                     
                     {% if user.is_authenticated %}
                         <!-- Admin Dashboard -->
-                        {% if user.is_staff or user.is_superuser %}
+                        {% if user.is_staff or user.is_superuser or user.profile.role == 'admin' %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link btn-auth btn-auth-register dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" style="background: #6366f1; color: white; margin-right: 0.5rem;">
                                     <i class="fas fa-crown"></i> Admin Panel

@@ -7,8 +7,9 @@ from decimal import Decimal
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('customer', 'গ্রাহক'),
+        ('admin', 'অ্যাডমিন'),        # নতুন: Management panel access
         ('rider', 'রাইডার'),
-        ('manager', 'ম্যানেজার'),  # নতুন: অর্ডার গ্রহণ/প্রত্যাখ্যান করতে
+        ('manager', 'ম্যানেজার'),  # অর্ডার গ্রহণ/প্রত্যাখ্যান করতে
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')

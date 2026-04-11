@@ -13,7 +13,14 @@ import json
 
 def is_admin(user):
     """Check if user is admin"""
-    return user.is_staff or user.is_superuser
+    # Check Django's built-in is_staff/is_superuser OR custom admin role
+    if user.is_staff or user.is_superuser:
+        return True
+    # Check if user has admin role in UserProfile
+    try:
+        return user.profile.role == 'admin'
+    except:
+        return False
 
 
 # ============ ADMIN DASHBOARD ============

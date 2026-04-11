@@ -43,3 +43,9 @@ class NotificationAdmin(admin.ModelAdmin):
     list_filter = ['notification_type', 'is_read', 'created_at']
     search_fields = ['user__username', 'title', 'message']
     readonly_fields = ['created_at']
+
+# ============ Customize Django Admin Interface ============
+# Remove "Django administration" header and set custom titles
+admin.site.site_header = "Zone Delivery Admin Panel"
+admin.site.site_title = "Zone Delivery"
+admin.site.index_title = "Admin Dashboard"
