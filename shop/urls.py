@@ -80,6 +80,12 @@ urlpatterns = [
     path('manager/category/<int:cat_id>/edit/', admin_views.manager_category_edit, name='manager_category_edit'),
     path('manager/category/<int:cat_id>/delete/', admin_views.manager_category_delete, name='manager_category_delete'),
     
+    # ============ HERO SLIDES ============
+    path('dashboard/hero-slides/', admin_views.admin_hero_slides, name='admin_hero_slides'),
+    path('dashboard/hero-slide/add/', admin_views.admin_hero_slide_add, name='admin_hero_slide_add'),
+    path('dashboard/hero-slide/<int:slide_id>/edit/', admin_views.admin_hero_slide_edit, name='admin_hero_slide_edit'),
+    path('dashboard/hero-slide/<int:slide_id>/delete/', admin_views.admin_hero_slide_delete, name='admin_hero_slide_delete'),
+    
     # ============ NOTIFICATION URLS ============
     path('api/notifications/', views.get_notifications, name='get_notifications'),
     path('api/notification/<int:notif_id>/read/', views.mark_notification_read, name='mark_notification_read'),

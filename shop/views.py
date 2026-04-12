@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db import models
 from django.http import JsonResponse
-from .models import Category, Product, UserProfile, Zone, Order, OrderItem, Notification
+from .models import Category, Product, UserProfile, Zone, Order, OrderItem, Notification, HeroSlide
 from .forms import UserRegisterForm, UserLoginForm, UserProfileForm, CheckoutForm
 from .utils import (
     calculate_distance, 
@@ -18,6 +18,12 @@ import uuid
 
 
 def home(request):
+    # Get hero slides
+    try:
+        hero_slides = HeroSlide.objects.filter(is_active=True)
+    except Exception as e:
+        hero_slides = []
+    
     try:
         zones = Zone.objects.filter(is_active=True).only('id', 'name', 'description')
     except Exception as e:
@@ -38,6 +44,7 @@ def home(request):
         categories = []
     
     context = {
+        'hero_slides': hero_slides,
         'categories': categories,
         'products': products,
         'zones': zones,

@@ -7,7 +7,7 @@
         <!-- Sidebar -->
         <div class="col-lg-3 col-md-4">
             <div class="card shadow-sm border-0 sticky-md-top" style="border-radius: 15px; top: 1rem;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 1.5rem 1rem; color: white; text-align: center; border-radius: 15px 15px 0 0;">
+                <div style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); padding: 1.5rem 1rem; color: white; text-align: center; border-radius: 15px 15px 0 0;">
                     {% if profile.avatar %}
                         <img src="{{ profile.avatar.url }}" alt="Avatar" style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; margin-bottom: 1rem; object-fit: cover;">
                     {% else %}
@@ -41,8 +41,8 @@
         <!-- Main Content -->
         <div class="col-lg-9 col-md-8">
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
-                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0;">
-                    <h5 class="mb-0"><i class="fas fa-edit"></i> প্রোফাইল সম্পাদনা করুন</h5>
+                <div class="card-header" style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white; border-radius: 15px 15px 0 0;">
+                    <h5 class="mb-0"><i class="fas fa-edit"></i> Edit Profile</h5>
                 </div>
                 
                 <div class="card-body p-3 p-md-4">
@@ -60,47 +60,47 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold"><i class="fas fa-user"></i> প্রথম নাম</label>
+                                <label class="form-label fw-bold"><i class="fas fa-user"></i> First Name</label>
                                 {{ form.first_name }}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold"><i class="fas fa-user"></i> শেষ নাম</label>
+                                <label class="form-label fw-bold"><i class="fas fa-user"></i> Last Name</label>
                                 {{ form.last_name }}
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold"><i class="fas fa-envelope"></i> ই-মেইল</label>
+                            <label class="form-label fw-bold"><i class="fas fa-envelope"></i> Email</label>
                             {{ form.email }}
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold"><i class="fas fa-phone"></i> ফোন নম্বর</label>
+                            <label class="form-label fw-bold"><i class="fas fa-phone"></i> Phone Number</label>
                             {{ form.phone }}
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold"><i class="fas fa-map-marker-alt"></i> শহর</label>
+                            <label class="form-label fw-bold"><i class="fas fa-map-marker-alt"></i> City</label>
                             {{ form.city }}
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold"><i class="fas fa-home"></i> ঠিকানা</label>
+                            <label class="form-label fw-bold"><i class="fas fa-home"></i> Address</label>
                             {{ form.address }}
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold"><i class="fas fa-image"></i> প্রোফাইল ছবি</label>
+                            <label class="form-label fw-bold"><i class="fas fa-image"></i> Profile Picture</label>
                             {{ form.avatar }}
-                            <small class="text-muted d-block mt-1">JPG, PNG বা GIF (Max 2MB)</small>
+                            <small class="text-muted d-block mt-1">JPG, PNG or GIF (Max 2MB)</small>
                         </div>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg fw-bold">
-                                <i class="fas fa-save"></i> পরিবর্তন সংরক্ষণ করুন
+                                <i class="fas fa-save"></i> Save Changes
                             </button>
                             <a href="{% url 'home' %}" class="btn btn-secondary btn-lg fw-bold">
-                                <i class="fas fa-arrow-left"></i> পিছিয়ে যান
+                                <i class="fas fa-arrow-left"></i> Back
                             </a>
                         </div>
                     </form>

@@ -1,0 +1,113 @@
+{% extends 'shop/admin/base.html' %}
+{% block title %}{% if slide %}Edit{% else %}Add{% endif %} Hero Slide - ZoneDelivery{% endblock %}
+
+{% block admin_content %}
+<div>
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold"><i class="fas fa-image"></i> {% if slide %}Edit{% else %}Add New{% endif %} Hero Slide</h2>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header" style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white; border-radius: 15px 15px 0 0;">
+                    <h5 class="mb-0">Slide Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Title *</label>
+                            <input type="text" name="title" class="form-control form-control-lg" placeholder="e.g., Welcome to ZoneDelivery" 
+                                   value="{% if slide %}{{ slide.title }}{% endif %}" required>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea name="description" class="form-control form-control-lg" rows="3" placeholder="Optional short description">{% if slide %}{{ slide.description }}{% endif %}</textarea>
+                        </div>
+
+                        <!-- Button Text -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Button Text</label>
+                            <input type="text" name="button_text" class="form-control form-control-lg" placeholder="e.g., Order Now" 
+                                   value="{% if slide %}{{ slide.button_text }}{% else %}Order Now{% endif %}">
+                        </div>
+
+                        <!-- Button Link -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Button Link</label>
+                            <input type="text" name="button_link" class="form-control form-control-lg" placeholder="e.g., /register/" 
+                                   value="{% if slide %}{{ slide.button_link }}{% else %}/register/{% endif %}">
+                        </div>
+
+                        <!-- Order -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Display Order</label>
+                            <input type="number" name="order" class="form-control form-control-lg" value="{% if slide %}{{ slide.order }}{% else %}0{% endif %}" min="0">
+                            <small class="text-muted">Lower numbers appear first</small>
+                        </div>
+
+                        <!-- Active Status -->
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="is_active" name="is_active" {% if not slide or slide.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">
+                                    Active (Display on homepage)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Background Image -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Background Image *</label>
+                            {% if slide and slide.background_image %}
+                            <div class="mb-3">
+                                <img src="{{ slide.background_image.url }}" alt="Current Image" style="max-width: 200px; height: auto; border-radius: 10px;">
+                            </div>
+                            {% endif %}
+                            <input type="file" name="background_image" class="form-control form-control-lg" accept="image/*" {% if not slide %}required{% endif %}>
+                            <small class="text-muted">Recommended size: 1200x400px</small>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                <i class="fas fa-save"></i> {% if slide %}Update Slide{% else %}Add Slide{% endif %}
+                            </button>
+                            <a href="{% url 'admin_hero_slides' %}" class="btn btn-secondary btn-lg fw-bold">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+                <div class="card-header" style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white;">
+                    <h5 class="mb-0">Preview</h5>
+                </div>
+                <div class="card-body p-0" style="height: 250px; overflow: hidden; background: #f0f0f0;">
+                    {% if slide and slide.background_image %}
+                    <img src="{{ slide.background_image.url }}" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #999;">
+                        <i class="fas fa-image fa-3x"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

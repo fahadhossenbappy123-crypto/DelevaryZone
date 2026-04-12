@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
 from django.conf import settings
-from .models import UserProfile, Zone, Category, Product, Order, OrderItem, Notification
+from .models import UserProfile, Zone, Category, Product, Order, OrderItem, Notification, HeroSlide
 from .forms import UserRegisterForm, UserProfileForm
 from .views import create_notification
 import json
@@ -834,3 +834,83 @@ def manager_category_delete(request, cat_id):
     category.delete()
     messages.success(request, f'ক্যাটেগরি "{name}" ডিলিট করা হয়েছে।')
     return redirect('manager_categories')
+
+
+# ================ HERO SLIDES ================
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_hero_slides(request):
+    """Admin can manage hero slides"""
+    slides = HeroSlide.objects.all()
+    
+    context = {
+        'slides': slides,
+    }
+    return render(request, 'shop/admin/hero_slides.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_hero_slide_add(request):
+    """Admin adds new hero slide"""
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        button_text = request.POST.get('button_text', 'Order Now')
+        button_link = request.POST.get('button_link', '/register/')
+        image = request.FILES.get('background_image')
+        is_active = request.POST.get('is_active') == 'on'
+        order = request.POST.get('order', 0)
+        
+        try:
+            HeroSlide.objects.create(
+                title=title,
+                description=description,
+                button_text=button_text,
+                button_link=button_link,
+                background_image=image,
+                is_active=is_active,
+                order=int(order)
+            )
+            messages.success(request, 'Hero slide added successfully!')
+            return redirect('admin_hero_slides')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+    
+    return render(request, 'shop/admin/hero_slide_form.html')
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_hero_slide_edit(request, slide_id):
+    """Admin edits hero slide"""
+    slide = get_object_or_404(HeroSlide, id=slide_id)
+    
+    if request.method == 'POST':
+        slide.title = request.POST.get('title')
+        slide.description = request.POST.get('description')
+        slide.button_text = request.POST.get('button_text', 'Order Now')
+        slide.button_link = request.POST.get('button_link', '/register/')
+        slide.is_active = request.POST.get('is_active') == 'on'
+        slide.order = int(request.POST.get('order', 0))
+        
+        if request.FILES.get('background_image'):
+            slide.background_image = request.FILES.get('background_image')
+        
+        slide.save()
+        messages.success(request, 'Hero slide updated successfully!')
+        return redirect('admin_hero_slides')
+    
+    context = {'slide': slide}
+    return render(request, 'shop/admin/hero_slide_form.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_hero_slide_delete(request, slide_id):
+    """Admin deletes hero slide"""
+    slide = get_object_or_404(HeroSlide, id=slide_id)
+    title = slide.title
+    slide.delete()
+    messages.success(request, f'Hero slide "{title}" deleted successfully!')
+    return redirect('admin_hero_slides')

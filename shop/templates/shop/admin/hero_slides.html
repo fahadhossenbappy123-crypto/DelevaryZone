@@ -1,0 +1,74 @@
+{% extends 'shop/admin/base.html' %}
+{% block title %}Hero Slides Management - ZoneDelivery{% endblock %}
+
+{% block admin_content %}
+<div>
+    <!-- Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold"><i class="fas fa-images"></i> Hero Slides Management</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{% url 'admin_hero_slide_add' %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add New Slide
+            </a>
+        </div>
+    </div>
+
+    <!-- Hero Slides List -->
+    <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white;">
+                    <tr>
+                        <th>Order</th>
+                        <th>Title</th>
+                        <th>Button Text</th>
+                        <th>Image</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slide in slides %}
+                    <tr>
+                        <td><strong>{{ slide.order }}</strong></td>
+                        <td>{{ slide.title }}</td>
+                        <td>{{ slide.button_text }}</td>
+                        <td>
+                            {% if slide.background_image %}
+                            <img src="{{ slide.background_image.url }}" alt="Slide Image" style="height: 50px; border-radius: 5px;">
+                            {% else %}
+                            <span class="text-muted">No image</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if slide.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'admin_hero_slide_edit' slide.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'admin_hero_slide_delete' slide.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="fas fa-inbox fa-2x mb-3 text-muted"></i>
+                            <p class="text-muted">No hero slides yet. <a href="{% url 'admin_hero_slide_add' %}">Add one now</a></p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

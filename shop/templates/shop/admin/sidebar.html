@@ -1,6 +1,6 @@
 <style>
     .admin-sidebar {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(180deg, #52C77B 0%, #3DA670 100%);
         color: white;
         min-height: 100vh;
         padding: 20px 0;
@@ -80,6 +80,11 @@
         <!-- Select Zone -->
         <a href="{% url 'admin_zones' %}" class="nav-link {% if 'admin_zone' in request.resolver_match.url_name %}active{% endif %}">
             <i class="fas fa-map-marker-alt"></i> জোন নির্বাচন
+        </a>
+
+        <!-- Hero Slides -->
+        <a href="{% url 'admin_hero_slides' %}" class="nav-link {% if 'admin_hero_slide' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-images"></i> Hero Slides
         </a>
 
         <!-- Manage Role (same as users page) -->

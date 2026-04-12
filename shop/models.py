@@ -192,3 +192,22 @@ class Notification(models.Model):
     
     def __str__(self):
         return f"{self.title} - {self.user.username}"
+
+
+# Hero Slide Model - For Homepage Carousel
+class HeroSlide(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.CharField(max_length=500, blank=True)
+    button_text = models.CharField(max_length=100, default="Order Now")
+    button_link = models.CharField(max_length=300, default="/register/", help_text="URL to navigate when button is clicked")
+    background_image = models.ImageField(upload_to='hero_slides/')
+    is_active = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0, help_text="Display order of slides")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['order']
+        verbose_name_plural = "Hero Slides"
+    
+    def __str__(self):
+        return f"{self.title} (Order: {self.order})"

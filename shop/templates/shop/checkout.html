@@ -18,7 +18,7 @@
                         {% csrf_token %}
 
                         <!-- Personal Information -->
-                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #667eea;">
+                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #52C77B;">
                             <h6 class="fw-bold mb-3">ব্যক্তিগত তথ্য</h6>
 
                             <div class="row g-3 mb-3">
@@ -53,7 +53,7 @@
                         </div>
 
                         <!-- Delivery Address -->
-                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #764ba2;">
+                        <div class="bg-light p-3 rounded mb-4" style="border-left: 4px solid #3DA670;">
                             <h6 class="fw-bold mb-3">ডেলিভারি ঠিকানা</h6>
 
                             {{ form.delivery_address }}
@@ -100,7 +100,7 @@
 
                             <!-- Map Container (Hidden by default) -->
                             <div id="mapContainer" style="display: none; margin-bottom: 15px;">
-                                <div id="checkoutMap" style="height: 350px; border-radius: 10px; border: 2px solid #667eea;"></div>
+                                <div id="checkoutMap" style="height: 350px; border-radius: 10px; border: 2px solid #52C77B;"></div>
                                 <small class="text-muted d-block mt-2">
                                     <i class="fas fa-info-circle"></i> ম্যাপে ক্লিক করে আপনার ডেলিভারি অবস্থান নির্বাচন করুন
                                 </small>
@@ -141,7 +141,7 @@
                         <!-- Submit Button -->
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg fw-bold" id="submitBtn" onclick="return validateCheckout()">
-                                <i class="fas fa-shopping-bag"></i> অর্ডার নিশ্চিত করুন
+                                <i class="fas fa-shopping-bag"></i> {% t 'Confirm Order' %}
                             </button>
                             <a href="{% url 'view_cart' %}" class="btn btn-outline-secondary btn-lg">
                                 <i class="fas fa-arrow-left"></i> কার্টে ফিরুন
@@ -193,7 +193,7 @@
                         </small>
                     </div>
 
-                    <div class="card-body p-3 bg-light rounded" style="border-left: 4px solid #667eea;">
+                    <div class="card-body p-3 bg-light rounded" style="border-left: 4px solid #52C77B;">
                         <div class="d-flex justify-content-between">
                             <strong>জোন অনুযায়ী ডেলিভারি চার্জ:</strong>
                         </div>
@@ -232,8 +232,8 @@
     }
 
     .form-select:focus, .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        border-color: #52C77B;
+        box-shadow: 0 0 0 0.2rem rgba(82, 199, 123, 0.15);
     }
 
     .form-check-input {
@@ -241,7 +241,7 @@
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
         border: none;
     }
 
@@ -403,9 +403,9 @@ function initCheckoutMap() {
             map: checkoutMap,
             center: {lat: currentSelectedZone.latitude, lng: currentSelectedZone.longitude},
             radius: currentSelectedZone.radius,
-            fillColor: '#667eea',
+            fillColor: '#52C77B',
             fillOpacity: 0.15,
-            strokeColor: '#667eea',
+            strokeColor: '#52C77B',
             strokeWeight: 2,
             editable: false
         });
