@@ -506,15 +506,18 @@ def manager_dashboard(request):
         ).select_related('customer', 'zone', 'rider').order_by('-updated_at')
         
         # Completed orders
-        completed_orders = Order.objects.filter(
+        completed_orders_qs = Order.objects.filter(
             manager=request.user,
             status='delivered'
-        ).select_related('customer', 'zone', 'rider').order_by('-delivered_at')[:10]
+        ).select_related('customer', 'zone', 'rider').order_by('-delivered_at')
         
         # Statistics
-        today_completed = completed_orders.filter(
+        today_completed = completed_orders_qs.filter(
             delivered_at__date=timezone.now().date()
-        ).count() if completed_orders.exists() else 0
+        ).count()
+        
+        # Get last 10 completed orders for display
+        completed_orders = completed_orders_qs[:10]
         
         context = {
             'manager': manager,
