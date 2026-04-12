@@ -33,29 +33,81 @@
 </div>
 
 <!-- Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
+<script>
+    // Check if API key exists
+    const googleMapsApiKey = '{{ google_maps_api_key }}';
+    if (!googleMapsApiKey || googleMapsApiKey.trim() === '') {
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusPanel = document.getElementById('statusPanel');
+            if (statusPanel) {
+                statusPanel.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        <strong>❌ Configuration Error</strong>
+                        <p class="mb-0 mt-2">Google Maps API key not configured. Please contact support.</p>
+                    </div>
+                `;
+            }
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places" async defer></script>
 
 <script>
 let map;
 let userMarker = null;
+let selectedMarker = null;
 let zoneCircles = [];
 let infoWindows = [];
+let mapReady = false;
 
 function initMap() {
     const dhaka = {lat: 23.8103, lng: 90.2506};
     
-    map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 13,
-        center: dhaka,
-        mapTypeId: 'roadmap',
-        fullscreenControl: true,
-        zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false
+    try {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 13,
+            center: dhaka,
+            mapTypeId: 'roadmap',
+            fullscreenControl: true,
+            zoomControl: true,
+            mapTypeControl: false,
+            streetViewControl: false
+        });
+        
+        mapReady = true;
+        
+        // Add map click listener
+        map.addListener('click', function(e) {
+            selectLocationFromMapClick(e.latLng);
+        });
+        
+        fetchZones();
+        checkLocation();
+    } catch (error) {
+        console.error('Map initialization error:', error);
+        showStatus('❌ Failed to load Google Maps. Please check API key and try again.', 'danger');
+    }
+}
+
+function selectLocationFromMapClick(latLng) {
+    const lat = latLng.lat();
+    const lng = latLng.lng();
+    
+    // Remove old selected marker
+    if (selectedMarker) {
+        selectedMarker.setMap(null);
+    }
+    
+    // Add new marker at clicked location
+    selectedMarker = new google.maps.Marker({
+        position: latLng,
+        map: map,
+        title: 'Selected Location',
+        icon: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
     });
     
-    fetchZones();
-    checkLocation();
+    // Check if location is in any service zone
+    checkServiceZone(lat, lng);
 }
 
 function fetchZones() {
@@ -64,10 +116,18 @@ function fetchZones() {
         .then(data => {
             drawZones(data.zones || []);
         })
-        .catch(err => console.error('Error fetching zones:', err));
+        .catch(err => {
+            console.error('Error fetching zones:', err);
+            showStatus('❌ Failed to load zones', 'danger');
+        });
 }
 
 function drawZones(zones) {
+    if (!zones || zones.length === 0) {
+        showStatus('⚠️ No service zones available', 'warning');
+        return;
+    }
+    
     zones.forEach(zone => {
         const circle = new google.maps.Circle({
             map: map,
@@ -81,10 +141,11 @@ function drawZones(zones) {
         });
         
         const infoWindow = new google.maps.InfoWindow({
-            content: `<div style="padding: 10px;"><strong>${zone.name}</strong><br><small>Delivery: ৳${zone.delivery_charge}</small></div>`
+            content: `<div style="padding: 10px; font-family: Arial;"><strong>${zone.name}</strong><br><small>Delivery: ৳${zone.delivery_charge}</small><br><small style="color: #666;">Area: ${zone.radius}m radius</small></div>`
         });
         
-        circle.addListener('click', () => {
+        circle.addListener('click', (e) => {
+            // Close all other info windows
             infoWindows.forEach(iw => iw.close());
             infoWindow.setPosition({lat: zone.latitude, lng: zone.longitude});
             infoWindow.open(map);
@@ -93,15 +154,17 @@ function drawZones(zones) {
         zoneCircles.push(circle);
         infoWindows.push(infoWindow);
     });
+    
+    showStatus('📍 Click anywhere on the map to select your delivery location', 'info');
 }
 
 function checkLocation() {
     if (!navigator.geolocation) {
-        showStatus('❌ Geolocation not supported', 'danger');
+        showStatus('⚠️ Geolocation not supported. Use manual location selection on the map.', 'warning');
         return;
     }
     
-    showStatus('📍 Getting your location...', 'info');
+    showStatus('📍 Requesting your location...', 'info');
     
     navigator.geolocation.getCurrentPosition(
         position => {
@@ -110,10 +173,22 @@ function checkLocation() {
             checkServiceZone(latitude, longitude);
         },
         error => {
-            showStatus('❌ Location access denied', 'danger');
-            console.error(error);
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    showStatus('❌ Location permission denied. You can still select location by clicking on the map.', 'warning');
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    showStatus('❌ Location unavailable. Click on the map to select your location.', 'warning');
+                    break;
+                case error.TIMEOUT:
+                    showStatus('❌ Location request timeout. Click on the map to select your location.', 'warning');
+                    break;
+                default:
+                    showStatus('❌ Error getting location. Click on the map to select your location.', 'warning');
+            }
+            console.error('Geolocation error:', error);
         },
-        {enableHighAccuracy: true, timeout: 10000}
+        {enableHighAccuracy: false, timeout: 8000, maximumAge: 300000}
     );
 }
 
@@ -154,18 +229,48 @@ function checkServiceZone(latitude, longitude) {
 
 function showStatus(message, type = 'info') {
     const panel = document.getElementById('statusPanel');
+    let alertClass = `alert-${type}`;
+    
     panel.innerHTML = `
-        <div class="alert alert-${type} mb-0">
-            <div style="font-size: 16px;">${message}</div>
+        <div class="alert ${alertClass} mb-0">
+            <div style="font-size: 14px; line-height: 1.5;">${message}</div>
         </div>
         <hr class="my-2">
-        <button class="btn btn-sm btn-primary w-100" onclick="checkLocation()">
-            <i class="fas fa-sync"></i> Re-check Location
-        </button>
+        <div style="display: flex; gap: 8px; flex-direction: column;">
+            <button class="btn btn-sm btn-primary w-100" onclick="checkLocation()">
+                <i class="fas fa-location-arrow"></i> Get My Location
+            </button>
+            <small class="text-muted text-center">Or click on the map to select location</small>
+        </div>
     `;
 }
 
-window.addEventListener('load', initMap);
+window.addEventListener('load', function() {
+    // Check if Google Maps API loaded
+    if (typeof google === 'undefined' || !google.maps) {
+        const statusPanel = document.getElementById('statusPanel');
+        if (statusPanel) {
+            statusPanel.innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <strong>❌ Google Maps Error</strong>
+                    <p class="mb-0 mt-2">Failed to load Google Maps. Please check your internet connection or API key configuration.</p>
+                </div>
+            `;
+        }
+        return;
+    }
+    
+    initMap();
+});
+
+// Fallback initialization if window load doesn't work
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof google !== 'undefined' && google.maps) {
+            // Map will be initialized when window loads
+        }
+    });
+}
 </script>
 
 <style>
