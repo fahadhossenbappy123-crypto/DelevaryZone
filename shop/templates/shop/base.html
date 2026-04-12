@@ -2,7 +2,7 @@
 {% load translate_tags %}
 
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,25 +41,33 @@
         /* Navbar Styling */
         .navbar {
             background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            padding: 1rem 0;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.15);
+            padding: 0.8rem 0;
         }
         
         .navbar-brand {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 900;
+            letter-spacing: -0.5px;
             background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            transition: transform 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
         }
         
         .nav-link {
-            color: rgba(255,255,255,0.9) !important;
-            font-weight: 500;
-            margin: 0 0.5rem;
-            transition: all 0.3s;
+            color: rgba(255,255,255,0.95) !important;
+            font-weight: 600;
+            margin: 0 0.3rem;
+            transition: all 0.3s ease;
             position: relative;
+            font-size: 1.05rem;
+            padding: 0.6rem 0.8rem !important;
         }
         
         .nav-link:hover {
@@ -91,31 +99,38 @@
         
         .btn-auth {
             border-radius: 50px;
-            padding: 0.5rem 1.5rem;
-            font-weight: 600;
+            padding: 0.65rem 1.8rem;
+            font-weight: 700;
             border: none;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
         }
         
         .btn-auth-login {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
             color: #fff;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
         }
         
         .btn-auth-login:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.35);
             color: #fff;
-            transform: scale(1.05);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
         
         .btn-auth-register {
             background: #fff;
             color: #3DA670;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
         .btn-auth-register:hover {
-            background: #f0f0f0;
-            transform: scale(1.05);
+            background: #f5f5f5;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
         
         /* Cards */
@@ -231,15 +246,25 @@
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             border: none;
             border-radius: 50px;
-            padding: 0.6rem 1.5rem;
-            font-weight: 600;
-            transition: all 0.3s;
+            padding: 0.7rem 1.8rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(82, 199, 123, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(82, 199, 123, 0.5);
             color: #fff;
+        }
+        
+        .btn-secondary, .btn-success, .btn-danger, .btn-warning, .btn-info {
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 0.6rem 1.5rem;
+            letter-spacing: 0.3px;
         }
         
         /* User Profile Menu */
@@ -291,35 +316,39 @@
             color: white;
             cursor: pointer;
             padding: 0.5rem 0.75rem;
-            font-size: 0.9rem;
-            font-weight: 600;
+            font-size: 1rem;
+            font-weight: 700;
             transition: all 0.3s ease;
         }
 
         .language-switcher:hover {
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 6px;
         }
 
         .language-switcher select {
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.4);
             color: white;
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
         .language-switcher select option {
-            background: #52C77B;
+            background: #3DA670;
             color: white;
+            font-weight: 600;
         }
 
         .language-switcher select:hover {
             border-color: rgba(255,255,255,0.8);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         /* Notification Icon Styling */
@@ -409,19 +438,21 @@
 
             /* Navbar */
             .navbar { padding: 0.8rem 0; }
-            .navbar-brand { font-size: 1.4rem !important; }
-            .nav-link, .btn-auth { padding: 0.5rem 1rem !important; font-size: 1rem; }
-            .auth-buttons { gap: 0.3rem; }
+            .navbar-brand { font-size: 1.5rem !important; font-weight: 900; }
+            .nav-link, .btn-auth { padding: 0.6rem 1.1rem !important; font-size: 1.15rem; font-weight: 700; }
+            .auth-buttons { gap: 0.5rem; }
 
             /* Buttons */
             .btn-primary, .btn-secondary, .btn-success, .btn-danger, .btn-info, .btn-warning {
-                padding: 0.6rem 1.2rem !important;
-                font-size: 1rem;
+                padding: 0.7rem 1.4rem !important;
+                font-size: 1.05rem;
                 width: 100%;
+                font-weight: 700;
+                letter-spacing: 0.5px;
             }
-            .btn-lg { padding: 0.8rem 1.5rem !important; font-size: 1.05rem; }
-            .btn-sm { padding: 0.4rem 0.8rem !important; font-size: 0.9rem; }
-            .btn { font-size: 0.95rem; }
+            .btn-lg { padding: 0.9rem 1.8rem !important; font-size: 1.1rem; }
+            .btn-sm { padding: 0.5rem 1rem !important; font-size: 0.95rem; }
+            .btn { font-size: 0.95rem; font-weight: 600; }
 
             /* Cards */
             .card { margin-bottom: 1rem; border-radius: 12px; }
@@ -475,8 +506,22 @@
             .badge { padding: 0.4rem 0.7rem; font-size: 0.9rem; }
 
             /* Dropdowns */
-            .dropdown-menu { font-size: 0.95rem; }
-            .dropdown-item { padding: 0.65rem 1rem; font-size: 0.95rem; }
+            .dropdown-menu { 
+                font-size: 1rem; 
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            }
+            .dropdown-item { 
+                padding: 0.8rem 1.2rem; 
+                font-size: 0.95rem;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+            .dropdown-item:hover {
+                background-color: rgba(82, 199, 123, 0.1);
+                padding-left: 1.4rem;
+            }
 
             /* Profile Sidebar */
             .profile-sidebar { margin-bottom: 2rem; }
@@ -501,12 +546,12 @@
             p { font-size: 0.95rem !important; }
 
             /* Navbar */
-            .navbar-brand { font-size: 1.2rem !important; }
-            .nav-link { padding: 0.4rem 0.6rem !important; font-size: 0.95rem; }
-            .btn-auth { padding: 0.4rem 0.7rem !important; font-size: 0.95rem; }
+            .navbar-brand { font-size: 1.3rem !important; }
+            .nav-link { padding: 0.5rem 0.8rem !important; font-size: 1.05rem; font-weight: 700; }
+            .btn-auth { padding: 0.5rem 0.9rem !important; font-size: 1rem; font-weight: 700; }
 
             /* All buttons full width on mobile */
-            .btn { width: 100%; display: block; font-size: 0.95rem; }
+            .btn { width: 100%; display: block; font-size: 1rem; font-weight: 700; }
             .d-grid { gap: 0.5rem !important; }
             .d-flex .btn { width: auto; }
 
@@ -533,22 +578,22 @@
             .px-5 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
 
             /* Forms */
-            .form-control { font-size: 0.95rem; padding: 0.65rem; }
-            label { font-size: 0.95rem; }
+            .form-control { font-size: 1rem; padding: 0.7rem; font-weight: 500; }
+            label { font-size: 0.95rem; font-weight: 700; }
             textarea { min-height: 100px; }
 
             /* Tables - horizontal scroll */
             .table-responsive { overflow-x: auto; }
-            .table { font-size: 0.9rem; }
-            .table-sm { font-size: 0.85rem; }
-            .table th, .table td { padding: 0.6rem 0.4rem !important; }
+            .table { font-size: 0.95rem; }
+            .table-sm { font-size: 0.9rem; }
+            .table th, .table td { padding: 0.7rem 0.5rem !important; font-weight: 600; }
 
             /* Alerts */
-            .alert { padding: 0.8rem; font-size: 0.9rem; }
-            .alert h5 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+            .alert { padding: 0.9rem; font-size: 0.95rem; }
+            .alert h5 { font-size: 0.95rem; margin-bottom: 0.3rem; font-weight: 700; }
 
             /* Badges */
-            .badge { padding: 0.3rem 0.5rem; font-size: 0.8rem; }
+            .badge { padding: 0.35rem 0.6rem; font-size: 0.85rem; font-weight: 700; }
 
             /* Images */
             img { max-width: 100%; height: auto; }
@@ -630,20 +675,20 @@
             </a>
             
             <!-- Mobile: Cart Icon -->
-            <a class="nav-link d-md-none ms-auto" href="{% url 'view_cart' %}" style="padding: 0.5rem 0.75rem;">
+            <a class="nav-link d-md-none ms-auto" href="{% url 'view_cart' %}" style="padding: 0.5rem 0.75rem; font-size: 1.2rem;">
                 <i class="fas fa-shopping-cart fs-5"></i>
                 {% if request.session.cart %}
-                    <span class="badge bg-danger ms-1" style="font-size: 0.7rem;">{{ request.session.cart|length }}</span>
+                    <span class="badge bg-danger ms-1" style="font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.6rem;">{{ request.session.cart|length }}</span>
                 {% else %}
-                    <span class="badge bg-danger ms-1" style="font-size: 0.7rem;">0</span>
+                    <span class="badge bg-danger ms-1" style="font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.6rem;">0</span>
                 {% endif %}
             </a>
             
             <!-- Mobile: Language Switcher -->
             <div class="d-md-none language-switcher">
                 <select id="languageSelect" onchange="changeLanguage(this.value)">
-                    <option value="en" {% if 'en' in request.path or request.LANGUAGE_CODE == 'en' %}selected{% endif %}>EN</option>
-                    <option value="bn" {% if 'bn' in request.path or request.LANGUAGE_CODE == 'bn' %}selected{% endif %}>BN</option>
+                    <option value="en" {% if request.LANGUAGE_CODE == 'en' or 'en' in request.path %}selected{% endif %}>🇬🇧 English</option>
+                    <option value="bn" {% if request.LANGUAGE_CODE == 'bn' or 'bn' in request.path %}selected{% endif %}>🇧🇩 বাংলা</option>
                 </select>
             </div>
             
@@ -804,7 +849,7 @@
                         <!-- Admin Dashboard -->
                         {% if user.is_staff or user.is_superuser or user.profile.role == 'admin' %}
                             <li class="nav-item dropdown">
-                                <a class="nav-link btn-auth btn-auth-register dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" style="background: #52C77B; color: white; margin-right: 0.5rem;">
+                                <a class="nav-link btn-auth btn-auth-register dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
                                     <i class="fas fa-crown"></i> Admin Panel
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="adminDropdown">
@@ -817,14 +862,14 @@
                         <!-- Manager Dashboard -->
                         {% elif user.profile.role == 'manager' %}
                             <li class="nav-item">
-                                <a class="nav-link btn-auth btn-auth-register" href="{% url 'manager_dashboard' %}" style="background: #fd7e14; color: white; margin-right: 0.5rem;">
+                                <a class="nav-link btn-auth btn-auth-register" href="{% url 'manager_dashboard' %}" style="background: linear-gradient(135deg, #fd7e14 0%, #ff9e3d 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
                                     <i class="fas fa-user-tie"></i> Manager Panel
                                 </a>
                             </li>
                         <!-- Rider Dashboard -->
                         {% elif user.profile.role == 'rider' %}
                             <li class="nav-item">
-                                <a class="nav-link btn-auth btn-auth-register" href="{% url 'rider_dashboard' %}" style="background: #ff6b6b; color: white; margin-right: 0.5rem;">
+                                <a class="nav-link btn-auth btn-auth-register" href="{% url 'rider_dashboard' %}" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
                                     <i class="fas fa-motorcycle"></i> Rider Panel
                                 </a>
                             </li>
@@ -878,14 +923,14 @@
                     
                     <!-- Notification Icon (Desktop) -->
                     <li class="nav-item">
-                        <button class="nav-link" id="notificationBellDesktop" style="border: none; background: none; padding: 0.5rem 0.75rem; cursor: pointer; position: relative;" onclick="openNotificationModal()">
+                        <button class="nav-link" id="notificationBellDesktop" style="border: none; background: none; padding: 0.5rem 0.75rem; cursor: pointer; position: relative; font-size: 1.2rem;" onclick="openNotificationModal()">
                             <i class="fas fa-bell"></i>
-                            <span id="notificationBadgeDesktop" class="badge bg-danger" style="position: absolute; top: 8px; right: 3px; font-size: 0.65rem; display: none;">0</span>
+                            <span id="notificationBadgeDesktop" class="badge bg-danger" style="position: absolute; top: 5px; right: 0px; font-size: 0.75rem; font-weight: 700; padding: 0.35rem 0.6rem; display: none;">0</span>
                         </button>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link btn-auth btn-auth-login" href="{% url 'view_cart' %}">
+                        <a class="nav-link btn-auth btn-auth-login" href="{% url 'view_cart' %}" style="font-weight: 700; font-size: 1.05rem;">
                             <i class="fas fa-shopping-cart"></i> {% t 'Cart' %}
                             {% if request.session.cart %}
                                 <span class="badge bg-danger ms-1">{{ request.session.cart|length }}</span>
