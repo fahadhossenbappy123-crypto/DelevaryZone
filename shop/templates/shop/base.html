@@ -267,6 +267,48 @@
             letter-spacing: 0.3px;
         }
         
+        /* Order Now Button - Unique & Professional */
+        .btn-order-now {
+            background: linear-gradient(135deg, #FF6B6B 0%, #ee5a5a 100%) !important;
+            border: 2px solid #FF6B6B !important;
+            color: white !important;
+            font-weight: 800 !important;
+            font-size: 1.2rem !important;
+            padding: 0.8rem 2.5rem !important;
+            border-radius: 50px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            position: relative !important;
+            overflow: hidden !important;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4) !important;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        
+        .btn-order-now::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-order-now:hover {
+            transform: translateY(-4px) scale(1.05) !important;
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6) !important;
+            border-color: #ff4848 !important;
+        }
+        
+        .btn-order-now:hover::before {
+            left: 100%;
+        }
+        
+        .btn-order-now:active {
+            transform: translateY(-2px) scale(1.02) !important;
+        }
+        
         /* User Profile Menu */
         .user-profile-menu {
             display: flex;
@@ -307,48 +349,6 @@
 
         .dropdown-item.text-danger:hover {
             background-color: #ffe5e5;
-        }
-
-        /* Language Switcher Mobile Styling */
-        .language-switcher {
-            background: transparent;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 0.5rem 0.75rem;
-            font-size: 1rem;
-            font-weight: 700;
-            transition: all 0.3s ease;
-        }
-
-        .language-switcher:hover {
-            background: rgba(255,255,255,0.15);
-            border-radius: 6px;
-        }
-
-        .language-switcher select {
-            background: rgba(255,255,255,0.2);
-            border: 2px solid rgba(255,255,255,0.4);
-            color: white;
-            padding: 0.5rem 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .language-switcher select option {
-            background: #3DA670;
-            color: white;
-            font-weight: 600;
-        }
-
-        .language-switcher select:hover {
-            border-color: rgba(255,255,255,0.8);
-            background: rgba(255,255,255,0.3);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         /* Notification Icon Styling */
@@ -499,8 +499,12 @@
             .alert h5 { font-size: 1.05rem; }
             .alert p { margin-bottom: 0.5rem; font-size: 0.9rem; }
 
-            /* Hero Section */
-            .hero-section { padding: 1.5rem 1rem !important; }
+        /* Hero Section */
+        .hero-section {
+            padding: 1.5rem 1rem !important;
+            width: 100%;
+            background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
+        }
 
             /* Badges */
             .badge { padding: 0.4rem 0.7rem; font-size: 0.9rem; }
@@ -595,6 +599,12 @@
             /* Badges */
             .badge { padding: 0.35rem 0.6rem; font-size: 0.85rem; font-weight: 700; }
 
+            /* Order Now Button - Mobile */
+            .btn-order-now {
+                padding: 0.7rem 1.5rem !important;
+                font-size: 1.15rem !important;
+            }
+
             /* Images */
             img { max-width: 100%; height: auto; }
 
@@ -684,14 +694,6 @@
                 {% endif %}
             </a>
             
-            <!-- Mobile: Language Switcher -->
-            <div class="d-md-none language-switcher">
-                <select id="languageSelect" onchange="changeLanguage(this.value)">
-                    <option value="en" {% if request.LANGUAGE_CODE == 'en' or 'en' in request.path %}selected{% endif %}>🇬🇧 English</option>
-                    <option value="bn" {% if request.LANGUAGE_CODE == 'bn' or 'bn' in request.path %}selected{% endif %}>🇧🇩 বাংলা</option>
-                </select>
-            </div>
-            
             <script>
                 // ============ GLOBAL VARIABLES ============
                 const bodyElement = document.body;
@@ -699,14 +701,6 @@
                 const notificationsUrl = bodyElement.getAttribute('data-notifications-url');
                 const markAllReadUrl = bodyElement.getAttribute('data-mark-all-read-url');
                 const loginUrl = bodyElement.getAttribute('data-login-url');
-                
-                function changeLanguage(lang) {
-                    let path = window.location.pathname;
-                    // Remove existing language prefix
-                    path = path.replace(/^\/(en|bn)\//, '/');
-                    // Add new language prefix
-                    window.location.href = '/' + lang + path + window.location.search;
-                }
                 
                 // ============ NOTIFICATION FUNCTIONS ============
                 
