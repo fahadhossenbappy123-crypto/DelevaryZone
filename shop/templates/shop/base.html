@@ -26,6 +26,7 @@
             background: linear-gradient(135deg, #E8F5E9 0%, #A5D6A7 100%);
             min-height: 100vh;
             color: #333;
+            font-size: 16px;
         }
         
         :root {
@@ -394,32 +395,40 @@
 
         /* ====== MOBILE RESPONSIVE ====== */
         @media (max-width: 768px) {
+            body { font-size: 16px; }
+            
             /* Typography */
-            h1, .display-3 { font-size: 1.8rem !important; line-height: 1.2; }
-            h2 { font-size: 1.4rem !important; }
-            h3 { font-size: 1.2rem !important; }
-            .lead { font-size: 1rem !important; }
+            h1, .display-3 { font-size: 1.9rem !important; line-height: 1.2; }
+            h2 { font-size: 1.6rem !important; }
+            h3 { font-size: 1.3rem !important; }
+            h4 { font-size: 1.1rem !important; }
+            h5 { font-size: 1rem !important; }
+            h6 { font-size: 0.95rem !important; }
+            .lead { font-size: 1.05rem !important; }
+            p { font-size: 0.95rem !important; }
 
             /* Navbar */
             .navbar { padding: 0.8rem 0; }
-            .navbar-brand { font-size: 1.3rem !important; }
-            .nav-link, .btn-auth { padding: 0.4rem 0.8rem !important; font-size: 0.9rem; }
+            .navbar-brand { font-size: 1.4rem !important; }
+            .nav-link, .btn-auth { padding: 0.5rem 1rem !important; font-size: 1rem; }
             .auth-buttons { gap: 0.3rem; }
 
             /* Buttons */
             .btn-primary, .btn-secondary, .btn-success, .btn-danger, .btn-info, .btn-warning {
-                padding: 0.5rem 1rem !important;
-                font-size: 0.9rem;
+                padding: 0.6rem 1.2rem !important;
+                font-size: 1rem;
                 width: 100%;
             }
-            .btn-lg { padding: 0.7rem 1.5rem !important; font-size: 0.95rem; }
-            .btn-sm { padding: 0.3rem 0.6rem !important; font-size: 0.8rem; }
+            .btn-lg { padding: 0.8rem 1.5rem !important; font-size: 1.05rem; }
+            .btn-sm { padding: 0.4rem 0.8rem !important; font-size: 0.9rem; }
+            .btn { font-size: 0.95rem; }
 
             /* Cards */
             .card { margin-bottom: 1rem; border-radius: 12px; }
-            .card-body { padding: 1rem !important; }
+            .card-body { padding: 1.2rem !important; }
+            .card-text { font-size: 0.95rem !important; }
             .product-img { height: 150px; }
-            .category-card { height: 150px; font-size: 1rem; }
+            .category-card { height: 150px; font-size: 1.2rem; }
 
             /* Grid */
             .col-lg-3, .col-lg-4, .col-lg-6, .col-md-3, .col-md-4, .col-md-6 {
@@ -440,55 +449,64 @@
             .px-5 { padding-left: 1rem !important; padding-right: 1rem !important; }
 
             /* Forms */
-            .form-control, .form-select { font-size: 1rem; padding: 0.6rem 0.8rem; margin-bottom: 1rem; }
-            label { font-size: 0.95rem; margin-bottom: 0.5rem; }
+            .form-control, .form-select { font-size: 1rem; padding: 0.8rem; margin-bottom: 1rem; }
+            label { font-size: 1rem; margin-bottom: 0.5rem; font-weight: 500; }
             input[type="text"], input[type="email"], input[type="password"], textarea, select {
                 width: 100% !important;
                 display: block !important;
+                font-size: 1rem;
             }
 
             /* Tables */
-            .table-responsive { font-size: 0.85rem; }
-            .table { font-size: 0.9rem; margin-bottom: 0; }
-            .table th, .table td { padding: 0.5rem 0.3rem !important; }
+            .table-responsive { font-size: 0.95rem; }
+            .table { font-size: 0.95rem; margin-bottom: 0; }
+            .table th, .table td { padding: 0.7rem 0.5rem !important; font-size: 0.9rem; }
             .table-hover tbody tr:hover { background-color: rgba(82, 199, 123, 0.1); }
 
             /* Alerts */
-            .alert { padding: 0.8rem; font-size: 0.9rem; margin-bottom: 1rem; }
-            .alert h5 { font-size: 1rem; }
-            .alert p { margin-bottom: 0.5rem; }
+            .alert { padding: 1rem; font-size: 0.95rem; margin-bottom: 1rem; }
+            .alert h5 { font-size: 1.05rem; }
+            .alert p { margin-bottom: 0.5rem; font-size: 0.9rem; }
 
             /* Hero Section */
             .hero-section { padding: 1.5rem 1rem !important; }
 
             /* Badges */
-            .badge { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+            .badge { padding: 0.4rem 0.7rem; font-size: 0.9rem; }
 
             /* Dropdowns */
-            .dropdown-menu { font-size: 0.9rem; }
-            .dropdown-item { padding: 0.5rem 1rem; }
+            .dropdown-menu { font-size: 0.95rem; }
+            .dropdown-item { padding: 0.65rem 1rem; font-size: 0.95rem; }
 
             /* Profile Sidebar */
             .profile-sidebar { margin-bottom: 2rem; }
 
             /* Tab Navigation */
             .nav-tabs { flex-wrap: wrap; }
-            .nav-link { padding: 0.5rem !important; font-size: 0.85rem; }
+            .nav-link { padding: 0.6rem !important; font-size: 0.95rem; }
+            
+            /* List Items */
+            li, td, .small { font-size: 0.95rem !important; }
         }
 
         @media (max-width: 576px) {
+            body { font-size: 15px; }
+            
             /* Extra small devices */
-            h1, .display-3 { font-size: 1.4rem !important; }
-            h2 { font-size: 1.1rem !important; }
-            .lead { font-size: 0.9rem !important; }
+            h1, .display-3 { font-size: 1.6rem !important; }
+            h2 { font-size: 1.3rem !important; }
+            h3 { font-size: 1.1rem !important; }
+            h4, h5 { font-size: 1rem !important; }
+            .lead { font-size: 0.95rem !important; }
+            p { font-size: 0.95rem !important; }
 
             /* Navbar */
-            .navbar-brand { font-size: 1.1rem !important; }
-            .nav-link { padding: 0.3rem 0.5rem !important; font-size: 0.8rem; }
-            .btn-auth { padding: 0.3rem 0.5rem !important; font-size: 0.8rem; }
+            .navbar-brand { font-size: 1.2rem !important; }
+            .nav-link { padding: 0.4rem 0.6rem !important; font-size: 0.95rem; }
+            .btn-auth { padding: 0.4rem 0.7rem !important; font-size: 0.95rem; }
 
             /* All buttons full width on mobile */
-            .btn { width: 100%; display: block; }
+            .btn { width: 100%; display: block; font-size: 0.95rem; }
             .d-grid { gap: 0.5rem !important; }
             .d-flex .btn { width: auto; }
 
@@ -497,13 +515,14 @@
 
             /* Cards */
             .card { border-radius: 10px; }
-            .card-body { padding: 0.8rem !important; }
+            .card-body { padding: 1rem !important; }
+            .card-text { font-size: 0.95rem; }
             .product-img { height: 120px; }
-            .category-card { height: 120px; font-size: 0.85rem; }
+            .category-card { height: 120px; font-size: 0.95rem; }
 
             /* Typography */
-            .fs-5, .lead { font-size: 0.9rem !important; }
-            .fs-6 { font-size: 0.85rem !important; }
+            .fs-5, .lead { font-size: 0.95rem !important; }
+            .fs-6 { font-size: 0.9rem !important; }
 
             /* Grid - truly responsive */
             .row > [class*='col-'] { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
@@ -514,20 +533,22 @@
             .px-5 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
 
             /* Forms */
-            .form-control { font-size: 0.95rem; padding: 0.5rem; }
+            .form-control { font-size: 0.95rem; padding: 0.65rem; }
+            label { font-size: 0.95rem; }
             textarea { min-height: 100px; }
 
             /* Tables - horizontal scroll */
             .table-responsive { overflow-x: auto; }
-            .table { font-size: 0.8rem; }
-            .table-sm { font-size: 0.75rem; }
+            .table { font-size: 0.9rem; }
+            .table-sm { font-size: 0.85rem; }
+            .table th, .table td { padding: 0.6rem 0.4rem !important; }
 
             /* Alerts */
-            .alert { padding: 0.7rem; font-size: 0.85rem; }
+            .alert { padding: 0.8rem; font-size: 0.9rem; }
             .alert h5 { font-size: 0.95rem; margin-bottom: 0.3rem; }
 
             /* Badges */
-            .badge { padding: 0.25rem 0.4rem; font-size: 0.7rem; }
+            .badge { padding: 0.3rem 0.5rem; font-size: 0.8rem; }
 
             /* Images */
             img { max-width: 100%; height: auto; }

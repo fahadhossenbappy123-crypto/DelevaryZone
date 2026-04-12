@@ -149,6 +149,9 @@ function drawZones(zones) {
             infoWindows.forEach(iw => iw.close());
             infoWindow.setPosition({lat: zone.latitude, lng: zone.longitude});
             infoWindow.open(map);
+            
+            // Also handle location selection when clicking on zone
+            selectLocationFromMapClick(e.latLng);
         });
         
         zoneCircles.push(circle);
