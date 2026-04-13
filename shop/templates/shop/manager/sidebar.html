@@ -7,6 +7,8 @@
         padding: 20px 0;
         position: sticky;
         top: 0;
+        visibility: visible;
+        opacity: 1;
     }
 
     .sidebar-header {
@@ -15,18 +17,22 @@
         margin-bottom: 20px;
         text-align: center;
         position: relative;
+        visibility: visible;
     }
 
     .manager-sidebar h5 {
         font-weight: 700;
         margin: 0;
         font-size: 1.3rem;
+        color: white;
+        visibility: visible;
     }
 
     .zone-info {
         color: rgba(255, 255, 255, 0.8);
         margin-top: 8px;
         font-size: 0.95rem;
+        visibility: visible;
     }
 
     .manager-sidebar .nav-link {
@@ -39,6 +45,7 @@
         align-items: center;
         gap: 12px;
         font-size: 1.1rem;
+        visibility: visible;
     }
 
     .manager-sidebar .nav-link:hover {
@@ -59,6 +66,13 @@
         width: 24px;
         text-align: center;
         font-size: 1.15rem;
+        color: white;
+    }
+
+    .manager-sidebar .nav-link span {
+        color: white;
+        display: block;
+        visibility: visible;
     }
 
     .sidebar-section-title {
@@ -69,12 +83,18 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-top: 8px;
+        visibility: visible;
     }
 
     .sidebar-divider {
         height: 1px;
         background: rgba(255, 255, 255, 0.15);
         margin: 12px 0;
+    }
+
+    .manager-sidebar .nav {
+        visibility: visible;
+        opacity: 1;
     }
 
     .manager-sidebar-close {
@@ -91,6 +111,7 @@
         right: 15px;
         z-index: 1001;
         transition: all 0.3s ease;
+        visibility: visible;
     }
 
     .manager-sidebar-close:hover {
@@ -111,10 +132,12 @@
             padding: 0;
             margin: 0;
             min-height: auto;
+            visibility: visible;
         }
 
         #managerSidebar.show {
             left: 0;
+            visibility: visible;
         }
 
         .manager-sidebar {
@@ -123,28 +146,41 @@
             padding: 15px 0;
             overflow-y: auto;
             width: 100%;
+            visibility: visible;
+            opacity: 1;
         }
 
         .manager-sidebar-close {
             display: block;
+            visibility: visible;
         }
 
         .sidebar-header {
             padding: 15px;
             margin-bottom: 15px;
+            visibility: visible;
         }
 
         .manager-sidebar h5 {
             font-size: 1.25rem;
+            visibility: visible;
         }
 
         .zone-info {
             font-size: 0.9rem;
+            visibility: visible;
+        }
+
+        .manager-sidebar .nav {
+            visibility: visible;
+            opacity: 1;
         }
 
         .manager-sidebar .nav-link {
             padding: 12px 16px;
             font-size: 1rem;
+            visibility: visible;
+            color: white;
         }
 
         .manager-sidebar .nav-link:hover {
@@ -154,11 +190,13 @@
         .manager-sidebar .nav-link i {
             font-size: 1rem;
             width: 22px;
+            color: white;
         }
 
         .sidebar-section-title {
             padding: 8px 16px;
             font-size: 0.7rem;
+            visibility: visible;
         }
     }
 </style>
