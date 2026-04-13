@@ -38,11 +38,12 @@
             --info: #52C77B;
         }
         
-        /* Navbar Styling */
+        /* Navbar Styling - Professional Design */
         .navbar {
             background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
-            box-shadow: 0 6px 30px rgba(0,0,0,0.15);
-            padding: 0.8rem 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 0.9rem 0;
+            border-bottom: 3px solid rgba(255,255,255,0.1);
         }
         
         .navbar-brand {
@@ -53,25 +54,28 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
         }
         
         .navbar-brand:hover {
-            transform: scale(1.05);
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.3));
         }
         
         .nav-link {
             color: rgba(255,255,255,0.95) !important;
             font-weight: 600;
-            margin: 0 0.3rem;
+            margin: 0 0.5rem;
             transition: all 0.3s ease;
             position: relative;
-            font-size: 1.2rem;
-            padding: 0.6rem 0.8rem !important;
+            font-size: 1.1rem;
+            padding: 0.7rem 1rem !important;
+            border-radius: 8px;
         }
         
         .nav-link:hover {
             color: #fff !important;
+            background: rgba(255,255,255,0.15);
             transform: translateY(-2px);
         }
         
@@ -79,22 +83,100 @@
             content: '';
             position: absolute;
             bottom: -5px;
-            left: 0;
+            left: 50%;
             width: 0;
-            height: 2px;
+            height: 3px;
             background: #fff;
-            transition: width 0.3s;
+            transition: width 0.3s, left 0.3s;
+            transform: translateX(-50%);
         }
         
         .nav-link:hover::after {
-            width: 100%;
+            width: 80%;
+        }
+        
+        /* Bottom Navigation Bar for Mobile */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
+            border-top: 2px solid rgba(255,255,255,0.15);
+            box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .bottom-nav .nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            height: 70px;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .bottom-nav .nav-item-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0;
+            font-weight: 600;
+            gap: 0.2rem;
+        }
+        
+        .bottom-nav .nav-item-btn:hover,
+        .bottom-nav .nav-item-btn.active {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .bottom-nav .nav-item-btn i {
+            font-size: 1.5rem;
+        }
+        
+        .bottom-nav .nav-item-btn span {
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        /* Special styling for panel buttons in center */
+        .bottom-nav .nav-item-btn.panel-btn {
+            flex: 1.3;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            margin: 0 0.3rem;
+            font-weight: 700;
+        }
+        
+        .bottom-nav .nav-item-btn.panel-btn:hover {
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        
+        .bottom-nav .nav-item-btn.panel-btn i {
+            font-size: 1.8rem;
+        }
+        
+        .bottom-nav .nav-item-btn.panel-btn span {
+            font-size: 0.7rem;
         }
         
         /* Auth Buttons */
         .auth-buttons {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.7rem;
             flex-wrap: wrap;
+            align-items: center;
         }
         
         .btn-auth {
@@ -103,34 +185,38 @@
             font-weight: 700;
             border: none;
             transition: all 0.3s ease;
-            font-size: 1.1rem;
+            font-size: 1rem;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
         
         .btn-auth-login {
             background: rgba(255,255,255,0.25);
             color: #fff;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1.5px solid rgba(255,255,255,0.4);
         }
         
         .btn-auth-login:hover {
             background: rgba(255,255,255,0.35);
             color: #fff;
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-color: rgba(255,255,255,0.6);
         }
         
         .btn-auth-register {
             background: #fff;
             color: #3DA670;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.5);
         }
         
         .btn-auth-register:hover {
-            background: #f5f5f5;
+            background: #f8f8f8;
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+            color: #2E7D32;
         }
         
         /* Cards */
@@ -239,6 +325,13 @@
         /* Main Container */
         .main-container {
             min-height: calc(100vh - 200px);
+        }
+        
+        /* Footer styling for mobile with bottom nav */
+        @media (max-width: 768px) {
+            footer {
+                margin-bottom: 70px;
+            }
         }
         
         /* Buttons */
@@ -422,9 +515,26 @@
             border-left-color: #ee0979 !important;
         }
 
+        /* Hide mobile offcanvas menu on extra small screens - use bottom nav instead */
+        @media (max-width: 576px) {
+            .offcanvas {
+                display: none !important;
+            }
+        }
+
         /* ====== MOBILE RESPONSIVE ====== */
         @media (max-width: 768px) {
             body { font-size: 16px; }
+            
+            /* Show bottom nav on mobile */
+            .bottom-nav {
+                display: block;
+            }
+            
+            /* Add padding to main container to avoid overlap with bottom nav */
+            .main-container {
+                padding-bottom: 100px;
+            }
             
             /* Typography */
             h1, .display-3 { font-size: 1.9rem !important; line-height: 1.2; }
@@ -1024,5 +1134,175 @@
             <p class="text-muted small mt-2">সকল অধিকার সংরক্ষিত | Powered by Django</p>
         </div>
     </footer>
+
+    <!-- Bottom Navigation Bar for Mobile -->
+    <nav class="bottom-nav d-md-none">
+        <div class="nav-items">
+            <!-- FOR CUSTOMERS -->
+            {% if user.is_authenticated and user.profile.role == 'customer' %}
+                <!-- Home -->
+                <a href="{% url 'home' %}" class="nav-item-btn" id="bottomNavHome">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                
+                <!-- Service Area -->
+                <a href="{% url 'user_map' %}" class="nav-item-btn" id="bottomNavService">
+                    <i class="fas fa-map-location-dot"></i>
+                    <span>Services</span>
+                </a>
+                
+                <!-- My Orders -->
+                <a href="{% url 'my_orders' %}" class="nav-item-btn" id="bottomNavOrders">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Orders</span>
+                </a>
+                
+                <!-- Profile -->
+                <a href="{% url 'profile' %}" class="nav-item-btn" id="bottomNavProfile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+            
+            <!-- FOR ADMIN & SUPERUSER -->
+            {% elif user.is_staff or user.is_superuser or user.profile.role == 'admin' %}
+                <!-- Dashboard -->
+                <a href="{% url 'admin_dashboard' %}" class="nav-item-btn" id="bottomNavDashboard">
+                    <i class="fas fa-sliders-h"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <!-- Categories -->
+                <a href="{% url 'admin_categories' %}" class="nav-item-btn" id="bottomNavCategories">
+                    <i class="fas fa-list"></i>
+                    <span>Categories</span>
+                </a>
+                
+                <!-- ADMIN PANEL CENTER -->
+                <a href="{% url 'admin_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavAdminPanel">
+                    <i class="fas fa-crown"></i>
+                    <span>Admin Panel</span>
+                </a>
+                
+                <!-- Products -->
+                <a href="{% url 'admin_products' %}" class="nav-item-btn" id="bottomNavProducts">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+                
+                <!-- Zones -->
+                <a href="{% url 'admin_zones' %}" class="nav-item-btn" id="bottomNavZones">
+                    <i class="fas fa-map"></i>
+                    <span>Zones</span>
+                </a>
+            
+            <!-- FOR MANAGER -->
+            {% elif user.profile.role == 'manager' %}
+                <!-- Dashboard -->
+                <a href="{% url 'manager_dashboard' %}" class="nav-item-btn" id="bottomNavManagerDashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <!-- Products -->
+                <a href="{% url 'admin_products' %}" class="nav-item-btn" id="bottomNavManagerProducts">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+                
+                <!-- MANAGER PANEL CENTER -->
+                <a href="{% url 'manager_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavManagerPanel">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Manager Panel</span>
+                </a>
+                
+                <!-- Orders -->
+                <a href="{% url 'admin_orders' %}" class="nav-item-btn" id="bottomNavManagerOrders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+                
+                <!-- Profile -->
+                <a href="{% url 'profile' %}" class="nav-item-btn" id="bottomNavManagerProfile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+            
+            <!-- FOR RIDER -->
+            {% elif user.profile.role == 'rider' %}
+                <!-- Dashboard -->
+                <a href="{% url 'rider_dashboard' %}" class="nav-item-btn" id="bottomNavRiderDashboard">
+                    <i class="fas fa-map-pin"></i>
+                    <span>Location</span>
+                </a>
+                
+                <!-- Orders -->
+                <a href="{% url 'rider_dashboard' %}" class="nav-item-btn" id="bottomNavAvailableOrders">
+                    <i class="fas fa-list-check"></i>
+                    <span>Orders</span>
+                </a>
+                
+                <!-- RIDER PANEL CENTER -->
+                <a href="{% url 'rider_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavRiderPanel">
+                    <i class="fas fa-motorcycle"></i>
+                    <span>Rider Panel</span>
+                </a>
+                
+                <!-- Earnings -->
+                <a href="{% url 'rider_dashboard' %}#earnings" class="nav-item-btn" id="bottomNavEarnings">
+                    <i class="fas fa-wallet"></i>
+                    <span>Earnings</span>
+                </a>
+                
+                <!-- Profile -->
+                <a href="{% url 'profile' %}" class="nav-item-btn" id="bottomNavRiderProfile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+            
+            <!-- FOR NON-AUTHENTICATED USERS -->
+            {% else %}
+                <!-- Home -->
+                <a href="{% url 'home' %}" class="nav-item-btn" id="bottomNavHome">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                
+                <!-- Service Area -->
+                <a href="{% url 'user_map' %}" class="nav-item-btn" id="bottomNavService">
+                    <i class="fas fa-map-location-dot"></i>
+                    <span>Services</span>
+                </a>
+                
+                <!-- Login -->
+                <a href="{% url 'login' %}" class="nav-item-btn" id="bottomNavLogin">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </a>
+                
+                <!-- Register -->
+                <a href="{% url 'register' %}" class="nav-item-btn" id="bottomNavRegister">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Register</span>
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Script for active state on bottom nav -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const bottomNavItems = document.querySelectorAll('.bottom-nav .nav-item-btn');
+            
+            bottomNavItems.forEach(item => {
+                const href = item.getAttribute('href');
+                // Simple path matching
+                if (currentPath === href || currentPath.includes(href)) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
