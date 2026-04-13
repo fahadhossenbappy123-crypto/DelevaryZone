@@ -91,7 +91,7 @@
                 <div class="category-card" 
                      style="background-image: url('{% if category.image %}{{ category.image.url }}{% else %}https://via.placeholder.com/300x200/52C77B/ffffff?text=No+Image{% endif %}');">
                     <div class="text-center" style="position: relative; z-index: 2;">
-                        <h6 class="mb-1 mb-md-2">{{ category.name }}</h6>
+                        <h6 class="mb-1 mb-md-2" style="font-size: 1.2rem;">{{ category.name }}</h6>
                         <small class="d-block" style="font-size: 0.75rem;">({{ category.products.count }} products)</small>
                     </div>
                 </div>

@@ -1048,7 +1048,7 @@
                         {% if user.is_staff or user.is_superuser or user.profile.role == 'admin' %}
                             <li class="nav-item dropdown">
                                 <a class="nav-link btn-auth btn-auth-register dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
-                                    <i class="fas fa-crown"></i> Admin Panel
+                                    <i class="fas fa-crown"></i> Admin
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="adminDropdown">
                                     <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}"><i class="fas fa-sliders-h"></i> Dashboard</a></li>
@@ -1061,14 +1061,14 @@
                         {% elif user.profile.role == 'manager' %}
                             <li class="nav-item">
                                 <a class="nav-link btn-auth btn-auth-register" href="{% url 'manager_dashboard' %}" style="background: linear-gradient(135deg, #fd7e14 0%, #ff9e3d 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
-                                    <i class="fas fa-user-tie"></i> Manager Panel
+                                    <i class="fas fa-user-tie"></i> Manager
                                 </a>
                             </li>
                         <!-- Rider Dashboard -->
                         {% elif user.profile.role == 'rider' %}
                             <li class="nav-item">
                                 <a class="nav-link btn-auth btn-auth-register" href="{% url 'rider_dashboard' %}" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
-                                    <i class="fas fa-motorcycle"></i> Rider Panel
+                                    <i class="fas fa-motorcycle"></i> Rider
                                 </a>
                             </li>
                         {% endif %}
@@ -1240,7 +1240,7 @@
                 <!-- ADMIN PANEL CENTER -->
                 <a href="{% url 'admin_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavAdminPanel">
                     <i class="fas fa-crown"></i>
-                    <span>Admin Panel</span>
+                    <span>Admin</span>
                 </a>
                 
                 <!-- Products -->
@@ -1272,7 +1272,7 @@
                 <!-- MANAGER PANEL CENTER -->
                 <a href="{% url 'manager_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavManagerPanel">
                     <i class="fas fa-user-tie"></i>
-                    <span>Manager Panel</span>
+                    <span>Manager</span>
                 </a>
                 
                 <!-- Orders -->
@@ -1304,7 +1304,7 @@
                 <!-- RIDER PANEL CENTER -->
                 <a href="{% url 'rider_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavRiderPanel">
                     <i class="fas fa-motorcycle"></i>
-                    <span>Rider Panel</span>
+                    <span>Rider</span>
                 </a>
                 
                 <!-- Earnings -->
