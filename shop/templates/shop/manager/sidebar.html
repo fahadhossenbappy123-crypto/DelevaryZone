@@ -1,4 +1,5 @@
 <style>
+    /* Manager Sidebar Desktop Styles */
     .manager-sidebar {
         background: linear-gradient(180deg, #52C77B 0%, #3DA670 100%);
         color: white;
@@ -8,7 +9,7 @@
         top: 0;
     }
 
-    .manager-sidebar .sidebar-header {
+    .sidebar-header {
         padding: 20px;
         border-bottom: 2px solid rgba(255, 255, 255, 0.2);
         margin-bottom: 20px;
@@ -22,7 +23,7 @@
         font-size: 1.3rem;
     }
 
-    .manager-sidebar .zone-info {
+    .zone-info {
         color: rgba(255, 255, 255, 0.8);
         margin-top: 8px;
         font-size: 0.95rem;
@@ -76,7 +77,6 @@
         margin: 12px 0;
     }
 
-    /* Mobile close button */
     .manager-sidebar-close {
         display: none;
         background: rgba(255, 255, 255, 0.1);
@@ -98,17 +98,38 @@
         transform: rotate(90deg);
     }
 
-    /* Mobile responsiveness */
+    /* Mobile Responsive Styles */
     @media (max-width: 991px) {
+        #managerSidebar {
+            position: fixed;
+            left: -100%;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            z-index: 1000;
+            transition: left 0.3s ease;
+            padding: 0;
+            margin: 0;
+            min-height: auto;
+        }
+
+        #managerSidebar.show {
+            left: 0;
+        }
+
         .manager-sidebar {
+            position: relative;
+            min-height: 100vh;
             padding: 15px 0;
+            overflow-y: auto;
+            width: 100%;
         }
 
         .manager-sidebar-close {
             display: block;
         }
 
-        .manager-sidebar .sidebar-header {
+        .sidebar-header {
             padding: 15px;
             margin-bottom: 15px;
         }
@@ -117,7 +138,7 @@
             font-size: 1.25rem;
         }
 
-        .manager-sidebar .zone-info {
+        .zone-info {
             font-size: 0.9rem;
         }
 
