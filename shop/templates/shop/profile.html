@@ -108,14 +108,12 @@
                 </div>
             </div>
 
-            <!-- Additional Info -->
+            <!-- Logout Button -->
             <div class="mt-4">
-                <div class="card shadow-sm border-0 bg-light" style="border-radius: 15px;">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-question-circle"></i> সাহায্যের প্রয়োজন?</h5>
-                        <p class="card-text">আপনার অ্যাকাউন্ট সম্পর্কে কোনো প্রশ্ন থাকলে আমাদের সাথে যোগাযোগ করুন।</p>
-                        <a href="#" class="btn btn-info btn-sm"><i class="fas fa-envelope"></i> আমাদের সাথে যোগাযোগ করুন</a>
-                    </div>
+                <div class="d-grid">
+                    <a href="{% url 'logout' %}" class="btn btn-danger btn-lg fw-bold">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
                 </div>
             </div>
         </div>

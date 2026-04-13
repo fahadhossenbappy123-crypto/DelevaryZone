@@ -877,7 +877,6 @@
                 function displayNotifications(notifications, unreadCount) {
                     const notificationList = document.getElementById('notificationList');
                     const badgeDesktop = document.getElementById('notificationBadgeDesktop');
-                    const badgeMobile = document.getElementById('notificationBadgeMobile');
                     const badgeMobileTop = document.getElementById('notificationBadgeMobileTop');
                     
                     // Update desktop badge
@@ -886,16 +885,6 @@
                         badgeDesktop.style.display = 'block';
                     } else {
                         badgeDesktop.style.display = 'none';
-                    }
-                    
-                    // Update mobile bottom nav badge
-                    if (badgeMobile) {
-                        if (unreadCount > 0) {
-                            badgeMobile.textContent = unreadCount;
-                            badgeMobile.classList.add('active');
-                        } else {
-                            badgeMobile.classList.remove('active');
-                        }
                     }
                     
                     // Update mobile top navbar badge
@@ -1207,16 +1196,6 @@
     <!-- Bottom Navigation Bar for Mobile -->
     <nav class="bottom-nav d-md-none">
         <div class="nav-items">
-            <!-- FOR AUTHENTICATED USERS - Notification Button (Visible for all) -->
-            {% if user.is_authenticated %}
-                <!-- Notifications -->
-                <button class="nav-item-btn" id="bottomNavNotification" onclick="openNotificationModal()" style="border: none; background: none; position: relative;">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge" id="notificationBadgeMobile">0</span>
-                    <span>Alerts</span>
-                </button>
-            {% endif %}
-            
             <!-- FOR CUSTOMERS -->
             {% if user.is_authenticated and user.profile.role == 'customer' %}
                 <!-- Home -->
