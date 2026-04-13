@@ -13,71 +13,131 @@
         border-bottom: 2px solid rgba(255, 255, 255, 0.2);
         margin-bottom: 20px;
         text-align: center;
+        position: relative;
     }
 
     .manager-sidebar h5 {
-        font-weight: bold;
+        font-weight: 700;
         margin: 0;
+        font-size: 1.3rem;
+    }
+
+    .manager-sidebar .zone-info {
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 8px;
+        font-size: 0.95rem;
     }
 
     .manager-sidebar .nav-link {
-        color: rgba(255, 255, 255, 0.85);
-        padding: 12px 20px;
+        color: rgba(255, 255, 255, 0.9);
+        padding: 14px 18px;
         border-left: 3px solid transparent;
         transition: all 0.3s ease;
         text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 10px;
-        font-size: 1.2rem;
+        gap: 12px;
+        font-size: 1.1rem;
     }
 
     .manager-sidebar .nav-link:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.15);
         color: white;
-        border-left-color: rgba(255, 255, 255, 0.5);
+        border-left-color: white;
+        padding-left: 20px;
     }
 
     .manager-sidebar .nav-link.active {
         background: rgba(255, 255, 255, 0.2);
         color: white;
         border-left-color: white;
-        font-weight: bold;
+        font-weight: 600;
     }
 
     .manager-sidebar .nav-link i {
-        width: 20px;
+        width: 24px;
         text-align: center;
+        font-size: 1.15rem;
     }
 
-    .manager-sidebar .divider {
+    .sidebar-section-title {
+        padding: 10px 18px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.55);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 8px;
+    }
+
+    .sidebar-divider {
         height: 1px;
-        background: rgba(255, 255, 255, 0.2);
-        margin: 15px 0;
+        background: rgba(255, 255, 255, 0.15);
+        margin: 12px 0;
     }
 
-    /* Mobile close button for sidebar */
+    /* Mobile close button */
     .manager-sidebar-close {
         display: none;
-        background: none;
+        background: rgba(255, 255, 255, 0.1);
         border: none;
         color: white;
-        font-size: 1.5rem;
+        font-size: 1.3rem;
         cursor: pointer;
-        padding: 10px;
+        padding: 8px 12px;
+        border-radius: 6px;
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 15px;
+        right: 15px;
         z-index: 1001;
+        transition: all 0.3s ease;
     }
 
+    .manager-sidebar-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+
+    /* Mobile responsiveness */
     @media (max-width: 991px) {
+        .manager-sidebar {
+            padding: 15px 0;
+        }
+
         .manager-sidebar-close {
             display: block;
         }
 
-        .manager-sidebar {
-            position: relative;
+        .manager-sidebar .sidebar-header {
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .manager-sidebar h5 {
+            font-size: 1.25rem;
+        }
+
+        .manager-sidebar .zone-info {
+            font-size: 0.9rem;
+        }
+
+        .manager-sidebar .nav-link {
+            padding: 12px 16px;
+            font-size: 1rem;
+        }
+
+        .manager-sidebar .nav-link:hover {
+            padding-left: 18px;
+        }
+
+        .manager-sidebar .nav-link i {
+            font-size: 1rem;
+            width: 22px;
+        }
+
+        .sidebar-section-title {
+            padding: 8px 16px;
+            font-size: 0.7rem;
         }
     }
 </style>
@@ -88,44 +148,52 @@
         <i class="fas fa-bars"></i>
     </button>
 
+    <!-- Sidebar Header -->
     <div class="sidebar-header">
         <h5><i class="fas fa-cogs"></i> ম্যানেজার প্যানেল</h5>
-        <small style="color: rgba(255, 255, 255, 0.7); margin-top: 5px;">
-            জোন: 
+        <div class="zone-info">
+            <i class="fas fa-map-marker-alt"></i> 
             {% if manager.zone_assigned %}
                 {{ manager.zone_assigned.name }}
             {% else %}
                 <span class="badge bg-danger">জোন নির্ধারিত নয়</span>
             {% endif %}
-        </small>
+        </div>
     </div>
 
+    <!-- Navigation Menu -->
     <nav class="nav flex-column">
         <!-- Dashboard -->
         <a href="{% url 'manager_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'manager_dashboard' %}active{% endif %}">
-            <i class="fas fa-home"></i> ড্যাশবোর্ড
+            <i class="fas fa-home"></i>
+            <span>ড্যাশবোর্ড</span>
         </a>
 
-        <div class="divider"></div>
+        <!-- Divider -->
+        <div class="sidebar-divider"></div>
 
-        <!-- Management Section -->
-        <div style="padding: 0 20px; font-size: 0.85rem; font-weight: bold; color: rgba(255, 255, 255, 0.6); text-transform: uppercase;">জোন পরিচালনা</div>
+        <!-- Section Title -->
+        <div class="sidebar-section-title">জোন পরিচালনা</div>
 
         <!-- Products -->
         <a href="{% url 'manager_products' %}" class="nav-link {% if 'manager_product' in request.resolver_match.url_name %}active{% endif %}">
-            <i class="fas fa-shopping-bag"></i> পণ্য
+            <i class="fas fa-shopping-bag"></i>
+            <span>পণ্য</span>
         </a>
 
         <!-- Categories -->
         <a href="{% url 'manager_categories' %}" class="nav-link {% if 'manager_categor' in request.resolver_match.url_name %}active{% endif %}">
-            <i class="fas fa-layer-group"></i> ক্যাটেগরি
+            <i class="fas fa-layer-group"></i>
+            <span>ক্যাটেগরি</span>
         </a>
 
-        <div class="divider"></div>
+        <!-- Divider -->
+        <div class="sidebar-divider"></div>
 
-        <!-- Home Link -->
+        <!-- Back to Home -->
         <a href="{% url 'home' %}" class="nav-link">
-            <i class="fas fa-arrow-left"></i> ওয়েবসাইটে ফিরুন
+            <i class="fas fa-arrow-left"></i>
+            <span>ওয়েবসাইটে ফিরুন</span>
         </a>
     </nav>
 </div>
