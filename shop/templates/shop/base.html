@@ -132,6 +132,7 @@
             padding: 0;
             font-weight: 600;
             gap: 0.2rem;
+            position: relative;
         }
         
         .bottom-nav .nav-item-btn:hover,
@@ -147,6 +148,37 @@
         .bottom-nav .nav-item-btn span {
             font-size: 0.75rem;
             font-weight: 700;
+        }
+        
+        /* Notification badge styling for mobile bottom nav */
+        .bottom-nav .nav-item-btn .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: 8px;
+            min-width: 20px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            animation: pulse 2s infinite;
+        }
+        
+        .bottom-nav .nav-item-btn .notification-badge.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(255, 71, 87, 0);
+            }
         }
         
         /* Special styling for panel buttons in center */
@@ -836,13 +868,24 @@
                 function displayNotifications(notifications, unreadCount) {
                     const notificationList = document.getElementById('notificationList');
                     const badgeDesktop = document.getElementById('notificationBadgeDesktop');
+                    const badgeMobile = document.getElementById('notificationBadgeMobile');
                     
-                    // Update badge
+                    // Update desktop badge
                     if (unreadCount > 0) {
                         badgeDesktop.textContent = unreadCount;
                         badgeDesktop.style.display = 'block';
                     } else {
                         badgeDesktop.style.display = 'none';
+                    }
+                    
+                    // Update mobile badge
+                    if (badgeMobile) {
+                        if (unreadCount > 0) {
+                            badgeMobile.textContent = unreadCount;
+                            badgeMobile.classList.add('active');
+                        } else {
+                            badgeMobile.classList.remove('active');
+                        }
                     }
                     
                     if (notifications.length === 0) {
@@ -925,20 +968,61 @@
                         loadNotifications();
                         // Refresh notifications every 30 seconds
                         setInterval(loadNotifications, 30000);
+                        
+                        // Request browser notification permission
+                        requestBrowserNotificationPermission();
                     }
                 });
+                
+                // ============ BROWSER NOTIFICATION FUNCTIONS ============
+                function requestBrowserNotificationPermission() {
+                    if ('Notification' in window) {
+                        if (Notification.permission === 'default') {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === 'granted') {
+                                    console.log('Browser notifications enabled');
+                                }
+                            });
+                        }
+                    }
+                }
+                
+                function sendBrowserNotification(title, options = {}) {
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        const defaultOptions = {
+                            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+                            badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🔔</text></svg>',
+                            tag: 'zone-delivery-notification',
+                            requireInteraction: true
+                        };
+                        new Notification(title, {
+                            ...defaultOptions,
+                            ...options
+                        });
+                    }
+                }
+                
+                // Enhanced displayNotifications to include browser notifications
+                const originalDisplayNotifications = displayNotifications;
+                window.displayNotifications = function(notifications, unreadCount) {
+                    originalDisplayNotifications(notifications, unreadCount);
+                    
+                    // Send browser notification for new unread notifications
+                    if (unreadCount > 0) {
+                        const firstNotif = notifications[0];
+                        if (firstNotif && !firstNotif.is_read) {
+                            sendBrowserNotification(firstNotif.title, {
+                                body: firstNotif.message,
+                                tag: 'notification-' + firstNotif.id,
+                                requireInteraction: false
+                            });
+                        }
+                    }
+                };
             </script>
 
-            <!-- Mobile: Hamburger Menu -->
-            <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <!-- Desktop Menu -->
-            <button class="navbar-toggler d-none d-md-block" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse d-none d-md-block" id="navbarNav">
+            <!-- Desktop Menu (Always Visible) -->
+            <div id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
@@ -1048,41 +1132,6 @@
         </div>
     </nav>
 
-    <!-- Mobile Offcanvas Menu -->
-    <div class="offcanvas offcanvas-end d-md-none" tabindex="-1" id="mobileMenu">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Menu</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="list-unstyled">
-                <li><a href="{% url 'home' %}" class="nav-link text-dark">Home</a></li>
-                <li><a href="{% url 'user_map' %}" class="nav-link text-dark">Service Area</a></li>
-                
-                {% if user.is_authenticated %}
-                    {% if user.is_staff or user.is_superuser %}
-                        <li><a href="{% url 'admin_dashboard' %}" class="nav-link text-dark" style="color: #52C77B !important;"><i class="fas fa-crown"></i> Admin Panel</a></li>
-                        <li><a href="{% url 'admin_register' %}" class="nav-link text-dark" style="color: #52C77B !important;"><i class="fas fa-user-shield"></i> Admin Registration</a></li>
-                    {% elif user.profile.role == 'manager' %}
-                        <li><a href="{% url 'manager_dashboard' %}" class="nav-link text-dark" style="color: #fd7e14 !important;"><i class="fas fa-user-tie"></i> Manager Panel</a></li>
-                    {% elif user.profile.role == 'rider' %}
-                        <li><a href="{% url 'rider_dashboard' %}" class="nav-link text-dark" style="color: #ff6b6b !important;"><i class="fas fa-motorcycle"></i> Rider Panel</a></li>
-                    {% endif %}
-                    
-                    {% if not user.is_staff and not user.is_superuser and user.profile.role == 'customer' %}
-                        <li><a href="{% url 'my_orders' %}" class="nav-link text-dark"><i class="fas fa-shopping-bag"></i> My Orders</a></li>
-                        <li><a href="{% url 'profile' %}" class="nav-link text-dark"><i class="fas fa-user-circle"></i> Profile</a></li>
-                    {% endif %}
-                    
-                    <li><a href="{% url 'logout' %}" class="nav-link text-danger"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                {% else %}
-                    <li><a href="{% url 'login' %}" class="nav-link text-dark"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                    <li><a href="{% url 'register' %}" class="nav-link text-dark"><i class="fas fa-user-plus"></i> Register</a></li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-
     <!-- Notification Modal -->
     <div class="modal fade" id="notificationModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 450px;">
@@ -1138,6 +1187,16 @@
     <!-- Bottom Navigation Bar for Mobile -->
     <nav class="bottom-nav d-md-none">
         <div class="nav-items">
+            <!-- FOR AUTHENTICATED USERS - Notification Button (Visible for all) -->
+            {% if user.is_authenticated %}
+                <!-- Notifications -->
+                <button class="nav-item-btn" id="bottomNavNotification" onclick="openNotificationModal()" style="border: none; background: none; position: relative;">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadgeMobile">0</span>
+                    <span>Alerts</span>
+                </button>
+            {% endif %}
+            
             <!-- FOR CUSTOMERS -->
             {% if user.is_authenticated and user.profile.role == 'customer' %}
                 <!-- Home -->
