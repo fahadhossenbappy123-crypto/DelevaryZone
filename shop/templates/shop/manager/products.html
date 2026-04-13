@@ -2,14 +2,76 @@
 {% block title %}পণ্য - ম্যানেজার প্যানেল{% endblock %}
 
 {% block content %}
+<style>
+    /* Mobile sidebar toggle */
+    .manager-menu-toggle {
+        display: none;
+        background: linear-gradient(135deg, #fd7e14 0%, #ff9e3d 100%);
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 991px) {
+        .manager-menu-toggle {
+            display: block;
+        }
+
+        .manager-sidebar {
+            position: fixed;
+            left: -100%;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, #52C77B 0%, #3DA670 100%);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        .manager-sidebar.show {
+            left: 0;
+        }
+
+        .manager-sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .manager-sidebar-overlay.show {
+            display: block;
+        }
+    }
+</style>
+
+<!-- Mobile Sidebar Overlay -->
+<div class="manager-sidebar-overlay" id="managerSidebarOverlay"></div>
+
+<!-- Sidebar -->
 <div class="row" style="margin: 0; min-height: 100vh;">
-    <!-- Sidebar -->
-    <div class="col-lg-2 p-0">
+    <div class="col-lg-2 p-0 manager-sidebar" id="managerSidebar">
         {% include 'shop/manager/sidebar.html' %}
     </div>
 
     <!-- Main Content -->
     <div class="col-lg-10 p-4">
+        <!-- Mobile Menu Toggle -->
+        <button class="manager-menu-toggle" id="managerMenuToggle">
+            <i class="fas fa-bars"></i> মেনু
+        </button>
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="fw-bold"><i class="fas fa-shopping-bag"></i> পণ্য</h2>
             <a href="{% url 'manager_product_add' %}" class="btn btn-primary">
@@ -86,4 +148,37 @@
         </div>
     </div>
 </div>
+</div>
+
+<script>
+    // Mobile sidebar toggle for manager products
+    document.addEventListener('DOMContentLoaded', function() {
+        const managerMenuToggle = document.getElementById('managerMenuToggle');
+        const managerSidebar = document.getElementById('managerSidebar');
+        const managerSidebarOverlay = document.getElementById('managerSidebarOverlay');
+        
+        if (managerMenuToggle) {
+            // Toggle sidebar on button click
+            managerMenuToggle.addEventListener('click', function() {
+                managerSidebar.classList.toggle('show');
+                managerSidebarOverlay.classList.toggle('show');
+            });
+            
+            // Close sidebar on overlay click
+            managerSidebarOverlay.addEventListener('click', function() {
+                managerSidebar.classList.remove('show');
+                managerSidebarOverlay.classList.remove('show');
+            });
+            
+            // Close sidebar when clicking on a link
+            const sidebarLinks = managerSidebar.querySelectorAll('a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    managerSidebar.classList.remove('show');
+                    managerSidebarOverlay.classList.remove('show');
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}
