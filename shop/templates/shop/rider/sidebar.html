@@ -1,7 +1,7 @@
 <style>
-    /* Admin Sidebar Desktop Styles */
-    .admin-sidebar {
-        background: linear-gradient(180deg, #52C77B 0%, #3DA670 100%);
+    /* Rider Sidebar Desktop Styles */
+    .rider-sidebar {
+        background: linear-gradient(180deg, #ff6b6b 0%, #ff8787 100%);
         color: white;
         min-height: 100vh;
         padding: 20px 0;
@@ -11,7 +11,7 @@
         opacity: 1;
     }
 
-    .admin-sidebar .sidebar-header {
+    .rider-sidebar .sidebar-header {
         padding: 20px;
         border-bottom: 2px solid rgba(255, 255, 255, 0.2);
         margin-bottom: 20px;
@@ -20,7 +20,7 @@
         visibility: visible;
     }
 
-    .admin-sidebar h5 {
+    .rider-sidebar h5 {
         font-weight: 700;
         margin: 0;
         font-size: 1.3rem;
@@ -28,7 +28,14 @@
         visibility: visible;
     }
 
-    .admin-sidebar .nav-link {
+    .rider-zone-info {
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 8px;
+        font-size: 0.95rem;
+        visibility: visible;
+    }
+
+    .rider-sidebar .nav-link {
         color: rgba(255, 255, 255, 0.9);
         padding: 14px 18px;
         border-left: 3px solid transparent;
@@ -41,28 +48,34 @@
         visibility: visible;
     }
 
-    .admin-sidebar .nav-link:hover {
+    .rider-sidebar .nav-link:hover {
         background: rgba(255, 255, 255, 0.15);
         color: white;
         border-left-color: white;
         padding-left: 20px;
     }
 
-    .admin-sidebar .nav-link.active {
+    .rider-sidebar .nav-link.active {
         background: rgba(255, 255, 255, 0.2);
         color: white;
         border-left-color: white;
         font-weight: 600;
     }
 
-    .admin-sidebar .nav-link i {
+    .rider-sidebar .nav-link i {
         width: 24px;
         text-align: center;
         font-size: 1.15rem;
         color: white;
     }
 
-    .admin-sidebar-section-title {
+    .rider-sidebar .nav-link span {
+        color: white;
+        display: block;
+        visibility: visible;
+    }
+
+    .rider-sidebar-section-title {
         padding: 10px 18px;
         font-size: 0.75rem;
         font-weight: 700;
@@ -73,13 +86,13 @@
         visibility: visible;
     }
 
-    .admin-sidebar-divider {
+    .rider-sidebar-divider {
         height: 1px;
         background: rgba(255, 255, 255, 0.15);
         margin: 12px 0;
     }
 
-    .admin-sidebar-close {
+    .rider-sidebar-close {
         display: none;
         background: rgba(255, 255, 255, 0.1);
         border: none;
@@ -96,19 +109,19 @@
         visibility: visible;
     }
 
-    .admin-sidebar-close:hover {
+    .rider-sidebar-close:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: rotate(90deg);
     }
 
-    .admin-sidebar .nav {
+    .rider-sidebar .nav {
         visibility: visible;
         opacity: 1;
     }
 
     /* Mobile Responsive Styles */
     @media (max-width: 991px) {
-        #adminSidebar {
+        #riderSidebar {
             position: fixed;
             left: -100%;
             top: 0;
@@ -122,12 +135,12 @@
             visibility: visible;
         }
 
-        #adminSidebar.show {
+        #riderSidebar.show {
             left: 0;
             visibility: visible;
         }
 
-        .admin-sidebar {
+        .rider-sidebar {
             position: relative;
             min-height: 100vh;
             padding: 15px 0;
@@ -137,45 +150,50 @@
             opacity: 1;
         }
 
-        .admin-sidebar-close {
+        .rider-sidebar-close {
             display: block;
             visibility: visible;
         }
 
-        .admin-sidebar .sidebar-header {
+        .rider-sidebar .sidebar-header {
             padding: 15px;
             margin-bottom: 15px;
             visibility: visible;
         }
 
-        .admin-sidebar h5 {
+        .rider-sidebar h5 {
             font-size: 1.25rem;
             visibility: visible;
         }
 
-        .admin-sidebar .nav {
+        .rider-zone-info {
+            font-size: 0.9rem;
+            visibility: visible;
+        }
+
+        .rider-sidebar .nav {
             visibility: visible;
             opacity: 1;
         }
 
-        .admin-sidebar .nav-link {
+        .rider-sidebar .nav-link {
             padding: 12px 16px;
             font-size: 1rem;
             visibility: visible;
             color: white;
         }
 
-        .admin-sidebar .nav-link:hover {
+        .rider-sidebar .nav-link:hover {
             padding-left: 18px;
         }
 
-        .admin-sidebar .nav-link i {
+        .rider-sidebar .nav-link i {
             font-size: 1rem;
             width: 22px;
             color: white;
         }
 
-        .admin-sidebar-section-title {
+        .rider-sidebar-section-title {
             padding: 8px 16px;
             font-size: 0.7rem;
             visibility: visible;
@@ -183,64 +201,56 @@
     }
 </style>
 
-<div class="admin-sidebar">
+<div class="rider-sidebar">
     <!-- Mobile Close Button -->
-    <button class="admin-sidebar-close" id="adminSidebarClose" title="বন্ধ করুন">
+    <button class="rider-sidebar-close" id="riderSidebarClose" title="বন্ধ করুন">
         <i class="fas fa-bars"></i>
     </button>
 
     <!-- Sidebar Header -->
     <div class="sidebar-header">
-        <h5><i class="fas fa-tachometer-alt"></i> Admin Panel</h5>
+        <h5><i class="fas fa-motorcycle"></i> Rider Panel</h5>
     </div>
 
     <!-- Navigation Menu -->
     <nav class="nav flex-column">
         <!-- Dashboard -->
-        <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        <a href="{% url 'rider_dashboard' %}" class="nav-link">
             <i class="fas fa-home"></i>
             <span>ড্যাশবোর্ড</span>
         </a>
 
         <!-- Divider -->
-        <div class="admin-sidebar-divider"></div>
+        <div class="rider-sidebar-divider"></div>
 
         <!-- Section Title -->
-        <div class="admin-sidebar-section-title">ব্যবস্থাপনা</div>
+        <div class="rider-sidebar-section-title">অপারেশন</div>
 
-        <!-- All Users -->
-        <a href="{% url 'admin_users' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
-            <i class="fas fa-users"></i>
-            <span>সব ব্যবহারকারী</span>
+        <!-- Available Orders -->
+        <a href="{% url 'rider_dashboard' %}#available" class="nav-link">
+            <i class="fas fa-list-check"></i>
+            <span>উপলব্ধ অর্ডার</span>
         </a>
 
-        <!-- Select Zone -->
-        <a href="{% url 'admin_zones' %}" class="nav-link {% if 'admin_zone' in request.resolver_match.url_name %}active{% endif %}">
-            <i class="fas fa-map-marker-alt"></i>
-            <span>জোন নির্বাচন</span>
+        <!-- Active Deliveries -->
+        <a href="{% url 'rider_dashboard' %}#active" class="nav-link">
+            <i class="fas fa-truck"></i>
+            <span>সক্রিয় ডেলিভারি</span>
         </a>
 
-        <!-- Hero Slides -->
-        <a href="{% url 'admin_hero_slides' %}" class="nav-link {% if 'admin_hero_slide' in request.resolver_match.url_name %}active{% endif %}">
-            <i class="fas fa-images"></i>
-            <span>Hero Slides</span>
-        </a>
-
-        <!-- Manage Role -->
-        <a href="{% url 'admin_users' %}?manage_role=1" class="nav-link">
-            <i class="fas fa-user-shield"></i>
-            <span>ভূমিকা পরিচালনা</span>
+        <!-- Earnings -->
+        <a href="{% url 'rider_dashboard' %}#earnings" class="nav-link">
+            <i class="fas fa-wallet"></i>
+            <span>আয়</span>
         </a>
 
         <!-- Divider -->
-        <div class="admin-sidebar-divider"></div>
+        <div class="rider-sidebar-divider"></div>
 
         <!-- Home Link -->
         <a href="{% url 'home' %}" class="nav-link">
             <i class="fas fa-arrow-left"></i>
             <span>ওয়েবসাইটে ফিরুন</span>
         </a>
-    </nav>
-</div>
     </nav>
 </div>
