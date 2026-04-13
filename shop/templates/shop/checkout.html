@@ -101,10 +101,34 @@
 
                             <!-- Map Container (Hidden by default) -->
                             <div id="mapContainer" style="display: none; margin-bottom: 15px;">
-                                <div id="checkoutMap" style="height: 350px; border-radius: 10px; border: 2px solid #52C77B;"></div>
+                                <!-- Map with Center Pointer -->
+                                <div style="position: relative; height: 350px; border-radius: 10px; overflow: hidden; border: 2px solid #52C77B;">
+                                    <div id="checkoutMap" style="height: 100%; width: 100%;"></div>
+                                    
+                                    <!-- Center Pointer Overlay -->
+                                    <div style="position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; margin-left: -25px; margin-top: -25px; pointer-events: none; z-index: 10;">
+                                        <!-- Pin Icon -->
+                                        <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); text-align: center;">
+                                            <div style="width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #52C77B; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Crosshair Circle -->
+                                        <div style="position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin-left: -20px; margin-top: -20px; border: 2px solid #52C77B; border-radius: 50%; background: rgba(82, 199, 123, 0.1); box-shadow: inset 0 0 0 8px rgba(82, 199, 123, 0.05);"></div>
+                                        
+                                        <!-- Center Dot -->
+                                        <div style="position: absolute; top: 50%; left: 50%; width: 12px; height: 12px; margin-left: -6px; margin-top: -6px; background: #52C77B; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                                    </div>
+                                </div>
+                                
                                 <small class="text-muted d-block mt-2">
-                                    <i class="fas fa-info-circle"></i> ম্যাপে ক্লিক করে আপনার ডেলিভারি অবস্থান নির্বাচন করুন
+                                    <i class="fas fa-info-circle"></i> ম্যাপ প্যান করে সবুজ পয়েন্টারের কেন্দ্রে আপনার ডেলিভারি অবস্থান রাখুন, তারপর নিশ্চিত করুন
                                 </small>
+                                
+                                <!-- Confirm Location Button for Map -->
+                                <button type="button" id="confirmMapLocationBtn" class="btn btn-success btn-sm mt-3 w-100" onclick="confirmMapSelection()">
+                                    <i class="fas fa-check-circle"></i> অবস্থান নিশ্চিত করুন
+                                </button>
                             </div>
 
                             <!-- Location Status -->
@@ -273,6 +297,24 @@
     .btn-success.btn-lg:hover {
         background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
     }
+    
+    /* Confirm location button styling */
+    #confirmMapLocationBtn {
+        background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
+        border: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    #confirmMapLocationBtn:hover {
+        background: linear-gradient(135deg, #45b873 0%, #369866 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(82, 199, 123, 0.3);
+    }
+    
+    #confirmMapLocationBtn:active {
+        transform: translateY(0);
+    }
 </style>
 
 <script>
@@ -415,32 +457,68 @@ function initCheckoutMap() {
         checkoutMap.setZoom(14);
     }
     
-    // Click handler on map
-    checkoutMap.addListener('click', function(e) {
-        selectLocationFromMap(e.latLng);
+    // Add listeners for center pointer approach (similar to Google Maps)
+    // Update center location on drag/zoom
+    checkoutMap.addListener('dragend', function() {
+        updateCenterLocationPreview();
     });
+    
+    checkoutMap.addListener('zoom_changed', function() {
+        updateCenterLocationPreview();
+    });
+    
+    // Initial center location preview
+    updateCenterLocationPreview();
 }
 
-// Select Location from Map Click
-function selectLocationFromMap(latLng) {
-    const lat = latLng.lat();
-    const lng = latLng.lng();
+// Update center location preview (for center pointer approach)
+function updateCenterLocationPreview() {
+    if (!checkoutMap) return;
     
-    // Remove old marker
+    const center = checkoutMap.getCenter();
+    const lat = center.lat();
+    const lng = center.lng();
+    
+    // Store temporarily (not confirmed yet)
+    document.getElementById('latitude').dataset.previewLat = lat.toFixed(6);
+    document.getElementById('longitude').dataset.previewLng = lng.toFixed(6);
+    
+    // Show preview tooltip
+    const confirmBtn = document.getElementById('confirmMapLocationBtn');
+    if (confirmBtn) {
+        const coordText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        confirmBtn.title = coordText;
+    }
+}
+
+// Confirm Location from Center Pointer
+function confirmMapSelection() {
+    const latPreview = document.getElementById('latitude').dataset.previewLat;
+    const lngPreview = document.getElementById('longitude').dataset.previewLng;
+    
+    if (!latPreview || !lngPreview) {
+        showLocationStatus('❌ অবস্থান পাওয়া যায়নি। দয়া করে পুনরায় চেষ্টা করুন।', 'danger');
+        return;
+    }
+    
+    const lat = parseFloat(latPreview);
+    const lng = parseFloat(lngPreview);
+    
+    // Confirm the location in hidden inputs
+    document.getElementById('latitude').value = lat.toFixed(6);
+    document.getElementById('longitude').value = lng.toFixed(6);
+    
+    // Add confirmation marker at center
     if (selectedMarker) {
         selectedMarker.setMap(null);
     }
     
-    // Add new marker
     selectedMarker = new google.maps.Marker({
-        position: latLng,
+        position: {lat: lat, lng: lng},
         map: checkoutMap,
-        title: 'নির্বাচিত অবস্থান'
+        title: 'নির্বাচিত অবস্থান',
+        animation: google.maps.Animation.DROP
     });
-    
-    // Update hidden inputs
-    document.getElementById('latitude').value = lat.toFixed(6);
-    document.getElementById('longitude').value = lng.toFixed(6);
     
     // Validate against zone
     if (currentSelectedZone) {
@@ -453,11 +531,8 @@ function selectLocationFromMap(latLng) {
             showLocationStatus(`⚠️ সতর্কতা: আপনার অবস্থান "${currentSelectedZone.name}" জোনের বাইরে আছে (দূরত্ব: ${distanceKm}km)`, 'warning');
         }
     } else {
-        showLocationStatus('✅ আপনি ম্যাপে আপনার অবস্থান নির্বাচন করেছেন', 'success');
+        showLocationStatus('✅ আপনার অবস্থান সফলভাবে নির্বাচিত হয়েছে', 'success');
     }
-    
-    // Center map on marker
-    checkoutMap.setCenter(latLng);
 }
 
 // Handle Location Errors (Mobile-friendly)

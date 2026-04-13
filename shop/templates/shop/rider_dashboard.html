@@ -1,6 +1,30 @@
 {% extends 'shop/base.html' %}
 {% block title %}রাইডার Management Panel - ZoneDelivery{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Mobile hamburger menu for rider dashboard */
+    .rider-sidebar-toggle {
+        display: none;
+        background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1rem;
+        font-size: 1.3rem;
+        cursor: pointer;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        width: auto;
+    }
+    
+    @media (max-width: 991px) {
+        .rider-sidebar-toggle {
+            display: block;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <style>
@@ -80,6 +104,15 @@
 </style>
 
 <div class="container-fluid mt-4 px-4">
+    <!-- Mobile Menu Button -->
+    <div class="row mb-3 d-lg-none">
+        <div class="col-12">
+            <button class="rider-sidebar-toggle" id="riderMenuToggle">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+        </div>
+    </div>
+    
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
@@ -518,5 +551,21 @@ document.addEventListener('DOMContentLoaded', function() {
         box-shadow: 0 4px 12px rgba(82, 199, 123, 0.4);
     }
 </style>
+
+<script>
+    // Mobile menu toggle for rider dashboard (smooth scroll to tabs)
+    document.addEventListener('DOMContentLoaded', function() {
+        const riderMenuToggle = document.getElementById('riderMenuToggle');
+        if (riderMenuToggle) {
+            riderMenuToggle.addEventListener('click', function() {
+                // Smooth scroll to tabs section
+                const riderTabs = document.getElementById('riderTabs');
+                if (riderTabs) {
+                    riderTabs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        }
+    });
+</script>
 
 {% endblock %}

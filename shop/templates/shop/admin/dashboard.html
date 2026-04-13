@@ -1,15 +1,78 @@
 {% extends 'shop/base.html' %}
 {% block title %}Admin Dashboard - ZoneDelivery{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Mobile hamburger menu for admin dashboard */
+    .admin-sidebar-toggle {
+        display: none;
+        background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1rem;
+        font-size: 1.3rem;
+        cursor: pointer;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+    
+    @media (max-width: 991px) {
+        .admin-sidebar-toggle {
+            display: block;
+        }
+        
+        .admin-sidebar {
+            position: fixed;
+            left: -100%;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            z-index: 1050;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar.show {
+            left: 0;
+        }
+        
+        .admin-sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+        }
+        
+        .admin-sidebar-overlay.show {
+            display: block;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row" style="margin: 0; min-height: 100vh;">
+    <!-- Mobile Sidebar Overlay -->
+    <div class="admin-sidebar-overlay" id="sidebarOverlay"></div>
+    
     <!-- Sidebar -->
-    <div class="col-lg-2 p-0">
+    <div class="col-lg-2 p-0 admin-sidebar" id="adminSidebar">
         {% include 'shop/admin/sidebar.html' %}
     </div>
 
     <!-- Main Content -->
     <div class="col-lg-10 p-4">
+        <!-- Mobile Hamburger Button -->
+        <button class="admin-sidebar-toggle d-lg-none" id="sidebarToggle">
+            <i class="fas fa-bars"></i> Menu
+        </button>
+        
         <h2 class="mb-4 fw-bold"><i class="fas fa-chart-line"></i> ড্যাশবোর্ড</h2>
 
         <!-- Stats Cards -->
@@ -130,4 +193,34 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Mobile sidebar toggle for admin dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const adminSidebar = document.getElementById('adminSidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        if (sidebarToggle && adminSidebar && sidebarOverlay) {
+            sidebarToggle.addEventListener('click', function() {
+                adminSidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            });
+            
+            sidebarOverlay.addEventListener('click', function() {
+                adminSidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+            
+            // Close sidebar when clicking on a link
+            const sidebarLinks = adminSidebar.querySelectorAll('a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    adminSidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -1,17 +1,65 @@
 {% extends 'shop/base.html' %}
 {% block title %}Service Zone Map - ZoneDelivery{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Mobile responsive map container */
+    @media (max-width: 768px) {
+        .map-container {
+            margin: 0 !important;
+            height: 100vh !important;
+        }
+        
+        #statusPanel {
+            min-width: 250px !important;
+            width: 90% !important;
+            bottom: 10px !important;
+            right: 5% !important;
+            left: auto !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .map-container {
+            margin: 0 !important;
+            height: 100vh !important;
+        }
+        
+        #statusPanel {
+            min-width: auto !important;
+            width: 95% !important;
+            bottom: 10px !important;
+            right: 2.5% !important;
+            left: auto !important;
+            padding: 15px !important;
+        }
+        
+        #topBar {
+            padding: 10px !important;
+        }
+        
+        #topBar h5 {
+            font-size: 1rem !important;
+        }
+        
+        #topBar small {
+            font-size: 0.8rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="height: 100vh; display: flex; flex-direction: column; margin: -4rem -4rem -2rem -4rem;">
+<div class="map-container" style="height: 100vh; display: flex; flex-direction: column; margin: -4rem -4rem -2rem -4rem;">
     
     <!-- Top Bar -->
-    <div style="padding: 15px; background: white; border-bottom: 1px solid #ddd; flex-shrink: 0;">
+    <div id="topBar" style="padding: 15px; background: white; border-bottom: 1px solid #ddd; flex-shrink: 0;">
         <h5 class="mb-0">📍 Service Zone Checker</h5>
         <small class="text-muted">Get your location and check delivery availability</small>
     </div>
 
     <!-- Google Map -->
-    <div id="map" style="flex: 1; width: 100%;"></div>
+    <div id="map" style="flex: 1; width: 100%; overflow: hidden;"></div>
 
     <!-- Status Panel -->
     <div id="statusPanel" style="
