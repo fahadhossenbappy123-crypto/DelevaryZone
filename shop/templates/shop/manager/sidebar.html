@@ -55,9 +55,39 @@
         background: rgba(255, 255, 255, 0.2);
         margin: 15px 0;
     }
+
+    /* Mobile close button for sidebar */
+    .manager-sidebar-close {
+        display: none;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 10px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1001;
+    }
+
+    @media (max-width: 991px) {
+        .manager-sidebar-close {
+            display: block;
+        }
+
+        .manager-sidebar {
+            position: relative;
+        }
+    }
 </style>
 
 <div class="manager-sidebar">
+    <!-- Mobile Close Button -->
+    <button class="manager-sidebar-close" id="managerSidebarClose" title="বন্ধ করুন">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <div class="sidebar-header">
         <h5><i class="fas fa-cogs"></i> ম্যানেজার প্যানেল</h5>
         <small style="color: rgba(255, 255, 255, 0.7); margin-top: 5px;">

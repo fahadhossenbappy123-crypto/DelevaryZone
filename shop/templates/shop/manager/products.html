@@ -162,6 +162,7 @@
         const managerMenuToggle = document.getElementById('managerMenuToggle');
         const managerSidebar = document.getElementById('managerSidebar');
         const managerSidebarOverlay = document.getElementById('managerSidebarOverlay');
+        const managerSidebarClose = document.getElementById('managerSidebarClose');
         
         if (managerMenuToggle) {
             // Toggle sidebar on button click
@@ -169,6 +170,14 @@
                 managerSidebar.classList.toggle('show');
                 managerSidebarOverlay.classList.toggle('show');
             });
+            
+            // Close sidebar on close button click (inside sidebar)
+            if (managerSidebarClose) {
+                managerSidebarClose.addEventListener('click', function() {
+                    managerSidebar.classList.remove('show');
+                    managerSidebarOverlay.classList.remove('show');
+                });
+            }
             
             // Close sidebar on overlay click
             managerSidebarOverlay.addEventListener('click', function() {
