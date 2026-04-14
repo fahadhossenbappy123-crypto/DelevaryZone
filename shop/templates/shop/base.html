@@ -126,6 +126,31 @@
         @media (max-width: 768px) {
             .bottom-nav {
                 display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                height: 70px;
+                z-index: 1030;
+            }
+        }
+        
+        /* Specific styles for admin/manager/rider panel navbars on mobile */
+        @media (max-width: 768px) {
+            /* Admin Panel Bottom Nav */
+            body:has({% url 'admin_dashboard' %}) .bottom-nav {
+                background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
+            }
+            
+            /* Manager Panel Bottom Nav */
+            body:has({% url 'manager_dashboard' %}) .bottom-nav {
+                background: linear-gradient(135deg, #fd7e14 0%, #ff9e3d 100%);
+            }
+            
+            /* Rider Panel Bottom Nav */
+            body:has({% url 'rider_dashboard' %}) .bottom-nav {
+                background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
             }
         }
         
@@ -241,6 +266,13 @@
             margin: 0;
             flex-wrap: nowrap;
             flex-basis: auto;
+        }
+        
+        /* Ensure all nav items are visible */
+        .bottom-nav .nav-items > * {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         /* Auth Buttons */
@@ -1093,16 +1125,10 @@
                     {% if user.is_authenticated %}
                         <!-- Admin Dashboard -->
                         {% if user.is_staff or user.is_superuser or user.profile.role == 'admin' %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link btn-auth btn-auth-register dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
+                            <li class="nav-item">
+                                <a class="nav-link btn-auth btn-auth-register" href="{% url 'admin_dashboard' %}" style="background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%); color: white; margin-right: 0.5rem; font-weight: 700; font-size: 1.05rem;">
                                     <i class="fas fa-crown"></i> Admin
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="adminDropdown">
-                                    <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}"><i class="fas fa-sliders-h"></i> Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin_register' %}"><i class="fas fa-user-shield"></i> Admin Registration</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-
-                                </ul>
                             </li>
                         <!-- Manager Dashboard -->
                         {% elif user.profile.role == 'manager' %}
