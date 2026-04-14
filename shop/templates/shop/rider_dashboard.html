@@ -3,6 +3,18 @@
 
 {% block extra_css %}
 <style>
+    /* ===== RIDER PANEL BOTTOM NAV ===== */
+    /* Hide customer nav items if showing */
+    #bottomNavHome, #bottomNavService, #bottomNavOrders, #bottomNavProfile { display: none !important; }
+    
+    /* Ensure rider items display */
+    #bottomNavMapView, #bottomNavAvailableOrders, #bottomNavRiderPanel, 
+    #bottomNavActiveDelivery, #bottomNavCompletedOrders, #bottomNavRiderProfile {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
     /* Mobile hamburger menu for rider dashboard */
     .rider-sidebar-toggle {
         display: none;

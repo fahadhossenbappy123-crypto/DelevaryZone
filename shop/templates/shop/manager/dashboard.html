@@ -3,6 +3,18 @@
 
 {% block extra_css %}
 <style>
+    /* ===== MANAGER PANEL BOTTOM NAV ===== */
+    /* Hide customer nav items if showing */
+    #bottomNavHome, #bottomNavService, #bottomNavOrders, #bottomNavProfile { display: none !important; }
+    
+    /* Ensure manager items display */
+    #bottomNavManagerProducts, #bottomNavManagerCategories, #bottomNavManagerPanel, 
+    #bottomNavManagerProfile {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
     /* Mobile hamburger menu for manager dashboard */
     .dashboard-sidebar-toggle {
         display: none;

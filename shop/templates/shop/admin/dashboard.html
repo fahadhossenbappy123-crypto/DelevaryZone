@@ -3,6 +3,22 @@
 
 {% block extra_css %}
 <style>
+    /* ===== ADMIN PANEL BOTTOM NAV ===== */
+    body .bottom-nav .nav-items {
+        /* Override default nav items for admin panel */
+    }
+    
+    /* Hide customer nav items if showing */
+    #bottomNavHome, #bottomNavService, #bottomNavOrders { display: none !important; }
+    
+    /* Ensure admin items display */
+    #bottomNavAllUsers, #bottomNavZones, #bottomNavAdminPanel, 
+    #bottomNavSlides, #bottomNavAdminProfile {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
     /* Mobile hamburger menu for admin dashboard */
     .admin-sidebar-toggle {
         display: none;
