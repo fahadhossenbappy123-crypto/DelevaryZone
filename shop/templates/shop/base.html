@@ -1330,16 +1330,16 @@
             
             <!-- FOR RIDER -->
             {% elif user.profile.role == 'rider' %}
-                <!-- Available Orders -->
-                <a href="{% url 'rider_dashboard' %}" class="nav-item-btn" id="bottomNavAvailableOrders">
-                    <i class="fas fa-list-check"></i>
-                    <span>Avl Orders</span>
+                <!-- Map View -->
+                <a href="{% url 'rider_dashboard' %}#map" class="nav-item-btn" id="bottomNavMapView">
+                    <i class="fas fa-map"></i>
+                    <span>Map View</span>
                 </a>
                 
-                <!-- Active Delivery -->
-                <a href="{% url 'rider_dashboard' %}#active" class="nav-item-btn" id="bottomNavActiveDelivery">
-                    <i class="fas fa-truck"></i>
-                    <span>Active Del</span>
+                <!-- Available Orders -->
+                <a href="{% url 'rider_dashboard' %}#available" class="nav-item-btn" id="bottomNavAvailableOrders">
+                    <i class="fas fa-list-check"></i>
+                    <span>Avl Orders</span>
                 </a>
                 
                 <!-- RIDER PANEL CENTER -->
@@ -1348,10 +1348,16 @@
                     <span>Rider</span>
                 </a>
                 
-                <!-- Finished Delivery -->
-                <a href="{% url 'rider_dashboard' %}#finished" class="nav-item-btn" id="bottomNavFinishedDelivery">
-                    <i class="fas fa-check-circle"></i>
-                    <span>Finish Del</span>
+                <!-- Active Delivery -->
+                <a href="{% url 'rider_dashboard' %}#active" class="nav-item-btn" id="bottomNavActiveDelivery">
+                    <i class="fas fa-truck"></i>
+                    <span>Active Del</span>
+                </a>
+                
+                <!-- Completed Orders -->
+                <a href="{% url 'rider_dashboard' %}#completed" class="nav-item-btn" id="bottomNavCompletedOrders">
+                    <i class="fas fa-history"></i>
+                    <span>Completed</span>
                 </a>
                 
                 <!-- Profile -->
