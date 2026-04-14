@@ -215,28 +215,22 @@
 
     <!-- Navigation Menu -->
     <nav class="nav flex-column">
-        <!-- Dashboard -->
-        <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-            <i class="fas fa-home"></i>
-            <span>ড্যাশবোর্ড</span>
-        </a>
-
-        <!-- Divider -->
-        <div class="admin-sidebar-divider"></div>
-
-        <!-- Section Title -->
-        <div class="admin-sidebar-section-title">ব্যবস্থাপনা</div>
-
         <!-- All Users -->
         <a href="{% url 'admin_users' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_users' %}active{% endif %}">
             <i class="fas fa-users"></i>
-            <span>সব ব্যবহারকারী</span>
+            <span>All Users</span>
         </a>
 
-        <!-- Select Zone -->
+        <!-- Zones -->
         <a href="{% url 'admin_zones' %}" class="nav-link {% if 'admin_zone' in request.resolver_match.url_name %}active{% endif %}">
             <i class="fas fa-map-marker-alt"></i>
-            <span>জোন নির্বাচন</span>
+            <span>Zone Selection</span>
+        </a>
+
+        <!-- Admin Dashboard CENTER -->
+        <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" style="background: rgba(255,255,255,0.2); border-left: 3px solid white; font-weight: 700;">
+            <i class="fas fa-crown"></i>
+            <span>Admin</span>
         </a>
 
         <!-- Hero Slides -->
@@ -245,19 +239,10 @@
             <span>Hero Slides</span>
         </a>
 
-        <!-- Manage Role -->
-        <a href="{% url 'admin_users' %}?manage_role=1" class="nav-link">
-            <i class="fas fa-user-shield"></i>
-            <span>ভূমিকা পরিচালনা</span>
-        </a>
-
-        <!-- Divider -->
-        <div class="admin-sidebar-divider"></div>
-
-        <!-- Home Link -->
-        <a href="{% url 'home' %}" class="nav-link">
-            <i class="fas fa-arrow-left"></i>
-            <span>ওয়েবসাইটে ফিরুন</span>
+        <!-- Profile -->
+        <a href="{% url 'profile' %}" class="nav-link">
+            <i class="fas fa-user-circle"></i>
+            <span>Profile</span>
         </a>
     </nav>
 </div>
