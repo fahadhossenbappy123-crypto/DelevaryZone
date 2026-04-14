@@ -106,13 +106,6 @@
             background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
             border-top: 2px solid rgba(255,255,255,0.15);
             box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
-        }
-
-        .bottom-nav-wrapper {
-            position: relative;
-        }
-        
-        .bottom-nav .nav-items {
             display: flex;
             justify-content: space-around;
             align-items: stretch;
@@ -206,32 +199,6 @@
         .bottom-nav .nav-item-btn.panel-btn span {
             font-size: 1.1rem;
             font-weight: 700;
-        }
-
-        /* Profile Button - Right Side */
-        .bottom-nav .profile-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            color: white;
-            text-decoration: none;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-
-        .bottom-nav .profile-btn:hover {
-            background: rgba(255,255,255,0.25);
-            border-color: white;
-            transform: translateY(-50%) scale(1.1);
         }
         
         /* Auth Buttons */
@@ -1226,8 +1193,7 @@
 
     <!-- Bottom Navigation Bar for Mobile -->
     <nav class="bottom-nav d-md-none">
-        <div class="bottom-nav-wrapper">
-            <div class="nav-items">
+        <div class="nav-items">
                 <!-- FOR CUSTOMERS -->
                 {% if user.is_authenticated and user.profile.role == 'customer' %}
                 <!-- Home -->
@@ -1376,16 +1342,8 @@
                     <span>Register</span>
                 </a>
             {% endif %}
-            </div>
-
-            <!-- Profile Button - Authenticated Users Only -->
-            {% if user.is_authenticated %}
-            <a href="{% url 'profile' %}" class="profile-btn" title="প্রোফাইল">
-                <i class="fas fa-user-circle"></i>
-            </a>
-            {% endif %}
         </div>
-    </nav>>
+    </nav>
 
     <!-- Script for active state on bottom nav -->
     <script>
