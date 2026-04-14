@@ -140,17 +140,17 @@
         @media (max-width: 768px) {
             /* Admin Panel Bottom Nav */
             body:has({% url 'admin_dashboard' %}) .bottom-nav {
-                background: linear-gradient(135deg, #52C77B 0%, #3DA670 100%);
+                background: linear-gradient(135deg, #fd14d6 0%, #3DA670 100%);
             }
             
             /* Manager Panel Bottom Nav */
             body:has({% url 'manager_dashboard' %}) .bottom-nav {
-                background: linear-gradient(135deg, #fd7e14 0%, #ff9e3d 100%);
+                background: linear-gradient(135deg, #fd7114 0%, #ff9e3d 100%);
             }
             
             /* Rider Panel Bottom Nav */
             body:has({% url 'rider_dashboard' %}) .bottom-nav {
-                background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+                background: linear-gradient(135deg, #ff4040 0%, #ff8787 100%);
             }
         }
         
@@ -1315,7 +1315,7 @@
                 
                 <!-- Zones -->
                 <a href="{% url 'admin_zones' %}" class="nav-item-btn" id="bottomNavZones">
-                    <i class="fas fa-map"></i>
+                    <i class="fas fa-map-marker-alt"></i>
                     <span>Zones</span>
                 </a>
                 
@@ -1325,10 +1325,10 @@
                     <span>Admin</span>
                 </a>
                 
-                <!-- Slides -->
+                <!-- Hero Slides -->
                 <a href="{% url 'admin_hero_slides' %}" class="nav-item-btn" id="bottomNavSlides">
                     <i class="fas fa-images"></i>
-                    <span>Slides</span>
+                    <span>Hero Slides</span>
                 </a>
                 
                 <!-- Profile -->
