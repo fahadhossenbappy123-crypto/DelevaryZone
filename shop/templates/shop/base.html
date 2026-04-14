@@ -1132,7 +1132,8 @@
                         </li>
                         {% endif %}
                         
-                        <!-- User Avatar with Profile & Logout Dropdown -->
+                        <!-- User Avatar with Profile & Logout Dropdown (Hidden in Admin/Manager/Rider) -->
+                        {% if not user.is_staff and not user.is_superuser and user.profile.role == 'customer' %}
                         <li class="nav-item dropdown">
                             <button class="nav-link user-avatar" id="userDropdown" 
                                     data-bs-toggle="dropdown" aria-expanded="false" 
@@ -1144,14 +1145,12 @@
                                     <h6 class="dropdown-header">{{ user.username }}</h6>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                {% if not user.is_staff and not user.is_superuser and user.profile.role == 'customer' %}
                                 <li>
                                     <a class="dropdown-item" href="{% url 'profile' %}">
                                         <i class="fas fa-user-circle"></i> Profile
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                {% endif %}
                                 <li>
                                     <a class="dropdown-item text-danger" href="{% url 'logout' %}">
                                         <i class="fas fa-sign-out-alt"></i> Logout
@@ -1159,6 +1158,16 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endif %}
+                        
+                        <!-- Logout for Admin/Manager/Rider (Simple Logout) -->
+                        {% if user.is_staff or user.is_superuser or user.profile.role in 'admin,manager,rider' %}
+                        <li class="nav-item">
+                            <a class="nav-link btn-auth btn-auth-login" href="{% url 'logout' %}" style="font-weight: 700;">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </li>
+                        {% endif %}
                     {% else %}
                         <li class="nav-item auth-buttons">
                             <a class="nav-link btn-auth btn-auth-login" href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
