@@ -174,29 +174,48 @@
         .rider-sidebar .nav {
             visibility: visible;
             opacity: 1;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .rider-sidebar .nav-link {
-            padding: 12px 16px;
-            font-size: 1rem;
+            padding: 10px 12px;
+            font-size: 0.9rem;
             visibility: visible;
             color: white;
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-left: none;
         }
 
         .rider-sidebar .nav-link:hover {
-            padding-left: 18px;
+            padding-left: 12px;
+            background: rgba(255, 255, 255, 0.25);
         }
 
         .rider-sidebar .nav-link i {
-            font-size: 1rem;
-            width: 22px;
+            font-size: 0.9rem;
+            width: 20px;
             color: white;
+            display: block;
+            margin-bottom: 2px;
         }
 
         .rider-sidebar-section-title {
             padding: 8px 16px;
             font-size: 0.7rem;
             visibility: visible;
+            width: 100%;
+        }
+
+        .rider-sidebar-divider {
+            width: 100%;
+            margin: 8px 0;
         }
     }
 </style>
