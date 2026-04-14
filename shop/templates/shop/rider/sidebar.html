@@ -214,22 +214,22 @@
 
     <!-- Navigation Menu -->
     <nav class="nav flex-column">
-        <!-- Dashboard -->
-        <a href="{% url 'rider_dashboard' %}" class="nav-link">
-            <i class="fas fa-home"></i>
-            <span>ড্যাশবোর্ড</span>
+        <!-- Map View -->
+        <a href="{% url 'rider_dashboard' %}#map" class="nav-link">
+            <i class="fas fa-map"></i>
+            <span>ম্যাপ ভিউ</span>
         </a>
-
-        <!-- Divider -->
-        <div class="rider-sidebar-divider"></div>
-
-        <!-- Section Title -->
-        <div class="rider-sidebar-section-title">অপারেশন</div>
 
         <!-- Available Orders -->
         <a href="{% url 'rider_dashboard' %}#available" class="nav-link">
             <i class="fas fa-list-check"></i>
             <span>উপলব্ধ অর্ডার</span>
+        </a>
+
+        <!-- Rider Dashboard CENTER -->
+        <a href="{% url 'rider_dashboard' %}" class="nav-link" style="background: rgba(255,255,255,0.2); border-left: 3px solid white; font-weight: 700;">
+            <i class="fas fa-motorcycle"></i>
+            <span>Rider</span>
         </a>
 
         <!-- Active Deliveries -->
@@ -238,19 +238,19 @@
             <span>সক্রিয় ডেলিভারি</span>
         </a>
 
-        <!-- Earnings -->
-        <a href="{% url 'rider_dashboard' %}#earnings" class="nav-link">
-            <i class="fas fa-wallet"></i>
-            <span>আয়</span>
+        <!-- Completed Orders -->
+        <a href="{% url 'rider_dashboard' %}#completed" class="nav-link">
+            <i class="fas fa-history"></i>
+            <span>সম্পন্ন অর্ডার</span>
         </a>
 
         <!-- Divider -->
         <div class="rider-sidebar-divider"></div>
 
-        <!-- Home Link -->
-        <a href="{% url 'home' %}" class="nav-link">
-            <i class="fas fa-arrow-left"></i>
-            <span>ওয়েবসাইটে ফিরুন</span>
+        <!-- Profile -->
+        <a href="{% url 'profile' %}" class="nav-link">
+            <i class="fas fa-user-circle"></i>
+            <span>প্রোফাইল</span>
         </a>
     </nav>
 </div>
