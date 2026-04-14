@@ -156,6 +156,9 @@
         .admin-sidebar .nav {
             visibility: visible;
             opacity: 1;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .admin-sidebar .nav-link {
@@ -163,22 +166,28 @@
             font-size: 1rem;
             visibility: visible;
             color: white;
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            white-space: nowrap;
+            border-left: none;
         }
 
         .admin-sidebar .nav-link:hover {
-            padding-left: 18px;
-        }
-
-        .admin-sidebar .nav-link i {
-            font-size: 1rem;
-            width: 22px;
-            color: white;
+            padding-left: 16px;
+            background: rgba(255, 255, 255, 0.25);
         }
 
         .admin-sidebar-section-title {
             padding: 8px 16px;
             font-size: 0.7rem;
             visibility: visible;
+            width: 100%;
+        }
+
+        .admin-sidebar-divider {
+            width: 100%;
+            margin: 8px 0;
         }
     }
 </style>
@@ -240,7 +249,5 @@
             <i class="fas fa-arrow-left"></i>
             <span>ওয়েবসাইটে ফিরুন</span>
         </a>
-    </nav>
-</div>
     </nav>
 </div>
