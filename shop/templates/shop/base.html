@@ -1222,16 +1222,16 @@
             
             <!-- FOR ADMIN & SUPERUSER -->
             {% elif user.is_staff or user.is_superuser or user.profile.role == 'admin' %}
-                <!-- Dashboard -->
-                <a href="{% url 'admin_dashboard' %}" class="nav-item-btn" id="bottomNavDashboard">
-                    <i class="fas fa-sliders-h"></i>
-                    <span>Dashboard</span>
+                <!-- All Users -->
+                <a href="{% url 'admin_users' %}" class="nav-item-btn" id="bottomNavAllUsers">
+                    <i class="fas fa-users"></i>
+                    <span>All Users</span>
                 </a>
                 
-                <!-- Categories -->
-                <a href="{% url 'admin_categories' %}" class="nav-item-btn" id="bottomNavCategories">
-                    <i class="fas fa-list"></i>
-                    <span>Categories</span>
+                <!-- Zones -->
+                <a href="{% url 'admin_zones' %}" class="nav-item-btn" id="bottomNavZones">
+                    <i class="fas fa-map"></i>
+                    <span>Zones</span>
                 </a>
                 
                 <!-- ADMIN PANEL CENTER -->
@@ -1240,42 +1240,36 @@
                     <span>Admin</span>
                 </a>
                 
-                <!-- Products -->
-                <a href="{% url 'admin_products' %}" class="nav-item-btn" id="bottomNavProducts">
-                    <i class="fas fa-box"></i>
-                    <span>Products</span>
+                <!-- Slides -->
+                <a href="{% url 'admin_hero_slides' %}" class="nav-item-btn" id="bottomNavSlides">
+                    <i class="fas fa-images"></i>
+                    <span>Slides</span>
                 </a>
                 
-                <!-- Zones -->
-                <a href="{% url 'admin_zones' %}" class="nav-item-btn" id="bottomNavZones">
-                    <i class="fas fa-map"></i>
-                    <span>Zones</span>
+                <!-- Profile -->
+                <a href="{% url 'profile' %}" class="nav-item-btn" id="bottomNavAdminProfile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
                 </a>
             
             <!-- FOR MANAGER -->
             {% elif user.profile.role == 'manager' %}
-                <!-- Dashboard -->
-                <a href="{% url 'manager_dashboard' %}" class="nav-item-btn" id="bottomNavManagerDashboard">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Dashboard</span>
-                </a>
-                
                 <!-- Products -->
                 <a href="{% url 'manager_products' %}" class="nav-item-btn" id="bottomNavManagerProducts">
                     <i class="fas fa-box"></i>
                     <span>Products</span>
                 </a>
                 
-                <!-- MANAGER PANEL CENTER -->
-                <a href="{% url 'manager_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavManagerPanel">
-                    <i class="fas fa-user-tie"></i>
-                    <span>Manager</span>
-                </a>
-                
                 <!-- Categories -->
                 <a href="{% url 'manager_categories' %}" class="nav-item-btn" id="bottomNavManagerCategories">
                     <i class="fas fa-layer-group"></i>
                     <span>Categories</span>
+                </a>
+                
+                <!-- MANAGER PANEL CENTER -->
+                <a href="{% url 'manager_dashboard' %}" class="nav-item-btn panel-btn" id="bottomNavManagerPanel">
+                    <i class="fas fa-user-tie"></i>
+                    <span>Manager</span>
                 </a>
                 
                 <!-- Profile -->
@@ -1286,16 +1280,16 @@
             
             <!-- FOR RIDER -->
             {% elif user.profile.role == 'rider' %}
-                <!-- Dashboard -->
-                <a href="{% url 'rider_dashboard' %}" class="nav-item-btn" id="bottomNavRiderDashboard">
-                    <i class="fas fa-map-pin"></i>
-                    <span>Location</span>
-                </a>
-                
-                <!-- Orders -->
+                <!-- Available Orders -->
                 <a href="{% url 'rider_dashboard' %}" class="nav-item-btn" id="bottomNavAvailableOrders">
                     <i class="fas fa-list-check"></i>
-                    <span>Orders</span>
+                    <span>Avl Orders</span>
+                </a>
+                
+                <!-- Active Delivery -->
+                <a href="{% url 'rider_dashboard' %}#active" class="nav-item-btn" id="bottomNavActiveDelivery">
+                    <i class="fas fa-truck"></i>
+                    <span>Active Del</span>
                 </a>
                 
                 <!-- RIDER PANEL CENTER -->
@@ -1304,10 +1298,10 @@
                     <span>Rider</span>
                 </a>
                 
-                <!-- Earnings -->
-                <a href="{% url 'rider_dashboard' %}#earnings" class="nav-item-btn" id="bottomNavEarnings">
-                    <i class="fas fa-wallet"></i>
-                    <span>Earnings</span>
+                <!-- Finished Delivery -->
+                <a href="{% url 'rider_dashboard' %}#finished" class="nav-item-btn" id="bottomNavFinishedDelivery">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Finish Del</span>
                 </a>
                 
                 <!-- Profile -->
