@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',  # Cloudinary SDK
     'shop',
     'django_bootstrap5',
 ]
@@ -234,10 +235,21 @@ else:
     csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,https://*.ngrok-free.dev,http://*.ngrok-free.dev')
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',')]
 
+# ============ CLOUDINARY STORAGE CONFIGURATION ============
+# সকল environment এ Cloudinary ব্যবহার করবে
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# Cloudinary credentials - environment variables থেকে load হবে
+CLOUDINARY = {
+    'cloud_name': os.getenv('CLOUDINARY_CLOUD_NAME', ''),
+    'api_key': os.getenv('CLOUDINARY_API_KEY', ''),
+    'api_secret': os.getenv('CLOUDINARY_API_SECRET', ''),
+}
+
 # Static & Media
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'media'  # Development এ local folder
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 

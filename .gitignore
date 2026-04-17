@@ -46,6 +46,10 @@ db.sqlite3-journal
 .env
 .env.local
 
+# Firebase credentials - NEVER commit these!
+firebase-key.json
+*firebase-adminsdk*.json
+
 # Coverage
 htmlcov/
 .coverage
