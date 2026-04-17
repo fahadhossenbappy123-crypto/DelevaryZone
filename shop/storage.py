@@ -1,9 +1,9 @@
 """
 Custom Cloudinary Storage Backend for Django
-Directly uses Cloudinary API instead of django-cloudinary-storage
+Hybrid backend that handles both old local paths and new Cloudinary uploads
 """
 
-from django.core.files.storage import Storage
+from django.core.files.storage import Storage, FileSystemStorage
 from django.core.files.base import ContentFile
 import cloudinary
 import cloudinary.uploader
@@ -14,19 +14,12 @@ from io import BytesIO
 class CloudinaryStorage(Storage):
     """
     Cloudinary storage backend যা সরাসরি cloudinary.uploader ব্যবহার করে
-    এটি render server restart এ ও files delete হবে না
+    নতুন uploads Cloudinary এ যায়
     """
     
     def _save(self, name, content):
         """
-        File को Cloudinary मे save करो
-        
-        Args:
-            name: File name
-            content: File content
-        
-        Returns:
-            Saved file name/public_id
+        File কে Cloudinary তে save করুন
         """
         try:
             # File পড়ুন
@@ -51,7 +44,7 @@ class CloudinaryStorage(Storage):
     
     def _open(self, name, mode='rb'):
         """
-        Cloudinary থেকে file পড়ুন (optional)
+        Cloudinary থেকে file পড়ুন
         """
         try:
             bucket = cloudinary.api.resource(name)
@@ -98,12 +91,20 @@ class CloudinaryStorage(Storage):
     
     def url(self, name):
         """
-        Get Cloudinary URL for file
+        Get file URL - supports both Cloudinary and local paths for backward compatibility
         
         Returns:
-            Secure URL string
+            Secure Cloudinary URL or local media URL
         """
         cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME', '')
+        
+        # যদি পুরাতন local path হয় (e.g., /media/products/...
+) তাহলে local URL return করুন
+        if '/' in name and not name.startswith('zone-delivery'):
+            # Old local storage path
+            return f'/media/{name}'
+        
+        # নতুন Cloudinary public_id এর জন্য Cloudinary URL
         if not cloud_name:
             return f'/media/{name}'
         
