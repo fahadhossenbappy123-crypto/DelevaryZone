@@ -1,6 +1,8 @@
 from pathlib import Path
 import os
 from decouple import config, Csv
+import cloudinary
+import cloudinary.uploader
 
 # Conditional import for dj-database-url
 try:
@@ -236,20 +238,21 @@ else:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',')]
 
 # ============ CLOUDINARY STORAGE CONFIGURATION ============
-# সকল environment এ Cloudinary ব্যবহার করবে
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Custom storage backend যা সরাসরি cloudinary.uploader ব্যবহার করে
+# এটি ensure করে যে images always Cloudinary এ থাকবে
+DEFAULT_FILE_STORAGE = 'shop.storage.CloudinaryStorage'
 
-# Cloudinary credentials - environment variables থেকে load হবে
-CLOUDINARY = {
-    'cloud_name': os.getenv('CLOUDINARY_CLOUD_NAME', ''),
-    'api_key': os.getenv('CLOUDINARY_API_KEY', ''),
-    'api_secret': os.getenv('CLOUDINARY_API_SECRET', ''),
-}
+# Cloudinary configuration - দ্রুত initialization
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', ''),
+    api_key=os.getenv('CLOUDINARY_API_KEY', ''),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET', '')
+)
 
-# Static & Media
+# Static & Media URLs
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # Development এ local folder
+MEDIA_ROOT = BASE_DIR / 'media'  # Local development fallback
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
