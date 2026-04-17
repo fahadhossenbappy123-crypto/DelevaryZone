@@ -1,67 +1,118 @@
 """
-Custom Cloudinary Storage Backend for Django
-Hybrid backend that handles both old local paths and new Cloudinary uploads
+Cloudinary Storage Backend for Django
+Pure Cloudinary storage - No local fallback
+All uploads go directly to Cloudinary cloud
 """
 
-from django.core.files.storage import Storage, FileSystemStorage
+from django.core.files.storage import Storage
 from django.core.files.base import ContentFile
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-import os
-from io import BytesIO
+import logging
+from decouple import config as decouple_config
+
+logger = logging.getLogger(__name__)
 
 class CloudinaryStorage(Storage):
     """
-    Cloudinary storage backend যা সরাসরি cloudinary.uploader ব্যবহার করে
-    নতুন uploads Cloudinary এ যায়
+    Pure Cloudinary storage backend
+    - ALL files go to Cloudinary
+    - NO local storage fallback
+    - Persistent across server restarts
     """
+    
+    def __init__(self):
+        """Initialize and verify Cloudinary config"""
+        cloud_name = decouple_config('CLOUDINARY_CLOUD_NAME', default='')
+        api_key = decouple_config('CLOUDINARY_API_KEY', default='')
+        api_secret = decouple_config('CLOUDINARY_API_SECRET', default='')
+        
+        if not all([cloud_name, api_key, api_secret]):
+            logger.error("❌ Cloudinary credentials missing! Set environment variables in .env")
+        
+        # Configure cloudinary
+        cloudinary.config(
+            cloud_name=cloud_name,
+            api_key=api_key,
+            api_secret=api_secret,
+            secure=True
+        )
     
     def _save(self, name, content):
         """
-        File কে Cloudinary তে save করুন
+        Save file directly to Cloudinary
+        
+        Args:
+            name: Filename (e.g., 'products/image.jpg')
+            content: File content
+        
+        Returns:
+            Cloudinary public_id (stored in database)
         """
         try:
-            # File পড়ুন
+            # Determine folder from name
+            if 'products' in name:
+                folder = 'zone-delivery/products'
+            elif 'category' in name:
+                folder = 'zone-delivery/categories'
+            elif 'profile' in name or 'avatar' in name:
+                folder = 'zone-delivery/profile_pics'
+            else:
+                folder = 'zone-delivery/media'
+            
+            # Read file content
             if hasattr(content, 'read'):
                 file_data = content.read()
+                if hasattr(content, 'seek'):
+                    content.seek(0)
             else:
                 file_data = content
             
-            # Cloudinary এ upload করুন
+            # Upload to Cloudinary
+            logger.info(f"📤 Uploading to Cloudinary: {name} → {folder}")
+            
             result = cloudinary.uploader.upload(
                 file_data,
-                resource_type='auto',  # Auto detect image/video
-                folder='zone-delivery'
+                folder=folder,
+                resource_type='auto',  # Image, video, or raw
+                overwrite=False,  # Prevent overwriting
+                unique_filename=True,  # Generate unique names
+                quality='auto',  # Auto quality optimization
+                fetch_format='auto'  # Auto format conversion
             )
             
-            # Cloudinary public_id return করুন
-            return result['public_id']
+            public_id = result['public_id']
+            logger.info(f"✅ Upload successful: {public_id}")
+            
+            return public_id
             
         except Exception as e:
-            print(f"Cloudinary upload error: {e}")
+            logger.error(f"❌ Cloudinary upload failed: {str(e)}")
             raise
     
     def _open(self, name, mode='rb'):
         """
-        Cloudinary থেকে file পড়ুন
+        Open file from Cloudinary
         """
         try:
-            bucket = cloudinary.api.resource(name)
-            if bucket:
-                return ContentFile(bucket.get('url'))
-        except:
-            pass
+            resource = cloudinary.api.resource(name)
+            if resource and resource.get('secure_url'):
+                return ContentFile(resource['secure_url'].encode())
+        except Exception as e:
+            logger.error(f"Error opening file from Cloudinary: {e}")
         return None
     
     def delete(self, name):
         """
-        Cloudinary থেকে file delete করুন
+        Delete file from Cloudinary
         """
         try:
+            logger.info(f"🗑️  Deleting from Cloudinary: {name}")
             cloudinary.uploader.destroy(name)
+            logger.info(f"✅ Deleted: {name}")
         except Exception as e:
-            print(f"Cloudinary delete error: {e}")
+            logger.error(f"Error deleting from Cloudinary: {e}")
     
     def exists(self, name):
         """
@@ -75,13 +126,13 @@ class CloudinaryStorage(Storage):
     
     def listdir(self, path):
         """
-        List directory (not implemented for Cloudinary)
+        Cloudinary does not support directory listing
         """
         raise NotImplementedError('Cloudinary does not support directory listing')
     
     def size(self, name):
         """
-        Get file size
+        Get file size from Cloudinary
         """
         try:
             resource = cloudinary.api.resource(name)
@@ -91,40 +142,27 @@ class CloudinaryStorage(Storage):
     
     def url(self, name):
         """
-        Get file URL - supports both Cloudinary and local paths for backward compatibility
+        Generate Cloudinary secure URL
+        ONLY returns Cloudinary URLs - NO local fallback
         
         Returns:
-            Secure Cloudinary URL or local media URL
+            Secure Cloudinary URL
         """
-        cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME', '')
+        cloud_name = decouple_config('CLOUDINARY_CLOUD_NAME', default='')
         
-        # যদি পুরাতন local path হয় (e.g., /media/products/...
-) তাহলে local URL return করুন
-        if '/' in name and not name.startswith('zone-delivery'):
-            # Old local storage path
-            return f'/media/{name}'
-        
-        # নতুন Cloudinary public_id এর জন্য Cloudinary URL
         if not cloud_name:
-            return f'/media/{name}'
+            logger.error("❌ CLOUDINARY_CLOUD_NAME not set!")
+            return ''
         
-        # Format: https://res.cloudinary.com/{cloud}/image/upload/{public_id}
-        return f'https://res.cloudinary.com/{cloud_name}/image/upload/{name}'
+        # Generate Cloudinary URL
+        url = f'https://res.cloudinary.com/{cloud_name}/image/upload/{name}'
+        return url
     
     def get_accessed_time(self, name):
-        """
-        Cloudinary দ্বারা সমর্থিত নয়
-        """
         raise NotImplementedError('Cloudinary does not support accessed time')
     
     def get_created_time(self, name):
-        """
-        Cloudinary দ্বারা সমর্থিত নয়
-        """
         raise NotImplementedError('Cloudinary does not support created time')
     
     def get_modified_time(self, name):
-        """
-        Cloudinary দ্বারা সমর্থিত নয়
-        """
         raise NotImplementedError('Cloudinary does not support modified time')

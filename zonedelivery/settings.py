@@ -238,15 +238,25 @@ else:
     CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(',')]
 
 # ============ CLOUDINARY STORAGE CONFIGURATION ============
-# Custom storage backend যা সরাসরি cloudinary.uploader ব্যবহার করে
-# এটি ensure করে যে images always Cloudinary এ থাকবে
+# Pure Cloudinary storage - No local fallback
 DEFAULT_FILE_STORAGE = 'shop.storage.CloudinaryStorage'
 
-# Cloudinary configuration - দ্রুত initialization
+# Django 5.1+ STORAGES configuration
+STORAGES = {
+    'default': {
+        'BACKEND': 'shop.storage.CloudinaryStorage',
+    },
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
+
+# Cloudinary configuration with decouple (loads from .env)
 cloudinary.config(
-    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME', ''),
-    api_key=os.getenv('CLOUDINARY_API_KEY', ''),
-    api_secret=os.getenv('CLOUDINARY_API_SECRET', '')
+    cloud_name=config('CLOUDINARY_CLOUD_NAME', default=''),
+    api_key=config('CLOUDINARY_API_KEY', default=''),
+    api_secret=config('CLOUDINARY_API_SECRET', default=''),
+    secure=True
 )
 
 # Static & Media URLs
