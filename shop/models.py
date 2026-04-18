@@ -71,11 +71,24 @@ class Category(models.Model):
 
 # Product
 class Product(models.Model):
+    UNIT_CHOICES = [
+        ('kg', 'কিলোগ্রাম (kg)'),
+        ('gram', 'গ্রাম (g)'),
+        ('litre', 'লিটার (L)'),
+        ('ml', 'মিলিলিটার (ml)'),
+        ('piece', 'পিস'),
+        ('packet', 'প্যাকেট'),
+        ('box', 'বক্স'),
+        ('bunch', 'বাঁড়ি/গুচ্ছ'),
+        ('dozen', 'ডজন'),
+    ]
+    
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     zone = models.ForeignKey(Zone, on_delete=models.CASCADE, related_name='products', null=True, blank=True)
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
+    unit = models.CharField(max_length=20, choices=UNIT_CHOICES, default='piece', help_text="পণ্যের ইউনিট")
     image = models.ImageField(upload_to='products/')
     stock = models.PositiveIntegerField(default=50)
     is_available = models.BooleanField(default=True)

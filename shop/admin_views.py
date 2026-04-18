@@ -242,6 +242,7 @@ def admin_product_add(request):
         title = request.POST.get('title')
         description = request.POST.get('description')
         price = request.POST.get('price')
+        unit = request.POST.get('unit')
         stock = request.POST.get('stock')
         image = request.FILES.get('image')
         
@@ -255,6 +256,7 @@ def admin_product_add(request):
                 title=title,
                 description=description,
                 price=price,
+                unit=unit,
                 stock=stock,
                 image=image
             )
@@ -266,7 +268,7 @@ def admin_product_add(request):
     categories = Category.objects.all()
     zones = Zone.objects.all()
     
-    context = {'categories': categories, 'zones': zones}
+    context = {'categories': categories, 'zones': zones, 'unit_choices': Product.UNIT_CHOICES}
     return render(request, 'shop/admin/product_form.html', context)
 
 
@@ -282,6 +284,7 @@ def admin_product_edit(request, prod_id):
         product.title = request.POST.get('title')
         product.description = request.POST.get('description')
         product.price = request.POST.get('price')
+        product.unit = request.POST.get('unit')
         product.stock = request.POST.get('stock')
         product.is_available = request.POST.get('is_available') == 'on'
         
@@ -299,6 +302,7 @@ def admin_product_edit(request, prod_id):
         'product': product,
         'categories': categories,
         'zones': zones,
+        'unit_choices': Product.UNIT_CHOICES,
     }
     return render(request, 'shop/admin/product_form.html', context)
 

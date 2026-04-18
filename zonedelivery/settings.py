@@ -34,6 +34,8 @@ if IS_PRODUCTION:
 else:
     # Development (ngrok, localhost)
     ALLOWED_HOSTS = [
+        'localhost',
+        '127.0.0.1',
         'delevaryzone-1.onrender.com',
     ]
 

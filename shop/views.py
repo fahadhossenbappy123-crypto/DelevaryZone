@@ -54,6 +54,45 @@ def home(request):
     return render(request, 'shop/home.html', context)
 
 
+def category_detail(request, slug):
+    """Display all products for a specific category"""
+    try:
+        category = get_object_or_404(Category, slug=slug)
+    except Exception as e:
+        messages.error(request, 'ক্যাটেগরি খুঁজে পাওয়া যায়নি।')
+        return redirect('home')
+    
+    try:
+        zones = Zone.objects.filter(is_active=True).only('id', 'name', 'description')
+    except Exception as e:
+        zones = []
+    
+    try:
+        selected_zone = request.GET.get('zone')
+        if selected_zone:
+            products = Product.objects.filter(
+                category=category, 
+                zone_id=selected_zone, 
+                is_available=True
+            ).select_related('category', 'zone')
+        else:
+            products = Product.objects.filter(
+                category=category, 
+                is_available=True
+            ).select_related('category', 'zone')
+    except Exception as e:
+        products = []
+    
+    context = {
+        'category': category,
+        'products': products,
+        'zones': zones,
+        'selected_zone': selected_zone if selected_zone else None,
+        'title': f'{category.name} - ZoneDelivery'
+    }
+    return render(request, 'shop/category_detail.html', context)
+
+
 def register(request):
     if request.user.is_authenticated:
         return redirect('home')

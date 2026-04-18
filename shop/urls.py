@@ -5,6 +5,7 @@ from . import admin_views
 urlpatterns = [
     # Home & Auth
     path('', views.home, name='home'),
+    path('category/<slug:slug>/', views.category_detail, name='category_detail'),
     path('register/', views.register, name='register'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),

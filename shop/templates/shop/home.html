@@ -70,13 +70,17 @@
         <div class="row g-3 mb-5">
             {% for category in categories %}
             <div class="col-lg-3 col-md-4 col-sm-6 col-6 mb-2">
-                <div class="category-card" 
-                     style="background-image: url('{% if category.image %}{{ category.image.url }}{% else %}https://via.placeholder.com/300x200/52C77B/ffffff?text=No+Image{% endif %}');">
-                    <div class="text-center" style="position: relative; z-index: 2;">
-                        <h6 class="mb-1 mb-md-2" style="font-size: 1.2rem;">{{ category.name }}</h6>
-                        <small class="d-block" style="font-size: 0.75rem;">({{ category.products.count }} products)</small>
+                <a href="{% url 'category_detail' category.slug %}" style="text-decoration: none; color: inherit;">
+                    <div class="category-card" 
+                         style="background-image: url('{% if category.image %}{{ category.image.url }}{% else %}https://via.placeholder.com/300x200/52C77B/ffffff?text=No+Image{% endif %}'); cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                         onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 8px 25px rgba(82, 199, 123, 0.4)';"
+                         onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+                        <div class="text-center" style="position: relative; z-index: 2;">
+                            <h6 class="mb-1 mb-md-2" style="font-size: 1.2rem;">{{ category.name }}</h6>
+                            <small class="d-block" style="font-size: 0.75rem;">({{ category.products.count }} products)</small>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             {% empty %}
             <div class="col-12">
@@ -131,7 +135,7 @@
                         
                         <div class="mb-2">
                             <span class="h6 fw-bold text-success">৳{{ product.price }}</span>
-                            <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">{{ product.stock }} পণ্য</span>
+                            <span class="badge bg-warning text-dark" style="font-size: 0.65rem;">{{ product.get_unit_display }}</span>
                         </div>
                         
                         <div class="mt-auto d-grid gap-2">

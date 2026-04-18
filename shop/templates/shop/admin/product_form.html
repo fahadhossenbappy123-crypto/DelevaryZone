@@ -46,11 +46,20 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold">মূল্য (৳)</label>
                                 <input type="number" name="price" class="form-control" placeholder="মূল্য" step="0.01" value="{% if product %}{{ product.price }}{% endif %}" required>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">ইউনিট</label>
+                                <select name="unit" class="form-select" required>
+                                    <option value="">-- বেছে নিন --</option>
+                                    {% for unit_code, unit_name in unit_choices %}
+                                        <option value="{{ unit_code }}" {% if product.unit == unit_code %}selected{% endif %}>{{ unit_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label fw-bold">স্টক</label>
                                 <input type="number" name="stock" class="form-control" placeholder="স্টক পরিমাণ" value="{% if product %}{{ product.stock }}{% else %}50{% endif %}" required>
                             </div>
