@@ -455,6 +455,8 @@ def add_to_cart(request, product_id):
             'id': product.id,
             'title': product.title,
             'price': float(product.price),
+            'unit': product.unit,
+            'unit_display': product.get_unit_display(),
             'image': product.image.url if product.image else '/static/placeholder.png',
             'quantity': 1,
             'zone_id': product.zone_id,
