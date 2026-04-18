@@ -884,6 +884,9 @@
     
     <!-- Extra CSS for child templates -->
     {% block extra_css %}{% endblock %}
+    
+    <!-- Cart AJAX Script -->
+    <script src="{% static 'js/cart.js' %}"></script>
 </head>
 <body data-is-authenticated="{% if user.is_authenticated %}1{% else %}0{% endif %}" data-notifications-url="{% url 'get_notifications' %}" data-mark-all-read-url="{% url 'mark_all_notifications_read' %}" data-login-url="{% url 'login' %}">
     <!-- Navbar -->
@@ -905,9 +908,9 @@
                 <a class="nav-link" href="{% url 'view_cart' %}" style="padding: 0.5rem 0.75rem; font-size: 1.2rem; color: white;">
                     <i class="fas fa-shopping-cart fs-5"></i>
                     {% if request.session.cart %}
-                        <span class="badge bg-danger ms-1" style="font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.5rem;">{{ request.session.cart|length }}</span>
+                        <span id="cart-count-badge" class="badge bg-danger ms-1" style="font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.5rem; data-cart-count='true';">{{ request.session.cart|length }}</span>
                     {% else %}
-                        <span class="badge bg-danger ms-1" style="font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.5rem;">0</span>
+                        <span id="cart-count-badge" class="badge bg-danger ms-1" style="font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.5rem; display: none;" data-cart-count='true;'>0</span>
                     {% endif %}
                 </a>
             </div>

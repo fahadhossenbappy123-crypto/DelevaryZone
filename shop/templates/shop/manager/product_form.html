@@ -50,17 +50,28 @@
                         <textarea name="description" class="form-control" rows="4" placeholder="পণ্যের বিস্তারিত বর্ণনা" required>{{ product.description }}</textarea>
                     </div>
 
-                    <!-- Price -->
+                    <!-- Price, Unit, Stock -->
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">মূল্য (৳) *</label>
                             <input type="number" name="price" class="form-control" step="0.01" placeholder="0.00" value="{{ product.price }}" required>
                         </div>
 
+                        <!-- Unit -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">ইউনিট *</label>
+                            <select name="unit" class="form-select" required>
+                                <option value="">-- বেছে নিন --</option>
+                                {% for unit_code, unit_name in unit_choices %}
+                                    <option value="{{ unit_code }}" {% if product.unit == unit_code %}selected{% endif %}>{{ unit_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <!-- Stock -->
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">স্টক পরিমাণ *</label>
-                            <input type="number" name="stock" class="form-control" placeholder="০" value="{{ product.stock }}" required>
+                            <input type="number" name="stock" class="form-control" placeholder="०" value="{{ product.stock }}" required>
                         </div>
                     </div>
 

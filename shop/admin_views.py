@@ -700,6 +700,7 @@ def manager_product_add(request):
         title = request.POST.get('title')
         description = request.POST.get('description')
         price = request.POST.get('price')
+        unit = request.POST.get('unit')
         stock = request.POST.get('stock')
         image = request.FILES.get('image')
         
@@ -712,6 +713,7 @@ def manager_product_add(request):
                 title=title,
                 description=description,
                 price=price,
+                unit=unit,
                 stock=stock,
                 image=image
             )
@@ -725,6 +727,7 @@ def manager_product_add(request):
     context = {
         'categories': categories,
         'manager': manager,
+        'unit_choices': Product.UNIT_CHOICES,
     }
     return render(request, 'shop/manager/product_form.html', context)
 
@@ -741,6 +744,7 @@ def manager_product_edit(request, prod_id):
         product.title = request.POST.get('title')
         product.description = request.POST.get('description')
         product.price = request.POST.get('price')
+        product.unit = request.POST.get('unit')
         product.stock = request.POST.get('stock')
         product.is_available = request.POST.get('is_available') == 'on'
         
@@ -757,6 +761,7 @@ def manager_product_edit(request, prod_id):
         'product': product,
         'categories': categories,
         'manager': manager,
+        'unit_choices': Product.UNIT_CHOICES,
     }
     return render(request, 'shop/manager/product_form.html', context)
 

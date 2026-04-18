@@ -468,6 +468,56 @@ def add_to_cart(request, product_id):
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
 
+def add_to_cart_ajax(request, product_id):
+    """AJAX endpoint for adding product to cart"""
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+    
+    try:
+        product = Product.objects.get(id=product_id, is_available=True)
+    except Product.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'পণ্যটি পাওয়া যায়নি।'})
+    
+    cart = get_cart(request)
+    product_id_str = str(product_id)
+    
+    # Check if already in cart
+    quantity_before = cart.get(product_id_str, {}).get('quantity', 0)
+    
+    if product_id_str in cart:
+        cart[product_id_str]['quantity'] += 1
+    else:
+        cart[product_id_str] = {
+            'id': product.id,
+            'title': product.title,
+            'price': float(product.price),
+            'unit': product.unit,
+            'unit_display': product.get_unit_display(),
+            'image': product.image.url if product.image else '/static/placeholder.png',
+            'quantity': 1,
+            'zone_id': product.zone_id,
+            'zone_name': product.zone.name if product.zone else 'N/A'
+        }
+    
+    set_cart(request, cart)
+    
+    # Calculate total cart items
+    total_items = sum(item['quantity'] for item in cart.values())
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'"{product.title}" কার্টে যোগ করা হয়েছে',
+        'product': {
+            'id': product.id,
+            'title': product.title,
+            'price': float(product.price),
+            'unit': product.get_unit_display(),
+            'image': product.image.url if product.image else '/static/placeholder.png',
+        },
+        'cart_total_items': total_items,
+    })
+
+
 def view_cart(request):
     """Display cart items"""
     cart = get_cart(request)
