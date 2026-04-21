@@ -1,0 +1,253 @@
+{% extends 'shop/base.html' %}
+{% block title %}রাইডার ম্যানেজমেন্ট - ZoneDelivery{% endblock %}
+
+{% block content %}
+<div class="row" style="margin: 0; min-height: 100vh;">
+    <!-- Mobile Sidebar Overlay -->
+    <div class="dashboard-sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-2 p-0 dashboard-sidebar" id="dashboardSidebar">
+        {% include 'shop/manager/sidebar.html' %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-10 p-4">
+        <!-- Mobile Hamburger Button -->
+        <button class="dashboard-sidebar-toggle d-lg-none" id="sidebarToggle">
+            <i class="fas fa-bars"></i> Menu
+        </button>
+        
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="fw-bold">
+                    <i class="fas fa-motorcycle"></i> রাইডার ম্যানেজমেন্ট
+                </h1>
+                <p class="text-muted">সক্রিয় রাইডারদের পরিচালনা এবং ট্র্যাক করুন</p>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="রাইডার খুঁজুন..." 
+                           id="searchRiders" value="{{ search }}">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="mb-3">
+            <a href="{% url 'manager_riders' %}" 
+               class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-users"></i> সবাই
+            </a>
+            <a href="?status=active" 
+               class="btn btn-sm {% if status_filter == 'active' %}btn-success{% else %}btn-outline-success{% endif %}">
+                <i class="fas fa-check-circle"></i> সক্রিয়
+            </a>
+            <a href="?status=inactive" 
+               class="btn btn-sm {% if status_filter == 'inactive' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                <i class="fas fa-times-circle"></i> নিষ্ক্রিয়
+            </a>
+        </div>
+
+        <!-- Riders Grid -->
+        {% if riders %}
+            <div class="row g-3">
+                {% for rider in riders %}
+                <div class="col-lg-6 col-xl-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <!-- Rider Header -->
+                        <div class="card-header {% if rider.is_active %}bg-success{% else %}bg-secondary{% endif %} text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-0">{{ rider.user.first_name|default:rider.user.username }}</h5>
+                                    <small class="text-white-50">@{{ rider.user.username }}</small>
+                                </div>
+                                <span class="badge {% if rider.is_active %}bg-light text-success{% else %}bg-dark text-secondary{% endif %}">
+                                    {% if rider.is_active %}সক্রিয়{% else %}নিষ্ক্রিয়{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Rider Body -->
+                        <div class="card-body">
+                            <!-- Contact Info -->
+                            <div class="mb-3">
+                                <p class="mb-1">
+                                    <i class="fas fa-phone text-primary"></i>
+                                    <strong>ফোন:</strong>
+                                </p>
+                                <p class="ms-3 mb-0 text-muted">
+                                    {{ rider.profile.phone|default:"সংযুক্ত নয়" }}
+                                </p>
+                            </div>
+
+                            <!-- Stats Row 1 -->
+                            <div class="row text-center mb-3">
+                                <div class="col-4">
+                                    <div class="card bg-light border-0">
+                                        <div class="card-body p-2">
+                                            <h5 class="card-title text-primary mb-0">{{ rider.total_deliveries }}</h5>
+                                            <small class="text-muted">সম্পূর্ণ</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card bg-light border-0">
+                                        <div class="card-body p-2">
+                                            <h5 class="card-title text-warning mb-0">{{ rider.pending_orders }}</h5>
+                                            <small class="text-muted">চলমান</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="card bg-light border-0">
+                                        <div class="card-body p-2">
+                                            <h5 class="card-title text-info mb-0">{{ rider.delivered_today }}</h5>
+                                            <small class="text-muted">আজ</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stats Row 2 -->
+                            {% if rider.avg_delivery_time %}
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="card bg-light border-0">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title text-success mb-0">
+                                                <i class="fas fa-clock"></i> {{ rider.avg_delivery_time }} মিনিট
+                                            </h6>
+                                            <small class="text-muted">গড় সময়</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="card bg-light border-0">
+                                        <div class="card-body p-2">
+                                            <h6 class="card-title text-danger mb-0">
+                                                <i class="fas fa-times"></i> {{ rider.cancelled_orders }}
+                                            </h6>
+                                            <small class="text-muted">বাতিল</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Rider Footer -->
+                        <div class="card-footer bg-light border-top">
+                            <div class="d-grid gap-2">
+                                <a href="#" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-tasks"></i> অর্ডার অ্যাসাইন করুন
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <h5>কোনো রাইডার পাওয়া যাচ্ছে না</h5>
+                <p class="text-muted">সার্চ ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন।</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Sidebar Toggle Script -->
+<script>
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const dashboardSidebar = document.getElementById('dashboardSidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            dashboardSidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+        });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            dashboardSidebar.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+        });
+    }
+
+    // Search functionality
+    const searchInput = document.getElementById('searchRiders');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const currentUrl = new URL(window.location);
+            if (this.value) {
+                currentUrl.searchParams.set('search', this.value);
+            } else {
+                currentUrl.searchParams.delete('search');
+            }
+            window.history.replaceState({}, '', currentUrl);
+        });
+    }
+</script>
+
+<style>
+    .dashboard-sidebar {
+        background: linear-gradient(180deg, #52C77B 0%, #3DA670 100%);
+        color: white;
+        min-height: 100vh;
+        padding: 20px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1040;
+    }
+
+    @media (max-width: 991px) {
+        .dashboard-sidebar {
+            position: fixed;
+            left: -100%;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            z-index: 1050;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .dashboard-sidebar.show {
+            left: 0;
+        }
+
+        .dashboard-sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1040;
+        }
+
+        .dashboard-sidebar-overlay.show {
+            display: block;
+        }
+    }
+
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+{% endblock %}

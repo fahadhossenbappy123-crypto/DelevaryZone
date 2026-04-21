@@ -69,6 +69,7 @@ urlpatterns = [
     path('manager/', admin_views.manager_dashboard, name='manager_dashboard'),
     path('manager/order/<int:order_id>/approve/', admin_views.manager_approve_order, name='manager_approve_order'),
     path('manager/order/<int:order_id>/assign-rider/', admin_views.manager_assign_rider, name='manager_assign_rider'),
+    path('manager/riders/', admin_views.manager_riders, name='manager_riders'),
     
     # Manager Product Management
     path('manager/products/', admin_views.manager_products, name='manager_products'),

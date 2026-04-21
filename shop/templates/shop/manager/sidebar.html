@@ -241,6 +241,18 @@
         <div class="sidebar-divider"></div>
 
         <!-- Section Title -->
+        <div class="sidebar-section-title">ডেলিভারি ম্যানেজমেন্ট</div>
+
+        <!-- Riders Management -->
+        <a href="{% url 'manager_riders' %}" class="nav-link {% if request.resolver_match.url_name == 'manager_riders' %}active{% endif %}">
+            <i class="fas fa-motorcycle"></i>
+            <span>রাইডার ম্যানেজমেন্ট</span>
+        </a>
+
+        <!-- Divider -->
+        <div class="sidebar-divider"></div>
+
+        <!-- Section Title -->
         <div class="sidebar-section-title">জোন পরিচালনা</div>
 
         <!-- Products -->

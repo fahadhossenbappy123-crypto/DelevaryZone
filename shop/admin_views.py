@@ -673,6 +673,78 @@ def manager_assign_rider(request, order_id):
     return render(request, 'shop/manager/assign_rider.html', context)
 
 
+@login_required(login_url='login')
+@user_passes_test(is_manager)
+def manager_riders(request):
+    """Manager views and manages riders for their zone"""
+    from django.db.models import Count, Q, F
+    from django.utils import timezone
+    
+    manager = request.user.profile
+    
+    # Get all active riders in the system (managers can see all riders)
+    riders = User.objects.filter(
+        profile__role='rider'
+    ).select_related('profile').prefetch_related('orders_as_rider')
+    
+    # Annotate riders with statistics
+    riders = riders.annotate(
+        total_deliveries=Count('orders_as_rider', filter=Q(orders_as_rider__status='delivered')),
+        pending_orders=Count('orders_as_rider', filter=Q(orders_as_rider__status__in=['confirmed', 'picked'])),
+        cancelled_orders=Count('orders_as_rider', filter=Q(orders_as_rider__status='cancelled'))
+    ).order_by('-profile__is_active_rider', 'username')
+    
+    # Calculate additional stats for each rider
+    rider_list = []
+    for rider in riders:
+        delivered_today = rider.orders_as_rider.filter(
+            status='delivered',
+            delivered_at__date=timezone.now().date()
+        ).count()
+        
+        # Get average delivery time
+        completed_orders = rider.orders_as_rider.filter(status='delivered')
+        avg_delivery_time = None
+        if completed_orders.exists():
+            total_time = sum([
+                (order.delivered_at - order.updated_at).total_seconds() 
+                for order in completed_orders if order.delivered_at and order.updated_at
+            ])
+            avg_delivery_time = int(total_time / completed_orders.count() / 60) if total_time else None
+        
+        rider_list.append({
+            'user': rider,
+            'profile': rider.profile,
+            'total_deliveries': rider.total_deliveries,
+            'pending_orders': rider.pending_orders,
+            'cancelled_orders': rider.cancelled_orders,
+            'delivered_today': delivered_today,
+            'avg_delivery_time': avg_delivery_time,
+            'is_active': rider.profile.is_active_rider,
+        })
+    
+    # Search/Filter
+    search = request.GET.get('search')
+    status_filter = request.GET.get('status')  # 'active' or 'inactive'
+    
+    if search:
+        rider_list = [r for r in rider_list if search.lower() in r['user'].username.lower() or 
+                      (r['profile'].phone and search in r['profile'].phone)]
+    
+    if status_filter == 'active':
+        rider_list = [r for r in rider_list if r['is_active']]
+    elif status_filter == 'inactive':
+        rider_list = [r for r in rider_list if not r['is_active']]
+    
+    context = {
+        'riders': rider_list,
+        'manager': manager,
+        'search': search,
+        'status_filter': status_filter,
+    }
+    return render(request, 'shop/manager/riders.html', context)
+
+
 # ================ MANAGER PRODUCTS ================
 @login_required(login_url='login')
 @user_passes_test(is_manager)
