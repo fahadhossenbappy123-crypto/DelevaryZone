@@ -5,9 +5,9 @@ from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
 from django.conf import settings
-from .models import UserProfile, Zone, Category, Product, Order, OrderItem, Notification, HeroSlide
+from .models import UserProfile, Zone, Category, Product, Order, OrderItem, Notification, HeroSlide, NotificationPreference
 from .forms import UserRegisterForm, UserProfileForm
-from .views import create_notification
+from .notification_service import create_notification, update_order_notifications
 import json
 
 

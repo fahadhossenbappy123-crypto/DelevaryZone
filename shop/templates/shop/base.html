@@ -1231,6 +1231,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <a href="{% url 'notification_history' %}" class="btn btn-sm btn-info" data-bs-dismiss="modal">
+                        <i class="fas fa-history"></i> History
+                    </a>
+                    <a href="{% url 'notification_preferences' %}" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-sliders-h"></i> Settings
+                    </a>
                     <button type="button" class="btn btn-sm btn-outline-primary" onclick="markAllRead()">
                         <i class="fas fa-check-double"></i> Mark All as Read
                     </button>

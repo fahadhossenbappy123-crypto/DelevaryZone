@@ -1,0 +1,171 @@
+{% extends 'shop/base.html' %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-bell"></i> Notification History</h2>
+                {% if page_obj.paginator.count > 0 %}
+                <button class="btn btn-sm btn-outline-danger" onclick="clearAllNotifications()">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+                {% endif %}
+            </div>
+            
+            {% if page_obj %}
+                {% if page_obj.object_list %}
+                    <!-- Notifications List -->
+                    <div class="notification-list">
+                        {% for notif in page_obj.object_list %}
+                        <div class="notification-card card mb-3 {% if not notif.is_read %}unread{% endif %}" style="border-left: 4px solid {% if notif.notification_type == 'order_delivered' %}#28a745{% elif notif.notification_type == 'order_cancelled' %}#dc3545{% elif notif.notification_type == 'rider_assigned' %}#fd7e14{% elif notif.notification_type == 'order_processing' %}#ffc107{% else %}#0dcaf0{% endif %};">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title mb-1">
+                                            {% if notif.notification_type == 'order_confirmation' %}
+                                            <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                                            {% elif notif.notification_type == 'order_processing' %}
+                                            <i class="fas fa-hourglass-half" style="color: #ffc107;"></i>
+                                            {% elif notif.notification_type == 'order_picked' %}
+                                            <i class="fas fa-box" style="color: #17a2b8;"></i>
+                                            {% elif notif.notification_type == 'order_in_transit' %}
+                                            <i class="fas fa-truck" style="color: #0dcaf0;"></i>
+                                            {% elif notif.notification_type == 'order_delivered' %}
+                                            <i class="fas fa-check-double" style="color: #20c997;"></i>
+                                            {% elif notif.notification_type == 'order_cancelled' %}
+                                            <i class="fas fa-times-circle" style="color: #dc3545;"></i>
+                                            {% elif notif.notification_type == 'rider_assigned' %}
+                                            <i class="fas fa-motorcycle" style="color: #fd7e14;"></i>
+                                            {% elif notif.notification_type == 'rider_near' %}
+                                            <i class="fas fa-location-dot" style="color: #ff6b6b;"></i>
+                                            {% else %}
+                                            <i class="fas fa-info-circle" style="color: #0dcaf0;"></i>
+                                            {% endif %}
+                                            {{ notif.title }}
+                                        </h5>
+                                    </div>
+                                    <div class="text-muted small">{{ notif.created_at|date:'M d, Y H:i' }}</div>
+                                </div>
+                                
+                                <p class="card-text text-muted mb-2">{{ notif.message }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        {% if notif.order %}
+                                        <a href="{% url 'order_detail' notif.order.order_id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-arrow-right"></i> View Order #{{ notif.order.order_id }}
+                                        </a>
+                                        {% endif %}
+                                        {% if not notif.is_read %}
+                                        <span class="badge bg-info ms-2">Unread</span>
+                                        {% endif %}
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification({{ notif.id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <nav class="mt-4" aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                    <div class="text-center text-muted mt-3">
+                        <small>Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ total_count }} notifications</small>
+                    </div>
+                {% else %}
+                    <!-- Empty State -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fs-1 text-muted"></i>
+                        <p class="text-muted mt-3">No notifications yet</p>
+                        <a href="{% url 'home' %}" class="btn btn-primary mt-3">Continue Shopping</a>
+                    </div>
+                {% endif %}
+            {% endif %}
+            
+            <!-- Quick Links -->
+            <div class="mt-5 pt-4 border-top">
+                <div class="row">
+                    <div class="col-md-6">
+                        <a href="{% url 'notification_preferences' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-sliders-h"></i> Notification Settings
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteNotification(notifId) {
+    if (confirm('Delete this notification?')) {
+        fetch(`/en/api/notification/${notifId}/delete/`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+}
+
+function clearAllNotifications() {
+    if (confirm('Clear all notifications? This cannot be undone.')) {
+        fetch('/en/api/notifications/clear/', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+}
+</script>
+{% endblock %}

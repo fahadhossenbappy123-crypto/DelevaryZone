@@ -1,0 +1,200 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="mb-4"><i class="fas fa-bell"></i> Notification Preferences</h2>
+            
+            <form method="POST" class="notification-preferences-form">
+                {% csrf_token %}
+                
+                <!-- In-App Notifications Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-mobile-alt"></i> In-App Notifications</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="order_confirmation" name="order_confirmation" 
+                                   {% if prefs.order_confirmation %}checked{% endif %}>
+                            <label class="form-check-label" for="order_confirmation">
+                                <strong>Order Confirmation</strong>
+                                <br>
+                                <small class="text-muted">Get notified when your order is confirmed</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="order_updates" name="order_updates" 
+                                   {% if prefs.order_updates %}checked{% endif %}>
+                            <label class="form-check-label" for="order_updates">
+                                <strong>Order Updates</strong>
+                                <br>
+                                <small class="text-muted">Get notified about order status changes (processing, picked, delivered, etc.)</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="rider_assignments" name="rider_assignments" 
+                                   {% if prefs.rider_assignments %}checked{% endif %}>
+                            <label class="form-check-label" for="rider_assignments">
+                                <strong>Rider Assignments</strong>
+                                <br>
+                                <small class="text-muted">Get notified when a rider is assigned to your order</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="general_notifications" name="general_notifications" 
+                                   {% if prefs.general_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="general_notifications">
+                                <strong>General Notifications</strong>
+                                <br>
+                                <small class="text-muted">Get notified about general updates and announcements</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Email Notifications Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-envelope"></i> Email Notifications</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="email_on_order_updates" name="email_on_order_updates" 
+                                   {% if prefs.email_on_order_updates %}checked{% endif %}>
+                            <label class="form-check-label" for="email_on_order_updates">
+                                <strong>Email on Order Updates</strong>
+                                <br>
+                                <small class="text-muted">Receive email notifications for order status changes</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="email_on_delivery" name="email_on_delivery" 
+                                   {% if prefs.email_on_delivery %}checked{% endif %}>
+                            <label class="form-check-label" for="email_on_delivery">
+                                <strong>Email on Delivery</strong>
+                                <br>
+                                <small class="text-muted">Receive email when your order is delivered</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="email_on_cancellation" name="email_on_cancellation" 
+                                   {% if prefs.email_on_cancellation %}checked{% endif %}>
+                            <label class="form-check-label" for="email_on_cancellation">
+                                <strong>Email on Cancellation</strong>
+                                <br>
+                                <small class="text-muted">Receive email if your order is cancelled</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="email_digests" name="email_digests" 
+                                   {% if prefs.email_digests %}checked{% endif %}>
+                            <label class="form-check-label" for="email_digests">
+                                <strong>Daily Email Digest</strong>
+                                <br>
+                                <small class="text-muted">Receive a daily summary of all your notifications</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sound & Browser Notifications -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-volume-up"></i> Sound & Browser Notifications</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="enable_sound" name="enable_sound" 
+                                   {% if prefs.enable_sound %}checked{% endif %}>
+                            <label class="form-check-label" for="enable_sound">
+                                <strong>Enable Sound Alerts</strong>
+                                <br>
+                                <small class="text-muted">Play sound when you receive a new notification</small>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enable_browser_notifications" name="enable_browser_notifications" 
+                                   {% if prefs.enable_browser_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="enable_browser_notifications">
+                                <strong>Enable Browser Notifications</strong>
+                                <br>
+                                <small class="text-muted">Show desktop notifications even when you're away from the site</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quiet Hours Section -->
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-moon"></i> Quiet Hours</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="quiet_hours_enabled" name="quiet_hours_enabled" 
+                                   {% if prefs.quiet_hours_enabled %}checked{% endif %}
+                                   onchange="toggleQuietHours()">
+                            <label class="form-check-label" for="quiet_hours_enabled">
+                                <strong>Enable Quiet Hours</strong>
+                                <br>
+                                <small class="text-muted">Disable notifications during specific hours</small>
+                            </label>
+                        </div>
+                        
+                        <div id="quiet_hours_form" {% if not prefs.quiet_hours_enabled %}style="display: none;"{% endif %}>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="quiet_hours_start" class="form-label">Quiet Hours Start Time</label>
+                                    <input type="time" class="form-control" id="quiet_hours_start" name="quiet_hours_start" 
+                                           value="{% if prefs.quiet_hours_start %}{{ prefs.quiet_hours_start|date:'H:i' }}{% endif %}">
+                                    <small class="text-muted">e.g., 22:00 (10 PM)</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="quiet_hours_end" class="form-label">Quiet Hours End Time</label>
+                                    <input type="time" class="form-control" id="quiet_hours_end" name="quiet_hours_end" 
+                                           value="{% if prefs.quiet_hours_end %}{{ prefs.quiet_hours_end|date:'H:i' }}{% endif %}">
+                                    <small class="text-muted">e.g., 08:00 (8 AM)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                        <i class="fas fa-save"></i> Save Preferences
+                    </button>
+                    <a href="{% url 'home' %}" class="btn btn-secondary btn-lg flex-grow-1">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+            
+            <!-- Quick Links -->
+            <div class="text-center">
+                <a href="{% url 'notification_history' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-history"></i> View Notification History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleQuietHours() {
+    const enabled = document.getElementById('quiet_hours_enabled').checked;
+    const form = document.getElementById('quiet_hours_form');
+    form.style.display = enabled ? 'block' : 'none';
+}
+</script>
+{% endblock %}

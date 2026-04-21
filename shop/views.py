@@ -5,13 +5,21 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db import models
 from django.http import JsonResponse
-from .models import Category, Product, UserProfile, Zone, Order, OrderItem, Notification, HeroSlide
+from .models import Category, Product, UserProfile, Zone, Order, OrderItem, Notification, HeroSlide, NotificationPreference
 from .forms import UserRegisterForm, UserLoginForm, UserProfileForm, CheckoutForm
 from .utils import (
     calculate_distance, 
     check_location_in_zones,
     get_delivery_charge_for_zone,
     get_google_maps_api_key
+)
+from .notification_service import (
+    create_notification,
+    get_notifications,
+    get_unread_count,
+    delete_notification,
+    clear_all_notifications,
+    update_order_notifications,
 )
 import json
 import uuid
@@ -273,6 +281,8 @@ def rider_dashboard(request):
                     order.rider = request.user
                     order.status = 'confirmed'
                     order.save()
+                    # Create notifications
+                    update_order_notifications(order, 'confirmed')
                     messages.success(request, f'অর্ডার #{order.order_id} গ্রহণ করা হয়েছে।')
                 else:
                     messages.error(request, 'এই অর্ডার ইতিমধ্যে নিয়োগ করা হয়েছে।')
@@ -284,6 +294,8 @@ def rider_dashboard(request):
                     status = request.POST.get('status')
                     order.status = status
                     order.save()
+                    # Create notifications for status change
+                    update_order_notifications(order, status)
                     
                     status_text = 'পিক আপ' if status == 'picked' else 'ডেলিভারি সম্পন্ন'
                     messages.success(request, f'অর্ডার #{order.order_id} {status_text} চিহ্নিত করা হয়েছে।')
@@ -354,6 +366,8 @@ def rider_order_detail(request, order_id):
         if status in dict(Order._meta.get_field('status').choices):
             order.status = status
             order.save()
+            # Create notifications for status change
+            update_order_notifications(order, status)
             status_text = 'পিক আপ' if status == 'picked' else 'ডেলিভারি সম্পন্ন'
             messages.success(request, f'অর্ডার #{order.order_id} {status_text} চিহ্নিত করা হয়েছে।')
             return redirect('rider_order_detail', order_id=order.id)
@@ -736,8 +750,11 @@ def checkout(request):
 @login_required
 def get_notifications(request):
     """Get all notifications for logged-in user with unread count"""
-    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:10]
-    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    notifications = Notification.objects.filter(
+        user=request.user,
+        is_deleted=False
+    ).order_by('-created_at')[:10]
+    unread_count = get_unread_count(request.user)
     
     notifications_data = []
     for notif in notifications:
@@ -770,24 +787,91 @@ def mark_notification_read(request, notif_id):
 @login_required
 def mark_all_notifications_read(request):
     """Mark all notifications as read"""
-    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    Notification.objects.filter(user=request.user, is_read=False, is_deleted=False).update(is_read=True)
     
     return JsonResponse({'status': 'success'})
 
 
-def create_notification(user, notification_type, title, message, order=None):
-    """
-    Helper function to create notifications
-    Called from other views when order status changes
-    """
-    Notification.objects.create(
-        user=user,
-        notification_type=notification_type,
-        title=title,
-        message=message,
-        order=order,
-        is_read=False,
-    )
+@login_required
+def notification_history(request):
+    """View notification history page"""
+    notifications = Notification.objects.filter(
+        user=request.user,
+        is_deleted=False
+    ).order_by('-created_at')
+    
+    # Pagination
+    from django.core.paginator import Paginator
+    paginator = Paginator(notifications, 20)  # 20 notifications per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'total_count': notifications.count(),
+        'title': 'Notification History'
+    }
+    return render(request, 'shop/notification_history.html', context)
+
+
+@login_required
+def delete_notification_view(request, notif_id):
+    """Delete/archive a notification"""
+    try:
+        notification = get_object_or_404(Notification, id=notif_id, user=request.user)
+        delete_notification(notification)
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+@login_required
+def clear_notifications(request):
+    """Clear all notifications"""
+    if request.method == 'POST':
+        clear_all_notifications(request.user)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'}, status=400)
+
+
+@login_required
+def notification_preferences(request):
+    """View and edit notification preferences"""
+    try:
+        prefs = request.user.notification_preference
+    except NotificationPreference.DoesNotExist:
+        prefs = NotificationPreference.objects.create(user=request.user)
+    
+    if request.method == 'POST':
+        # Update preferences
+        prefs.order_updates = request.POST.get('order_updates') == 'on'
+        prefs.order_confirmation = request.POST.get('order_confirmation') == 'on'
+        prefs.rider_assignments = request.POST.get('rider_assignments') == 'on'
+        prefs.general_notifications = request.POST.get('general_notifications') == 'on'
+        
+        prefs.email_on_order_updates = request.POST.get('email_on_order_updates') == 'on'
+        prefs.email_on_delivery = request.POST.get('email_on_delivery') == 'on'
+        prefs.email_on_cancellation = request.POST.get('email_on_cancellation') == 'on'
+        prefs.email_digests = request.POST.get('email_digests') == 'on'
+        
+        prefs.enable_sound = request.POST.get('enable_sound') == 'on'
+        prefs.enable_browser_notifications = request.POST.get('enable_browser_notifications') == 'on'
+        
+        prefs.quiet_hours_enabled = request.POST.get('quiet_hours_enabled') == 'on'
+        if request.POST.get('quiet_hours_start'):
+            prefs.quiet_hours_start = request.POST.get('quiet_hours_start')
+        if request.POST.get('quiet_hours_end'):
+            prefs.quiet_hours_end = request.POST.get('quiet_hours_end')
+        
+        prefs.save()
+        messages.success(request, 'Notification preferences updated successfully!')
+        return redirect('notification_preferences')
+    
+    context = {
+        'prefs': prefs,
+        'title': 'Notification Preferences'
+    }
+    return render(request, 'shop/notification_preferences.html', context)
 
 
 
