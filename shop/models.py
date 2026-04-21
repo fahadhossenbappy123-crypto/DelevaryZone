@@ -179,16 +179,12 @@ class OrderItem(models.Model):
 
 # Notification Model
 class Notification(models.Model):
+    # Simple notification types
     NOTIFICATION_TYPES = [
         ('order_confirmation', 'Order Confirmed'),
-        ('order_processing', 'Order Processing'),
-        ('order_picked', 'Order Picked'),
-        ('order_in_transit', 'Order In Transit'),
         ('order_delivered', 'Order Delivered'),
         ('order_cancelled', 'Order Cancelled'),
         ('rider_assigned', 'Rider Assigned'),
-        ('rider_near', 'Rider Near You'),
-        ('payment_reminder', 'Payment Reminder'),
         ('general', 'General'),
     ]
     
@@ -197,20 +193,14 @@ class Notification(models.Model):
     title = models.CharField(max_length=200)
     message = models.TextField()
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
-    
-    # Status
     is_read = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=False)
-    email_sent = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    read_at = models.DateTimeField(blank=True, null=True)
     
     class Meta:
         ordering = ['-created_at']
         verbose_name_plural = "Notifications"
         indexes = [
             models.Index(fields=['user', '-created_at']),
-            models.Index(fields=['user', 'is_read']),
         ]
     
     def __str__(self):
@@ -219,45 +209,34 @@ class Notification(models.Model):
     def mark_as_read(self):
         """Mark notification as read"""
         if not self.is_read:
-            from django.utils import timezone
             self.is_read = True
-            self.read_at = timezone.now()
-            self.save(update_fields=['is_read', 'read_at'])
+            self.save(update_fields=['is_read'])
 
 
 # Notification Preferences Model
 class NotificationPreference(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_preference')
-    
-    # In-app notifications
-    order_updates = models.BooleanField(default=True, help_text="Get notified on order status updates")
-    order_confirmation = models.BooleanField(default=True, help_text="Get notified when order is confirmed")
-    rider_assignments = models.BooleanField(default=True, help_text="Get notified when rider is assigned")
-    general_notifications = models.BooleanField(default=True, help_text="Get notified about general updates")
-    
-    # Email notifications
-    email_on_order_updates = models.BooleanField(default=True, help_text="Send email on order updates")
-    email_on_delivery = models.BooleanField(default=True, help_text="Send email when order is delivered")
-    email_on_cancellation = models.BooleanField(default=True, help_text="Send email if order is cancelled")
-    email_digests = models.BooleanField(default=False, help_text="Receive daily digest of all notifications")
-    
-    # Sound and browser notifications
-    enable_sound = models.BooleanField(default=True, help_text="Play sound for new notifications")
-    enable_browser_notifications = models.BooleanField(default=True, help_text="Show browser notifications")
-    
-    # Quiet hours
-    quiet_hours_enabled = models.BooleanField(default=False, help_text="Enable quiet hours (no notifications)")
-    quiet_hours_start = models.TimeField(blank=True, null=True, help_text="Quiet hours start time (HH:MM)")
-    quiet_hours_end = models.TimeField(blank=True, null=True, help_text="Quiet hours end time (HH:MM)")
-    
+    order_updates = models.BooleanField(default=True, help_text='Get notified on order status updates')
+    order_confirmation = models.BooleanField(default=True, help_text='Get notified when order is confirmed')
+    rider_assignments = models.BooleanField(default=True, help_text='Get notified when rider is assigned')
+    general_notifications = models.BooleanField(default=True, help_text='Get notified about general updates')
+    email_on_order_updates = models.BooleanField(default=True, help_text='Send email on order updates')
+    email_on_delivery = models.BooleanField(default=True, help_text='Send email when order is delivered')
+    email_on_cancellation = models.BooleanField(default=True, help_text='Send email if order is cancelled')
+    email_digests = models.BooleanField(default=False, help_text='Receive daily digest of all notifications')
+    enable_sound = models.BooleanField(default=True, help_text='Play sound for new notifications')
+    enable_browser_notifications = models.BooleanField(default=True, help_text='Show browser notifications')
+    quiet_hours_enabled = models.BooleanField(default=False, help_text='Enable quiet hours (no notifications)')
+    quiet_hours_start = models.TimeField(null=True, blank=True, help_text='Quiet hours start time (HH:MM)')
+    quiet_hours_end = models.TimeField(null=True, blank=True, help_text='Quiet hours end time (HH:MM)')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
-        verbose_name_plural = "Notification Preferences"
-    
+        verbose_name_plural = 'Notification Preferences'
+
     def __str__(self):
-        return f"Notification Preferences - {self.user.username}"
+        return f"Preferences for {self.user.username}"
 
 
 # Hero Slide Model - For Homepage Carousel
