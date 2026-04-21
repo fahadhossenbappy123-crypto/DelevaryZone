@@ -685,6 +685,9 @@ def checkout(request):
                         order=order
                     )
                 
+                # Create notifications for managers in the zone
+                update_order_notifications(order, 'pending')
+                
                 # Redirect to order detail if user logged in
                 if request.user.is_authenticated:
                     return redirect('order_detail', order_id=order_id)

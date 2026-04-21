@@ -32,7 +32,7 @@ def should_notify_user(user, notification_type):
             if current_time >= start or current_time < end:
                 return False
     
-    # Check notification type preferences
+    # Check notification type preferences for in-app notifications
     if notification_type == 'order_confirmation':
         return prefs.order_confirmation
     elif notification_type in ['order_processing', 'order_picked', 'order_in_transit']:
@@ -49,6 +49,15 @@ def should_notify_user(user, notification_type):
         return prefs.general_notifications
     
     return True
+
+
+def can_play_sound(user):
+    """Check if user has sound notifications enabled"""
+    try:
+        prefs = user.notification_preference
+        return prefs.enable_sound
+    except NotificationPreference.DoesNotExist:
+        return True  # Default to enabled
 
 
 def send_notification_email(notification):
@@ -177,10 +186,25 @@ def update_order_notifications(order, status):
     """
     if status == 'pending':
         # Notification for managers in the zone
-        if order.zone and order.customer:
-            title = 'New Order Received'
-            message = f'Order #{order.order_id} from {order.customer.get_full_name() or order.customer.username} in {order.zone.name}'
-            # Managers will see this in their dashboard
+        if order.zone:
+            manager_users = User.objects.filter(
+                profile__role='manager',
+                profile__zone_assigned=order.zone
+            )
+            
+            customer_name = order.customer.get_full_name() or order.customer.username if order.customer else order.customer_phone
+            title = '🔔 New Order Received'
+            message = f'New Order #{order.order_id} from {customer_name} - ৳{order.total_amount} (Zone: {order.zone.name})'
+            
+            for manager in manager_users:
+                create_notification(
+                    user=manager,
+                    notification_type='order_confirmation',
+                    title=title,
+                    message=message,
+                    order=order,
+                    send_email=True
+                )
     
     elif status == 'approved':
         if order.customer:

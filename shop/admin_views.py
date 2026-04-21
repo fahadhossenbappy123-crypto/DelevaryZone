@@ -560,17 +560,19 @@ def manager_approve_order(request, order_id):
             order.manager = request.user
             order.manager_responded_at = timezone.now()
             order.save()
-            messages.success(request, f'অর্ডার {order.order_id} অনুমোদিত হয়েছে। এখন রাইডার নির্ধারণ করুন।')
             
-            # Create notification for customer
+            # Create notification for customer with email
             if order.customer:
                 create_notification(
                     user=order.customer,
                     notification_type='order_processing',
-                    title='Order Approved',
+                    title='Order Approved ✓',
                     message=f'Your order #{order.order_id} has been approved. Rider will be assigned soon.',
-                    order=order
+                    order=order,
+                    send_email=True
                 )
+            
+            messages.success(request, f'অর্ডার {order.order_id} অনুমোদিত হয়েছে। এখন রাইডার নির্ধারণ করুন।')
             
         elif action == 'reject':
             reason = request.POST.get('reason', '')
@@ -579,17 +581,19 @@ def manager_approve_order(request, order_id):
             order.manager_approval_reason = reason
             order.manager_responded_at = timezone.now()
             order.save()
-            messages.info(request, f'অর্ডার {order.order_id} প্রত্যাখ্যান করা হয়েছে।')
             
-            # Create notification for customer
+            # Create notification for customer with email
             if order.customer:
                 create_notification(
                     user=order.customer,
                     notification_type='order_cancelled',
-                    title='Order Cancelled',
+                    title='Order Cancelled ✗',
                     message=f'Your order #{order.order_id} has been cancelled. Reason: {reason}',
-                    order=order
+                    order=order,
+                    send_email=True
                 )
+            
+            messages.info(request, f'অর্ডার {order.order_id} প্রত্যাখ্যান করা হয়েছে।')
         
         return redirect('manager_dashboard')
     

@@ -18,7 +18,7 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <p>
-                                <strong>নাম:</strong> {{ order.customer_phone }}<br>
+                                <strong>নাম:</strong> {% if order.customer %}{{ order.customer.get_full_name|default:order.customer.username }}{% else %}{{ order.customer_phone }}{% endif %}<br>
                                 <strong>ফোন:</strong> {{ order.customer_phone }}<br>
                                 <strong>ই-মেইল:</strong> {{ order.customer_email }}
                             </p>
@@ -138,7 +138,25 @@
 document.getElementById('rejectForm').addEventListener('submit', function(e) {
     if (!confirm('আপনি কি নিশ্চিত যে এই অর্ডার প্রত্যাখ্যান করতে চান?')) {
         e.preventDefault();
+    } else {
+        // Play sound and trigger notification
+        if (typeof playNotificationSound === 'function') {
+            playNotificationSound();
+        }
     }
+});
+
+// Add sound alert for approve action
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const action = this.querySelector('input[name="action"]').value;
+        if (action === 'approve') {
+            // Play sound for approval
+            if (typeof playNotificationSound === 'function') {
+                playNotificationSound();
+            }
+        }
+    });
 });
 </script>
 
