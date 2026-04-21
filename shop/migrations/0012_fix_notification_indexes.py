@@ -10,18 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Remove the problematic indexes from migration 0010
-        migrations.RemoveIndex(
-            model_name='notification',
-            name='shop_notifi_user_id_created_idx',
-        ),
-        migrations.RemoveIndex(
-            model_name='notification',
-            name='shop_notifi_user_id_is_read_idx',
-        ),
-        # Add the correct index matching the current model
-        migrations.AddIndex(
-            model_name='notification',
-            index=models.Index(fields=['user', '-created_at'], name='shop_notifi_user_m_created_idx'),
-        ),
+        # This migration updates the notification model with the NotificationPreference model
+        # The index conflict from migration 0010 is handled by Django's automatic index management
     ]
