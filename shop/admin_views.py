@@ -685,25 +685,25 @@ def manager_riders(request):
     # Get all active riders in the system (managers can see all riders)
     riders = User.objects.filter(
         profile__role='rider'
-    ).select_related('profile').prefetch_related('orders_as_rider')
+    ).select_related('profile').prefetch_related('deliveries')
     
     # Annotate riders with statistics
     riders = riders.annotate(
-        total_deliveries=Count('orders_as_rider', filter=Q(orders_as_rider__status='delivered')),
-        pending_orders=Count('orders_as_rider', filter=Q(orders_as_rider__status__in=['confirmed', 'picked'])),
-        cancelled_orders=Count('orders_as_rider', filter=Q(orders_as_rider__status='cancelled'))
+        total_deliveries=Count('deliveries', filter=Q(deliveries__status='delivered')),
+        pending_orders=Count('deliveries', filter=Q(deliveries__status__in=['confirmed', 'picked'])),
+        cancelled_orders=Count('deliveries', filter=Q(deliveries__status='cancelled'))
     ).order_by('-profile__is_active_rider', 'username')
     
     # Calculate additional stats for each rider
     rider_list = []
     for rider in riders:
-        delivered_today = rider.orders_as_rider.filter(
+        delivered_today = rider.deliveries.filter(
             status='delivered',
             delivered_at__date=timezone.now().date()
         ).count()
         
         # Get average delivery time
-        completed_orders = rider.orders_as_rider.filter(status='delivered')
+        completed_orders = rider.deliveries.filter(status='delivered')
         avg_delivery_time = None
         if completed_orders.exists():
             total_time = sum([
