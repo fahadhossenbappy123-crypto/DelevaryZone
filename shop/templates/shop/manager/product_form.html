@@ -84,6 +84,16 @@
                         {% endif %}
                     </div>
 
+                    <!-- Delivery Time -->
+                    <div class="mb-3">
+                        <label class="form-label">ডেলিভারি সময় (মিনিটে) *</label>
+                        <div class="input-group">
+                            <input type="number" name="delivery_time" class="form-control" min="1" step="1" placeholder="45" value="{{ product.delivery_time|default:45 }}" required>
+                            <span class="input-group-text"><i class="fas fa-clock"></i> মিনিট</span>
+                        </div>
+                        <small class="text-muted d-block mt-1">ডিফল্ট: ৪৫ মিনিট</small>
+                    </div>
+
                     {% if product %}
                     <!-- Availability -->
                     <div class="mb-3 form-check">

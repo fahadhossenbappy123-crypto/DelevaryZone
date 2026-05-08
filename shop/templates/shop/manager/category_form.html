@@ -47,6 +47,24 @@
                         {% endif %}
                     </div>
 
+                    <!-- Position -->
+                    <div class="mb-3">
+                        <label class="form-label">অবস্থান *</label>
+                        <select name="position" class="form-control" required>
+                            <option value="top" {% if category.position == 'top' %}selected{% endif %}>উপরে</option>
+                            <option value="middle" {% if category.position == 'middle' or not category.position %}selected{% endif %}>মাঝখানে</option>
+                            <option value="bottom" {% if category.position == 'bottom' %}selected{% endif %}>নিচে</option>
+                        </select>
+                        <small class="text-muted">ক্যাটেগরি কোথায় দেখাবে তা নির্ধারণ করুন</small>
+                    </div>
+
+                    <!-- Display Order -->
+                    <div class="mb-3">
+                        <label class="form-label">প্রদর্শন ক্রম</label>
+                        <input type="number" name="display_order" class="form-control" placeholder="0" value="{{ category.display_order|default:0 }}" min="0">
+                        <small class="text-muted">একই অবস্থানের মধ্যে ক্রম নির্ধারণ (ছোট সংখ্যা = আগে দেখাবে)</small>
+                    </div>
+
                     <!-- Buttons -->
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">

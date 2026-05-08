@@ -3,6 +3,14 @@
  * Handles Add to Cart with animated notifications
  */
 
+function isUserAuthenticated() {
+    return document.body.dataset.isAuthenticated === '1';
+}
+
+function getLoginUrl() {
+    return document.body.dataset.loginUrl || '/login/';
+}
+
 // Show toast notification
 function showToast(title, message, type = 'success') {
     const toastHTML = `
@@ -29,7 +37,8 @@ function showToast(title, message, type = 'success') {
         toastContainer.style.cssText = `
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 20px;
+            right: auto;
             z-index: 9999;
         `;
         document.body.appendChild(toastContainer);
@@ -53,6 +62,11 @@ function showToast(title, message, type = 'success') {
 
 // Add to cart with AJAX
 function addToCartAjax(productId) {
+    if (!isUserAuthenticated()) {
+        window.location.href = getLoginUrl();
+        return;
+    }
+
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
                       document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     

@@ -24,6 +24,13 @@ IS_PRODUCTION = IS_RENDER or os.getenv('ENVIRONMENT') == 'production'
 # Set SECRET_KEY in environment variables for production
 SECRET_KEY = config('SECRET_KEY', default='')
 
+# ============ ADMIN LOGIN CONFIGURATION ============
+# These values can be set in .env and used to bootstrap a default admin user.
+ADMIN_USERNAME = config('ADMIN_USERNAME', default=None)
+ADMIN_PASSWORD = config('ADMIN_PASSWORD', default=None)
+ADMIN_EMAIL = config('ADMIN_EMAIL', default='admin@example.com')
+ADMIN_CREATE_DEFAULT = config('ADMIN_CREATE_DEFAULT', default=False, cast=bool)
+
 DEBUG = config('DEBUG', default=False if IS_PRODUCTION else True, cast=bool)
 
 # Allowed Hosts Configuration
@@ -54,7 +61,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -144,7 +150,7 @@ else:
     # Development and Production without Redis - use database (most reliable)
     SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_AGE = 2592000  # 1 month
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
 SESSION_COOKIE_SECURE = IS_PRODUCTION  # HTTPS only in production
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
@@ -274,6 +280,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ============ GOOGLE MAPS API CONFIGURATION ============
 # Set GOOGLE_MAPS_API_KEY in environment variables
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY', default='')
+
+# ============ GOOGLE OAUTH CONFIGURATION ============
+GOOGLE_OAUTH_CLIENT_ID = config('GOOGLE_OAUTH_CLIENT_ID', default='')
+GOOGLE_OAUTH_CLIENT_SECRET = config('GOOGLE_OAUTH_CLIENT_SECRET', default='')
+GOOGLE_OAUTH_REDIRECT_URI = config('GOOGLE_OAUTH_REDIRECT_URI', default='http://localhost:8000/google-callback/')
 
 # ============ PERFORMANCE OPTIMIZATION ============
 # Use atomic database transactions for better performance

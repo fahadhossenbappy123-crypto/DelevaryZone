@@ -1,0 +1,279 @@
+{% extends 'shop/base.html' %}
+{% load translate_tags %}
+{% block title %}Recommendation Settings - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Admin Panel</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'admin_dashboard' %}" class="list-group-item list-group-item-action">Dashboard</a>
+                    <a href="{% url 'admin_users' %}" class="list-group-item list-group-item-action">Users</a>
+                    <a href="{% url 'admin_zones' %}" class="list-group-item list-group-item-action">Zones</a>
+                    <a href="{% url 'admin_categories' %}" class="list-group-item list-group-item-action">Categories</a>
+                    <a href="{% url 'admin_products' %}" class="list-group-item list-group-item-action">Products</a>
+                    <a href="{% url 'admin_orders' %}" class="list-group-item list-group-item-action">Orders</a>
+                    <a href="{% url 'admin_recommendations' %}" class="list-group-item list-group-item-action">Recommendations</a>
+                    <a href="{% url 'admin_hero_slides' %}" class="list-group-item list-group-item-action">Hero Slides</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-sliders-h"></i> Recommendation Settings</h2>
+                <a href="{% url 'admin_recommendations' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Recommendations
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-balance-scale"></i> Algorithm Weights</h5>
+                    <small class="text-muted">Adjust the weights for different recommendation algorithms. Higher weights give more importance to that algorithm.</small>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Personalization Algorithms</h6>
+
+                                <div class="mb-3">
+                                    <label for="weight_location_based" class="form-label">
+                                        <i class="fas fa-map-marker-alt"></i> Location Based
+                                        <small class="text-muted d-block">Recommends products from nearby zones</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_location_based" name="weight_location_based"
+                                           value="{{ current_weights.location_based|default:1.0 }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="weight_category_based" class="form-label">
+                                        <i class="fas fa-folder"></i> Category Based
+                                        <small class="text-muted d-block">Recommends products from preferred categories</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_category_based" name="weight_category_based"
+                                           value="{{ current_weights.category_based|default:1.0 }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="weight_purchase_history" class="form-label">
+                                        <i class="fas fa-shopping-cart"></i> Purchase History
+                                        <small class="text-muted d-block">Recommends products similar to past purchases</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_purchase_history" name="weight_purchase_history"
+                                           value="{{ current_weights.purchase_history|default:1.0 }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="weight_view_history" class="form-label">
+                                        <i class="fas fa-eye"></i> View History
+                                        <small class="text-muted d-block">Recommends products user has viewed before</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_view_history" name="weight_view_history"
+                                           value="{{ current_weights.view_history|default:1.0 }}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h6 class="mb-3">Global Algorithms</h6>
+
+                                <div class="mb-3">
+                                    <label for="weight_time_based" class="form-label">
+                                        <i class="fas fa-clock"></i> Time Based
+                                        <small class="text-muted d-block">Recommends seasonal or time-relevant products</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_time_based" name="weight_time_based"
+                                           value="{{ current_weights.time_based|default:1.0 }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="weight_popularity_based" class="form-label">
+                                        <i class="fas fa-fire"></i> Popularity Based
+                                        <small class="text-muted d-block">Recommends most viewed/popular products</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_popularity_based" name="weight_popularity_based"
+                                           value="{{ current_weights.popularity_based|default:1.0 }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="weight_similar_users" class="form-label">
+                                        <i class="fas fa-users"></i> Similar Users
+                                        <small class="text-muted d-block">Recommends products liked by similar users</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_similar_users" name="weight_similar_users"
+                                           value="{{ current_weights.similar_users|default:1.0 }}">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="weight_trending" class="form-label">
+                                        <i class="fas fa-chart-line"></i> Trending
+                                        <small class="text-muted d-block">Recommends currently trending products</small>
+                                    </label>
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control"
+                                           id="weight_trending" name="weight_trending"
+                                           value="{{ current_weights.trending|default:1.0 }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Changes to algorithm weights will take effect immediately for new recommendations.
+                            Existing cached recommendations may still use old weights.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Settings
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetWeights()">
+                                <i class="fas fa-undo"></i> Reset to Default
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Algorithm Explanations -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-question-circle"></i> Algorithm Explanations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="algorithmAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#location">
+                                    Location Based Algorithm
+                                </button>
+                            </h2>
+                            <div id="location" class="accordion-collapse collapse show" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Prioritizes products from zones geographically close to the user's location or preferred delivery area.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#category">
+                                    Category Based Algorithm
+                                </button>
+                            </h2>
+                            <div id="category" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Recommends products from categories that the user has shown interest in through views, purchases, or preferences.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#purchase">
+                                    Purchase History Algorithm
+                                </button>
+                            </h2>
+                            <div id="purchase" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Analyzes user's past orders to recommend similar products or products commonly purchased together.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#view">
+                                    View History Algorithm
+                                </button>
+                            </h2>
+                            <div id="view" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Tracks product views to recommend items that the user has shown interest in but hasn't purchased yet.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#time">
+                                    Time Based Algorithm
+                                </button>
+                            </h2>
+                            <div id="time" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Considers time of day, day of week, and seasonal factors to recommend appropriate products.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#popularity">
+                                    Popularity Based Algorithm
+                                </button>
+                            </h2>
+                            <div id="popularity" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Recommends products that are currently popular or have high view/purchase counts across all users.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#similar">
+                                    Similar Users Algorithm
+                                </button>
+                            </h2>
+                            <div id="similar" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Finds users with similar preferences and recommends products that those similar users have liked.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#trending">
+                                    Trending Algorithm
+                                </button>
+                            </h2>
+                            <div id="trending" class="accordion-collapse collapse" data-bs-parent="#algorithmAccordion">
+                                <div class="accordion-body">
+                                    Identifies products with rapidly increasing popularity or view counts in recent time periods.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function resetWeights() {
+    // Reset all weight inputs to 1.0
+    const inputs = document.querySelectorAll('input[type="number"]');
+    inputs.forEach(input => {
+        input.value = '1.0';
+    });
+}
+</script>
+{% endblock %}

@@ -9,6 +9,7 @@ from django.conf import settings
 from django.utils import timezone
 from datetime import time
 from .models import Notification, NotificationPreference, Order
+from .firebase_config import push_realtime_notification
 
 
 def should_notify_user(user, notification_type):
@@ -38,7 +39,7 @@ def should_notify_user(user, notification_type):
     elif notification_type in ['order_processing', 'order_picked', 'order_in_transit']:
         return prefs.order_updates
     elif notification_type == 'order_delivered':
-        return prefs.order_updates and prefs.order_updates
+        return prefs.order_updates
     elif notification_type == 'order_cancelled':
         return prefs.order_updates
     elif notification_type == 'rider_assigned':
@@ -143,6 +144,9 @@ def create_notification(user, notification_type, title, message, order=None, sen
             is_read=False,
         )
         
+        # Push notification to Firebase Realtime DB for live sync
+        push_realtime_notification(notification)
+
         # Send email notification if enabled and requested
         if send_email:
             send_notification_email(notification)
@@ -199,7 +203,7 @@ def update_order_notifications(order, status):
             for manager in manager_users:
                 create_notification(
                     user=manager,
-                    notification_type='order_confirmation',
+                    notification_type='rider_assigned',
                     title=title,
                     message=message,
                     order=order,
@@ -246,6 +250,10 @@ def update_order_notifications(order, status):
             )
     
     elif status == 'delivered':
+        # BUG FIX #4: Update delivered_at timestamp
+        order.delivered_at = timezone.now()
+        order.save()
+        
         if order.customer:
             create_notification(
                 user=order.customer,

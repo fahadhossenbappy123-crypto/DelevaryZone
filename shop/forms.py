@@ -5,6 +5,21 @@ from .models import UserProfile, Zone
 
 
 class UserRegisterForm(UserCreationForm):
+    first_name = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'প্রথম নাম'
+    }))
+    last_name = forms.CharField(max_length=100, required=True, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'শেষ নাম'
+    }))
+    phone = forms.CharField(max_length=15, required=True, widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'type': 'tel',
+        'placeholder': 'মোবাইল নম্বর',
+        'pattern': '[0-9+\\-\\s()]*',
+        'inputmode': 'tel'
+    }))
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
         'class': 'form-control',
         'placeholder': 'আপনার ই-মেইল'
@@ -15,16 +30,18 @@ class UserRegisterForm(UserCreationForm):
     }))
     password1 = forms.CharField(label='পাসওয়ার্ড', widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)'
+        'placeholder': 'পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)',
+        'id': 'registerPassword1'
     }))
     password2 = forms.CharField(label='পাসওয়ার্ড নিশ্চিতকরণ', widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'পাসওয়ার্ড আবার লিখুন'
+        'placeholder': 'পাসওয়ার্ড আবার লিখুন',
+        'id': 'registerPassword2'
     }))
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2')
+        fields = ('first_name', 'last_name', 'username', 'email', 'password1', 'password2')
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -32,15 +49,29 @@ class UserRegisterForm(UserCreationForm):
             raise forms.ValidationError('এই ই-মেইল ইতিমধ্যে ব্যবহৃত হয়েছে।')
         return email
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.first_name = self.cleaned_data.get('first_name', '')
+        user.last_name = self.cleaned_data.get('last_name', '')
+        if commit:
+            user.save()
+            UserProfile.objects.create(
+                user=user,
+                role='customer',
+                phone=self.cleaned_data.get('phone', '')
+            )
+        return user
+
 
 class UserLoginForm(forms.Form):
-    username = forms.CharField(max_length=100, widget=forms.TextInput(attrs={
+    identifier = forms.CharField(max_length=255, widget=forms.TextInput(attrs={
         'class': 'form-control mb-3',
-        'placeholder': 'ইউজারনেম'
+        'placeholder': 'Email বা Mobile Number'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control mb-3',
-        'placeholder': 'পাসওয়ার্ড'
+        'placeholder': 'পাসওয়ার্ড',
+        'id': 'loginPassword'
     }))
 
 

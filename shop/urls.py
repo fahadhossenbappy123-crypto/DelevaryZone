@@ -5,9 +5,13 @@ from . import admin_views
 urlpatterns = [
     # Home & Auth
     path('', views.home, name='home'),
+    path('product/<int:product_id>/', views.product_detail, name='product_detail'),
     path('category/<slug:slug>/', views.category_detail, name='category_detail'),
     path('register/', views.register, name='register'),
     path('login/', views.user_login, name='login'),
+    path('google-login/', views.google_login, name='google_login'),
+    path('google-callback/', views.google_callback, name='google_callback'),
+    path('auth/google/callback/', views.google_callback),
     path('logout/', views.user_logout, name='logout'),
     path('admin-register/', views.admin_register, name='admin_register'),
     
@@ -16,7 +20,7 @@ urlpatterns = [
     
     # Orders
     path('my-orders/', views.my_orders, name='my_orders'),
-    path('order/<str:order_id>/', views.order_detail, name='order_detail'),
+    path('order/<int:order_id>/', views.order_detail, name='order_detail'),
     
     # Shopping Cart
     path('cart/', views.view_cart, name='view_cart'),
@@ -29,11 +33,13 @@ urlpatterns = [
     # Rider
     path('rider/dashboard/', views.rider_dashboard, name='rider_dashboard'),
     path('rider/order/<int:order_id>/', views.rider_order_detail, name='rider_order_detail'),
+    path('rider/order/<int:order_id>/return/', views.rider_return_delivery, name='rider_return_delivery'),
     
     # Map & Geolocation
     path('map/', views.user_map, name='user_map'),
     path('api/zones/', views.api_zones, name='api_zones'),
     path('api/check-location/', views.api_check_location, name='api_check_location'),
+    path('api/active-notices/', views.api_active_notices, name='api_active_notices'),
     
     # ============ ADMIN PANEL (CUSTOM) ============
     # Admin Dashboard
@@ -63,12 +69,13 @@ urlpatterns = [
     
     # Order Management
     path('dashboard/orders/', admin_views.admin_orders, name='admin_orders'),
-    path('dashboard/order/<str:order_id>/', admin_views.admin_order_detail, name='admin_order_detail'),
+    path('dashboard/order/<int:order_id>/', admin_views.admin_order_detail, name='admin_order_detail'),
     
     # ============ MANAGER PANEL ============
     path('manager/', admin_views.manager_dashboard, name='manager_dashboard'),
     path('manager/order/<int:order_id>/approve/', admin_views.manager_approve_order, name='manager_approve_order'),
     path('manager/order/<int:order_id>/assign-rider/', admin_views.manager_assign_rider, name='manager_assign_rider'),
+    path('manager/order/<int:order_id>/return-request/', admin_views.manager_return_request, name='manager_return_request'),
     path('manager/riders/', admin_views.manager_riders, name='manager_riders'),
     
     # Manager Product Management
@@ -88,6 +95,16 @@ urlpatterns = [
     path('dashboard/hero-slide/add/', admin_views.admin_hero_slide_add, name='admin_hero_slide_add'),
     path('dashboard/hero-slide/<int:slide_id>/edit/', admin_views.admin_hero_slide_edit, name='admin_hero_slide_edit'),
     path('dashboard/hero-slide/<int:slide_id>/delete/', admin_views.admin_hero_slide_delete, name='admin_hero_slide_delete'),
+    
+    # ============ RECOMMENDATION MANAGEMENT ============
+    path('dashboard/recommendations/', admin_views.admin_recommendations, name='admin_recommendations'),
+    path('dashboard/recommendation-settings/', admin_views.admin_recommendation_settings, name='admin_recommendation_settings'),
+    
+    # ============ ADMIN NOTICES ============
+    path('dashboard/notices/', admin_views.admin_notices, name='admin_notices'),
+    path('dashboard/notice/add/', admin_views.admin_notice_add, name='admin_notice_add'),
+    path('dashboard/notice/<int:notice_id>/edit/', admin_views.admin_notice_edit, name='admin_notice_edit'),
+    path('dashboard/notice/<int:notice_id>/delete/', admin_views.admin_notice_delete, name='admin_notice_delete'),
     
     # ============ NOTIFICATION URLS ============
     path('api/notifications/', views.get_notifications, name='get_notifications'),

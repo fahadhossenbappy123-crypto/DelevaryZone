@@ -106,7 +106,7 @@
                                 </td>
                                 <td>{{ order.created_at|date:"d M, Y" }}</td>
                                 <td>
-                                    <a href="{% url 'admin_order_detail' order.order_id %}" class="btn btn-sm btn-primary">
+                                    <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-sm btn-primary">
                                         <i class="fas fa-eye"></i> বিস্তারিত
                                     </a>
                                 </td>
@@ -138,6 +138,54 @@
 <div id="ordersData" style="display: none;" data-orders="{{ orders_json }}"></div>
 
 <!-- Google Maps API -->
+<script>
+    // Check if API key exists
+    const googleMapsApiKey = '{{ google_maps_api_key }}';
+    if (!googleMapsApiKey || googleMapsApiKey.trim() === '') {
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapContainer = document.getElementById('adminOrdersMap');
+            if (mapContainer) {
+                mapContainer.style.display = 'flex';
+                mapContainer.style.alignItems = 'center';
+                mapContainer.style.justifyContent = 'center';
+                mapContainer.style.background = '#f8f9fa';
+                mapContainer.innerHTML = `
+                    <div class="text-center p-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-danger">Google Maps API Key Missing</h5>
+                        <p class="text-muted">Please configure Google Maps API key in settings.</p>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        // Set up Google Maps error handler
+        window.gm_authFailure = function() {
+            const mapContainer = document.getElementById('adminOrdersMap');
+            if (mapContainer) {
+                mapContainer.style.display = 'flex';
+                mapContainer.style.alignItems = 'center';
+                mapContainer.style.justifyContent = 'center';
+                mapContainer.style.background = '#f8f9fa';
+                mapContainer.innerHTML = `
+                    <div class="text-center p-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h5 class="text-danger">Google Maps Authentication Failed</h5>
+                        <p class="text-muted mb-2">Possible causes:</p>
+                        <ul class="text-start mb-3" style="font-size: 0.9rem; max-width: 300px; margin: 0 auto;">
+                            <li>API key is invalid or expired</li>
+                            <li>API key has referrer restrictions</li>
+                            <li>Maps JavaScript API not enabled</li>
+                            <li>Billing not set up in Google Cloud</li>
+                        </ul>
+                        <p class="mb-0" style="font-size: 0.8rem;">API Key: <code>{{ google_maps_api_key|slice:":20" }}...</code></p>
+                    </div>
+                `;
+            }
+            console.error('Google Maps authentication failed');
+        };
+    }
+</script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
 
 <script>
@@ -158,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const allOrders = JSON.parse(ordersDataElement.getAttribute('data-orders'));
 
             
-            const validOrders = allOrders.filter(order => order.lat && order.lng);
+            const validOrders = allOrders.filter(order => order.latitude && order.longitude);
             const markers = [];
             const bounds = new google.maps.LatLngBounds();
             
@@ -174,23 +222,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 const markerColor = statusColors[order.status] || '#6f42c1';
                 
                 const marker = new google.maps.Marker({
-                    position: {lat: order.lat, lng: order.lng},
+                    position: {lat: order.latitude, lng: order.longitude},
                     map: adminMap,
-                    title: `অর্ডার #${order.id}`
+                    title: `অর্ডার #${order.order_id}`
                 });
                 
                 const infoWindow = new google.maps.InfoWindow({
                     content: `<div style="min-width: 280px; padding: 10px;">
-                        <h6 class="fw-bold mb-2">অর্ডার #${order.id}</h6>
+                        <h6 class="fw-bold mb-2">অর্ডার #${order.order_id}</h6>
                         <p class="mb-2"><i class="fas fa-user"></i> <strong>${order.customer}</strong></p>
-                        <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> ${order.address}</p>
+                        <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> ${order.customer_address}</p>
                         <p class="mb-2"><i class="fas fa-layer-group"></i> জোন: <strong>${order.zone}</strong></p>
-                        <p class="mb-2"><i class="fas fa-money-bill"></i> মূল্য: <strong>৳${order.total}</strong></p>
+                        <p class="mb-2"><i class="fas fa-money-bill"></i> মূল্য: <strong>৳${order.total_amount}</strong></p>
                         <p class="mb-2"><i class="fas fa-motorcycle"></i> রাইডার: <strong>${order.rider || 'নির্ধারিত নয়'}</strong></p>
                         <p class="mb-2">
                             <span class="badge" style="background: ${markerColor}; color: white;">${order.status}</span>
                         </p>
-                        <a href="/dashboard/order/${order.id}/" class="btn btn-sm btn-primary w-100 mt-2">
+                        <a href="/dashboard/order/${order.order_id}/" class="btn btn-sm btn-primary w-100 mt-2">
                             <i class="fas fa-eye"></i> বিস্তারিত
                         </a>
                     </div>`

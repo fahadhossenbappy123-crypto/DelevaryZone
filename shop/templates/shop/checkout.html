@@ -246,7 +246,56 @@
 </div>
 
 <!-- Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+<script>
+    // Check if API key exists
+    const googleMapsApiKey = '{{ google_maps_api_key }}';
+    if (!googleMapsApiKey || googleMapsApiKey.trim() === '') {
+        // Show error in map container
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapContainer = document.getElementById('checkoutMap');
+            if (mapContainer) {
+                mapContainer.style.display = 'flex';
+                mapContainer.style.alignItems = 'center';
+                mapContainer.style.justifyContent = 'center';
+                mapContainer.style.background = '#f8f9fa';
+                mapContainer.innerHTML = `
+                    <div class="text-center p-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-danger">Google Maps API Key Missing</h5>
+                        <p class="text-muted">Please contact support to configure Google Maps.</p>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        // Set up Google Maps error handler
+        window.gm_authFailure = function() {
+            const mapContainer = document.getElementById('checkoutMap');
+            if (mapContainer) {
+                mapContainer.style.display = 'flex';
+                mapContainer.style.alignItems = 'center';
+                mapContainer.style.justifyContent = 'center';
+                mapContainer.style.background = '#f8f9fa';
+                mapContainer.innerHTML = `
+                    <div class="text-center p-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h5 class="text-danger">Google Maps Authentication Failed</h5>
+                        <p class="text-muted mb-2">Possible causes:</p>
+                        <ul class="text-start mb-3" style="font-size: 0.9rem; max-width: 300px; margin: 0 auto;">
+                            <li>API key is invalid or expired</li>
+                            <li>API key has referrer restrictions</li>
+                            <li>Maps JavaScript API not enabled</li>
+                            <li>Billing not set up in Google Cloud</li>
+                        </ul>
+                        <p class="mb-0" style="font-size: 0.8rem;">API Key: <code>{{ google_maps_api_key|slice:":20" }}...</code></p>
+                    </div>
+                `;
+            }
+            console.error('Google Maps authentication failed');
+        };
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}" async defer></script>
 
 <style>
     .form-select, .form-control {
@@ -432,63 +481,78 @@ function toggleMapMode() {
 
 // Initialize Checkout Map
 function initCheckoutMap() {
+    // Check if Google Maps API is loaded
+    if (typeof google === 'undefined' || !google.maps) {
+        showLocationStatus('❌ Google Maps API লোড হয়নি। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।', 'danger');
+        return;
+    }
+    
     const dhaka = {lat: 23.8103, lng: 90.4125};
     
-    checkoutMap = new google.maps.Map(document.getElementById('checkoutMap'), {
-        zoom: 12,
-        center: dhaka,
-        mapTypeId: 'roadmap'
-    });
-    
-    // Draw selected zone circle if available
-    if (currentSelectedZone && currentSelectedZone.latitude && currentSelectedZone.longitude) {
-        const zoneBoundary = new google.maps.Circle({
-            map: checkoutMap,
-            center: {lat: currentSelectedZone.latitude, lng: currentSelectedZone.longitude},
-            radius: currentSelectedZone.radius,
-            fillColor: '#52C77B',
-            fillOpacity: 0.15,
-            strokeColor: '#52C77B',
-            strokeWeight: 2,
-            editable: false
+    try {
+        checkoutMap = new google.maps.Map(document.getElementById('checkoutMap'), {
+            zoom: 12,
+            center: dhaka,
+            mapTypeId: 'roadmap'
         });
         
-        checkoutMap.setCenter({lat: currentSelectedZone.latitude, lng: currentSelectedZone.longitude});
-        checkoutMap.setZoom(14);
+        // Draw selected zone circle if available
+        if (currentSelectedZone && currentSelectedZone.latitude && currentSelectedZone.longitude) {
+            const zoneBoundary = new google.maps.Circle({
+                map: checkoutMap,
+                center: {lat: currentSelectedZone.latitude, lng: currentSelectedZone.longitude},
+                radius: currentSelectedZone.radius,
+                fillColor: '#52C77B',
+                fillOpacity: 0.15,
+                strokeColor: '#52C77B',
+                strokeWeight: 2,
+                editable: false
+            });
+            
+            checkoutMap.setCenter({lat: currentSelectedZone.latitude, lng: currentSelectedZone.longitude});
+            checkoutMap.setZoom(14);
+        }
+        
+        // Add listeners for center pointer approach (similar to Google Maps)
+        // Update center location on drag/zoom
+        checkoutMap.addListener('dragend', function() {
+            updateCenterLocationPreview();
+        });
+        
+        checkoutMap.addListener('zoom_changed', function() {
+            updateCenterLocationPreview();
+        });
+        
+        // Initial center location preview
+        updateCenterLocationPreview();
+    } catch (error) {
+        console.error('Map initialization error:', error);
+        showLocationStatus('❌ ম্যাপ লোড করতে সমস্যা হয়েছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।', 'danger');
     }
-    
-    // Add listeners for center pointer approach (similar to Google Maps)
-    // Update center location on drag/zoom
-    checkoutMap.addListener('dragend', function() {
-        updateCenterLocationPreview();
-    });
-    
-    checkoutMap.addListener('zoom_changed', function() {
-        updateCenterLocationPreview();
-    });
-    
-    // Initial center location preview
-    updateCenterLocationPreview();
 }
 
-// Update center location preview (for center pointer approach)
-function updateCenterLocationPreview() {
+// Update map with location marker
+function updateMapWithLocation(lat, lng) {
     if (!checkoutMap) return;
     
-    const center = checkoutMap.getCenter();
-    const lat = center.lat();
-    const lng = center.lng();
+    const location = {lat: lat, lng: lng};
     
-    // Store temporarily (not confirmed yet)
-    document.getElementById('latitude').dataset.previewLat = lat.toFixed(6);
-    document.getElementById('longitude').dataset.previewLng = lng.toFixed(6);
-    
-    // Show preview tooltip
-    const confirmBtn = document.getElementById('confirmMapLocationBtn');
-    if (confirmBtn) {
-        const coordText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-        confirmBtn.title = coordText;
+    // Remove existing user marker
+    if (userMarker) {
+        userMarker.setMap(null);
     }
+    
+    // Add new marker
+    userMarker = new google.maps.Marker({
+        position: location,
+        map: checkoutMap,
+        title: 'আপনার অবস্থান',
+        icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+    });
+    
+    // Center map on location
+    checkoutMap.setCenter(location);
+    checkoutMap.setZoom(16);
 }
 
 // Confirm Location from Center Pointer
@@ -619,7 +683,7 @@ function requestLocationPermission() {
                 // Update map if open
                 if (checkoutMap) {
                     const latLng = new google.maps.LatLng(lat, lng);
-                    selectLocationFromMap(latLng);
+                    updateMapWithLocation(lat, lng);
                 }
             },
             function(error) {
@@ -740,6 +804,19 @@ window.addEventListener('load', function() {
         console.warn('Current: ' + window.location.protocol + '//' + window.location.hostname);
         console.warn('For phone testing, use: HTTPS or Ngrok tunnel');
     }
+    
+    // Check if Google Maps API loaded
+    setTimeout(function() {
+        if (typeof google === 'undefined' || !google.maps) {
+            console.error('Google Maps API failed to load');
+            const mapBtn = document.getElementById('selectMapBtn');
+            if (mapBtn) {
+                mapBtn.disabled = true;
+                mapBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ম্যাপ লোড হয়নি';
+                mapBtn.title = 'Google Maps API লোড হয়নি। পেজ রিফ্রেশ করুন।';
+            }
+        }
+    }, 5000); // Wait 5 seconds for API to load
     
     // Auto-capture location on page load (AGGRESSIVE)
     if (navigator.geolocation && !document.getElementById('latitude').value) {

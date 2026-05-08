@@ -65,6 +65,34 @@
             display: block;
         }
     }
+    
+    /* Order Management Tabs Styling */
+    .nav-tabs .nav-link {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: #000;
+        border: none;
+        border-bottom: 3px solid transparent;
+        margin-right: 0.5rem;
+        font-weight: 600;
+        font-size: 1.05rem;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .nav-tabs .nav-link:hover {
+        background: linear-gradient(135deg, #218838 0%, #17a2b8 100%);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .nav-tabs .nav-link.active {
+        background: linear-gradient(135deg, #fd7e14 0%, #ff9e3d 100%);
+        color: white;
+        border: none;
+        border-bottom: 3px solid #ff6c00;
+        box-shadow: 0 4px 12px rgba(253, 126, 20, 0.3);
+    }
 </style>
 {% endblock %}
 
@@ -160,6 +188,11 @@
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#active" role="tab">
                             <i class="fas fa-truck"></i> চলমান ({{ active_count }})
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#returns" role="tab">
+                            <i class="fas fa-undo"></i> রিটার্ন অনুরোধ ({{ return_count }})
                         </a>
                     </li>
                     <li class="nav-item">
@@ -274,6 +307,44 @@
                             </div>
                         {% else %}
                             <p class="text-muted text-center py-3">কোনো চলমান ডেলিভারি নেই</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Return Requested Orders -->
+                    <div id="returns" class="tab-pane fade">
+                        {% if return_requested_orders %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>অর্ডার #</th>
+                                            <th>ফোন</th>
+                                            <th>রাইডার</th>
+                                            <th>স্থিতি</th>
+                                            <th>অ্যাকশন</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in return_requested_orders %}
+                                        <tr style="border-left: 4px solid #ffc107;">
+                                            <td><strong>#{{ order.order_id }}</strong></td>
+                                            <td>{{ order.customer_phone }}</td>
+                                            <td>{{ order.rider.username }}</td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">রিটার্ন অনুরোধ</span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'manager_return_request' order.id %}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-eye"></i> দেখুন
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted text-center py-3">কোনো রিটার্ন অনুরোধ নেই</p>
                         {% endif %}
                     </div>
 

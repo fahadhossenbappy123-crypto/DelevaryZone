@@ -1,169 +1,73 @@
 {% extends 'shop/base.html' %}
-{% block title %}ক্যাটেগরি - ম্যানেজার প্যানেল{% endblock %}
+{% block title %}ক্যাটেগরি অবস্থান - ম্যানেজার প্যানেল{% endblock %}
 
 {% block content %}
-<style>
-    /* Mobile sidebar toggle */
-    .manager-menu-toggle {
-        display: none;
-        background: linear-gradient(135deg, #fd7e14 0%, #ff9e3d 100%);
-        border: none;
-        color: white;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-    }
-
-    @media (max-width: 991px) {
-        .manager-menu-toggle {
-            display: block;
-        }
-
-        .row > .col-lg-10 {
-            width: 100% !important;
-            max-width: 100% !important;
-            flex: 0 0 100% !important;
-        }
-
-        .manager-sidebar {
-            position: fixed;
-            left: -100%;
-            top: 0;
-            width: 250px;
-            height: 100vh;
-            background: linear-gradient(180deg, #52C77B 0%, #3DA670 100%);
-            z-index: 1000;
-            transition: left 0.3s ease;
-            overflow-y: auto;
-            padding-top: 20px;
-        }
-
-        .manager-sidebar.show {
-            left: 0;
-        }
-
-        .manager-sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        .manager-sidebar-overlay.show {
-            display: block;
-        }
-    }
-</style>
-
-<!-- Mobile Sidebar Overlay -->
-<div class="manager-sidebar-overlay" id="managerSidebarOverlay"></div>
-
-<!-- Sidebar -->
 <div class="row" style="margin: 0; min-height: 100vh;">
-    <div class="col-lg-2 p-0 manager-sidebar" id="managerSidebar">
+    <!-- Sidebar -->
+    <div class="col-lg-2 p-0">
         {% include 'shop/manager/sidebar.html' %}
     </div>
 
     <!-- Main Content -->
     <div class="col-lg-10 p-4">
-        <!-- Mobile Menu Toggle -->
-        <button class="manager-menu-toggle" id="managerMenuToggle">
-            <i class="fas fa-bars"></i> মেনু
-        </button>
-
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold"><i class="fas fa-layer-group"></i> ক্যাটেগরি</h2>
+            <h2 class="fw-bold"><i class="fas fa-layer-group"></i> ক্যাটেগরি ব্যবস্থাপনা</h2>
             <a href="{% url 'manager_category_add' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> নতুন ক্যাটেগরি যোগ করুন
+                <i class="fas fa-plus"></i> নতুন ক্যাটেগরি
             </a>
         </div>
 
-        <!-- Categories Grid -->
-        <div class="row g-3">
-            {% for category in categories %}
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100">
-                    {% if category.image %}
-                        <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}" style="height: 200px; object-fit: cover;">
-                    {% else %}
-                        <div style="height: 200px; background: #e9ecef; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-image text-muted fa-3x"></i>
-                        </div>
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ category.name }}</h5>
-                        <p class="card-text text-muted" style="font-size: 0.9rem;">{{ category.description|truncatewords:15 }}</p>
-                    </div>
-                    <div class="card-footer bg-white border-top">
-                        <div class="d-flex gap-2">
-                            <a href="{% url 'manager_category_edit' category.id %}" class="btn btn-sm btn-warning flex-grow-1">
-                                <i class="fas fa-edit"></i> এডিট
-                            </a>
-                            <a href="{% url 'manager_category_delete' category.id %}" class="btn btn-sm btn-danger" onclick="return confirm('নিশ্চিত?');">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <div class="col-12">
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox text-muted fa-3x"></i>
-                    <p class="text-muted mt-3">কোনো ক্যাটেগরি নেই</p>
-                </div>
-            </div>
-            {% endfor %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> এখানে সব ক্যাটেগরি দেখুন আর প্রদর্শনের ক্রম আপডেট করুন।
         </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>নাম</th>
+                            <th>অবস্থান</th>
+                            <th>প্রদর্শন ক্রম</th>
+                            <th>পণ্য সংখ্যা</th>
+                            <th>কর্ম</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for category in categories %}
+                        <tr>
+                            <td>{{ category.name }}</td>
+                            <td>{{ category.get_position_display }}</td>
+                            <td style="width: 150px;">
+                                <input type="number" name="display_order_{{ category.id }}" class="form-control form-control-sm" value="{{ category.display_order }}" min="0">
+                            </td>
+                            <td>{{ category.products.count }}</td>
+                            <td>
+                                <a href="{% url 'manager_category_edit' category.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'manager_category_delete' category.id %}" class="btn btn-sm btn-danger" onclick="return confirm('আপনি কি এই ক্যাটেগরি মুছে ফেলতে চান?');">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">কোনো ক্যাটেগরি পাওয়া যায়নি।</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> ক্রম সেভ করুন
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-</div>
-
-<script>
-    // Mobile sidebar toggle for manager categories
-    document.addEventListener('DOMContentLoaded', function() {
-        const managerMenuToggle = document.getElementById('managerMenuToggle');
-        const managerSidebar = document.getElementById('managerSidebar');
-        const managerSidebarOverlay = document.getElementById('managerSidebarOverlay');
-        const managerSidebarClose = document.getElementById('managerSidebarClose');
-        
-        if (managerMenuToggle) {
-            // Toggle sidebar on button click
-            managerMenuToggle.addEventListener('click', function() {
-                managerSidebar.classList.toggle('show');
-                managerSidebarOverlay.classList.toggle('show');
-            });
-            
-            // Close sidebar on close button click (inside sidebar)
-            if (managerSidebarClose) {
-                managerSidebarClose.addEventListener('click', function() {
-                    managerSidebar.classList.remove('show');
-                    managerSidebarOverlay.classList.remove('show');
-                });
-            }
-            
-            // Close sidebar on overlay click
-            managerSidebarOverlay.addEventListener('click', function() {
-                managerSidebar.classList.remove('show');
-                managerSidebarOverlay.classList.remove('show');
-            });
-            
-            // Close sidebar when clicking on a link
-            const sidebarLinks = managerSidebar.querySelectorAll('a');
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    managerSidebar.classList.remove('show');
-                    managerSidebarOverlay.classList.remove('show');
-                });
-            });
-        }
-    });
-</script>
 {% endblock %}

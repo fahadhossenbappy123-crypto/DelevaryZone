@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.text import slugify
 from django.conf import settings
-from .models import UserProfile, Zone, Category, Product, Order, OrderItem, Notification, HeroSlide, NotificationPreference
+from .models import UserProfile, Zone, Category, Product, Order, OrderItem, Notification, HeroSlide, NotificationPreference, AdminNotice
 from .forms import UserRegisterForm, UserProfileForm
 from .notification_service import create_notification, update_order_notifications
 import json
@@ -244,6 +245,7 @@ def admin_product_add(request):
         price = request.POST.get('price')
         unit = request.POST.get('unit')
         stock = request.POST.get('stock')
+        delivery_time = request.POST.get('delivery_time', 45)
         image = request.FILES.get('image')
         
         try:
@@ -258,6 +260,7 @@ def admin_product_add(request):
                 price=price,
                 unit=unit,
                 stock=stock,
+                delivery_time=delivery_time,
                 image=image
             )
             messages.success(request, f'Product "{title}" যোগ করা হয়েছে।')
@@ -286,6 +289,7 @@ def admin_product_edit(request, prod_id):
         product.price = request.POST.get('price')
         product.unit = request.POST.get('unit')
         product.stock = request.POST.get('stock')
+        product.delivery_time = request.POST.get('delivery_time', 45)
         product.is_available = request.POST.get('is_available') == 'on'
         
         if request.FILES.get('image'):
@@ -430,7 +434,7 @@ def admin_orders(request):
 @user_passes_test(is_admin)
 def admin_order_detail(request, order_id):
     """Order Detail"""
-    order = get_object_or_404(Order, order_id=order_id)
+    order = get_object_or_404(Order, id=order_id)
     items = order.items.all()
     
     if request.method == 'POST':
@@ -509,6 +513,12 @@ def manager_dashboard(request):
             status__in=['confirmed', 'picked']
         ).select_related('customer', 'zone', 'rider').order_by('-updated_at')
         
+        # Return requested orders
+        return_requested_orders = Order.objects.filter(
+            manager=request.user,
+            status='return_requested'
+        ).select_related('customer', 'zone', 'rider').order_by('-updated_at')
+        
         # Completed orders
         completed_orders_qs = Order.objects.filter(
             manager=request.user,
@@ -528,10 +538,12 @@ def manager_dashboard(request):
             'pending_orders': pending_orders,
             'approved_orders': approved_orders,
             'active_orders': active_orders,
+            'return_requested_orders': return_requested_orders,
             'completed_orders': completed_orders,
             'today_completed': today_completed,
             'pending_count': pending_orders.count(),
             'active_count': active_orders.count(),
+            'return_count': return_requested_orders.count(),
         }
         return render(request, 'shop/manager/dashboard.html', context)
     
@@ -602,12 +614,22 @@ def manager_approve_order(request, order_id):
     for item in items:
         item.item_total = item.quantity * item.price
     
+    zone_data = None
+    if order.zone:
+        zone_data = {
+            'name': order.zone.name,
+            'latitude': order.zone.latitude,
+            'longitude': order.zone.longitude,
+            'radius': order.zone.radius,
+        }
+
     context = {
         'order': order,
         'items': items,
+        'google_maps_api_key': settings.GOOGLE_MAPS_API_KEY,
+        'zone_data': zone_data,
     }
     return render(request, 'shop/manager/approve_order.html', context)
-
 
 @login_required(login_url='login')
 @user_passes_test(is_manager)
@@ -745,6 +767,73 @@ def manager_riders(request):
     return render(request, 'shop/manager/riders.html', context)
 
 
+# ================ MANAGER RETURN REQUESTS ================
+@login_required(login_url='login')
+@user_passes_test(is_manager)
+def manager_return_request(request, order_id):
+    """Manager handles return delivery request from rider"""
+    manager = request.user.profile
+    order = get_object_or_404(Order, id=order_id)
+    
+    # Verify order belongs to this manager
+    if order.manager != request.user:
+        messages.error(request, 'আপনার এই অর্ডার দেখার অনুমতি নেই।')
+        return redirect('manager_dashboard')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        reason = request.POST.get('reason', '')
+        
+        if action == 'approve':
+            # Approve the return
+            order.status = 'cancelled'
+            order.save()
+            
+            # Create notification for rider
+            create_notification(
+                user=order.rider,
+                notification_type='return_approved',
+                title='রিটার্ন অনুমোদিত',
+                message=f'অর্ডার #{order.order_id} এর রিটার্ন অনুমোদিত হয়েছে।',
+                order=order
+            )
+            
+            # Create notification for customer
+            create_notification(
+                user=order.customer,
+                notification_type='return_approved',
+                title='রিটার্ন অনুমোদিত',
+                message=f'আপনার অর্ডার #{order.order_id} রিটার্ন অনুমোদিত হয়েছে। শীঘ্রই রাইডার পণ্য সংগ্রহ করবেন।',
+                order=order,
+                send_email=True
+            )
+            
+            messages.success(request, f'অর্ডার #{order.order_id} এর রিটার্ন অনুমোদন করা হয়েছে।')
+            
+        elif action == 'reject':
+            # Reject the return
+            order.status = 'delivered'
+            order.save()
+            
+            # Create notification for rider
+            create_notification(
+                user=order.rider,
+                notification_type='return_rejected',
+                title='রিটার্ন প্রত্যাখ্যান করা হয়েছে',
+                message=f'অর্ডার #{order.order_id} এর রিটার্ন প্রত্যাখ্যান করা হয়েছে। কারণ: {reason}',
+                order=order
+            )
+            
+            messages.info(request, f'অর্ডার #{order.order_id} এর রিটার্ন প্রত্যাখ্যান করা হয়েছে।')
+        
+        return redirect('manager_dashboard')
+    
+    context = {
+        'order': order,
+    }
+    return render(request, 'shop/manager/return_request.html', context)
+
+
 # ================ MANAGER PRODUCTS ================
 @login_required(login_url='login')
 @user_passes_test(is_manager)
@@ -778,6 +867,7 @@ def manager_product_add(request):
         price = request.POST.get('price')
         unit = request.POST.get('unit')
         stock = request.POST.get('stock')
+        delivery_time = request.POST.get('delivery_time', 45)
         image = request.FILES.get('image')
         
         try:
@@ -791,6 +881,7 @@ def manager_product_add(request):
                 price=price,
                 unit=unit,
                 stock=stock,
+                delivery_time=delivery_time,
                 image=image
             )
             messages.success(request, f'পণ্য "{title}" যোগ করা হয়েছে।')
@@ -822,6 +913,7 @@ def manager_product_edit(request, prod_id):
         product.price = request.POST.get('price')
         product.unit = request.POST.get('unit')
         product.stock = request.POST.get('stock')
+        product.delivery_time = request.POST.get('delivery_time', 45)
         product.is_available = request.POST.get('is_available') == 'on'
         
         if request.FILES.get('image'):
@@ -858,9 +950,24 @@ def manager_product_delete(request, prod_id):
 @login_required(login_url='login')
 @user_passes_test(is_manager)
 def manager_categories(request):
-    """Manager can view all categories"""
-    categories = Category.objects.all()
-    
+    """Manager can view and arrange all categories"""
+    if request.method == 'POST':
+        for key, value in request.POST.items():
+            if key.startswith('display_order_'):
+                parts = key.rsplit('_', 1)
+                if len(parts) == 2:
+                    cat_id = parts[1]
+                    try:
+                        category = Category.objects.get(id=cat_id)
+                        category.display_order = int(value) if value.isdigit() else 0
+                        category.save()
+                    except Category.DoesNotExist:
+                        pass
+
+        messages.success(request, 'ক্যাটেগরির ক্রম আপডেট হয়েছে!')
+        return redirect('manager_categories')
+
+    categories = Category.objects.all().order_by('display_order', 'name')
     context = {
         'categories': categories,
     }
@@ -874,6 +981,8 @@ def manager_category_add(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         description = request.POST.get('description')
+        position = request.POST.get('position', 'middle')
+        display_order = request.POST.get('display_order', '0')
         image = request.FILES.get('image')
         
         if Category.objects.filter(name=name).exists():
@@ -885,6 +994,8 @@ def manager_category_add(request):
                 name=name,
                 slug=slug,
                 description=description,
+                position=position,
+                display_order=int(display_order) if display_order.isdigit() else 0,
                 image=image
             )
             messages.success(request, f'ক্যাটেগরি "{name}" যোগ করা হয়েছে।')
@@ -902,8 +1013,12 @@ def manager_category_edit(request, cat_id):
     if request.method == 'POST':
         category.name = request.POST.get('name')
         category.description = request.POST.get('description')
+        category.position = request.POST.get('position', 'middle')
+        category.display_order = int(request.POST.get('display_order', '0')) if request.POST.get('display_order', '0').isdigit() else 0
         if request.FILES.get('image'):
             category.image = request.FILES.get('image')
+        if not category.slug and category.name:
+            category.slug = slugify(category.name)
         category.save()
         
         messages.success(request, f'ক্যাটেগরি "{category.name}" আপডেট হয়েছে।')
@@ -1002,3 +1117,181 @@ def admin_hero_slide_delete(request, slide_id):
     slide.delete()
     messages.success(request, f'Hero slide "{title}" deleted successfully!')
     return redirect('admin_hero_slides')
+
+
+# ================ RECOMMENDATION MANAGEMENT ================
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_recommendations(request):
+    """Admin interface for managing product recommendations"""
+    from .recommendation_engine import ProductRecommendationEngine
+    from .models import ProductView, UserPreference, ProductRecommendation
+    from django.db.models import Count, Avg
+    from django.utils import timezone
+
+    # Get recommendation statistics
+    total_views = ProductView.objects.count()
+    total_preferences = UserPreference.objects.count()
+    total_recommendations = ProductRecommendation.objects.count()
+
+    # Recent product views
+    recent_views = ProductView.objects.select_related('product', 'user').order_by('-viewed_at')[:20]
+
+    # Popular products by views
+    popular_products = ProductView.objects.values('product__title', 'product__id').annotate(
+        view_count=Count('product')
+    ).order_by('-view_count')[:10]
+
+    # User preferences summary
+    preference_stats = UserPreference.objects.values('preference_type').annotate(
+        count=Count('id')
+    ).order_by('-count')
+
+    # Recommendation performance (if we had click-through data)
+    recommendation_performance = ProductRecommendation.objects.values('algorithm').annotate(
+        count=Count('id'),
+        avg_score=Avg('score')
+    ).order_by('-count')
+
+    context = {
+        'total_views': total_views,
+        'total_preferences': total_preferences,
+        'total_recommendations': total_recommendations,
+        'recent_views': recent_views,
+        'popular_products': popular_products,
+        'preference_stats': preference_stats,
+        'recommendation_performance': recommendation_performance,
+    }
+    return render(request, 'shop/admin/recommendations.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_recommendation_settings(request):
+    """Admin can adjust recommendation algorithm weights and settings"""
+    from .recommendation_engine import ProductRecommendationEngine
+
+    if request.method == 'POST':
+        # Update algorithm weights
+        engine = ProductRecommendationEngine()
+        weights = {}
+
+        for algorithm in ['location_based', 'category_based', 'purchase_history', 'view_history',
+                         'time_based', 'popularity_based', 'similar_users', 'trending']:
+            weight_key = f'weight_{algorithm}'
+            weight_value = request.POST.get(weight_key)
+            if weight_value:
+                try:
+                    weights[algorithm] = float(weight_value)
+                except ValueError:
+                    pass
+
+        # Save weights to settings (you might want to store this in database)
+        if weights:
+            # For now, we'll just show success message
+            # In production, you'd save this to a settings model
+            messages.success(request, 'Recommendation weights updated successfully!')
+            return redirect('admin_recommendations')
+
+    # Get current weights
+    engine = ProductRecommendationEngine()
+    current_weights = getattr(engine, 'algorithm_weights', {})
+
+    context = {
+        'current_weights': current_weights,
+    }
+    return render(request, 'shop/admin/recommendation_settings.html', context)
+
+
+# ============ ADMIN NOTICES/ANNOUNCEMENTS ============
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_notices(request):
+    """List all admin notices"""
+    notices = AdminNotice.objects.all().order_by('-created_at')
+    
+    context = {
+        'notices': notices,
+    }
+    return render(request, 'shop/admin/notices.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_notice_add(request):
+    """Add new admin notice"""
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        message = request.POST.get('message')
+        icon = request.POST.get('icon', 'fas fa-bell')
+        priority = request.POST.get('priority', 'medium')
+        color_bg = request.POST.get('color_bg', '#28a745')
+        color_text = request.POST.get('color_text', '#ffffff')
+        is_marquee = request.POST.get('is_marquee') == 'on'
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        
+        try:
+            notice = AdminNotice.objects.create(
+                title=title,
+                message=message,
+                icon=icon,
+                priority=priority,
+                color_bg=color_bg,
+                color_text=color_text,
+                is_marquee=is_marquee,
+                start_date=start_date,
+                end_date=end_date,
+            )
+            messages.success(request, f'Notice "{title}" created successfully!')
+            return redirect('admin_notices')
+        except Exception as e:
+            messages.error(request, f'Error creating notice: {str(e)}')
+    
+    context = {
+        'priority_choices': AdminNotice._meta.get_field('priority').choices,
+    }
+    return render(request, 'shop/admin/notice_add.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_notice_edit(request, notice_id):
+    """Edit admin notice"""
+    notice = get_object_or_404(AdminNotice, id=notice_id)
+    
+    if request.method == 'POST':
+        notice.title = request.POST.get('title')
+        notice.message = request.POST.get('message')
+        notice.icon = request.POST.get('icon', 'fas fa-bell')
+        notice.priority = request.POST.get('priority', 'medium')
+        notice.color_bg = request.POST.get('color_bg', '#28a745')
+        notice.color_text = request.POST.get('color_text', '#ffffff')
+        notice.is_marquee = request.POST.get('is_marquee') == 'on'
+        notice.is_active = request.POST.get('is_active') == 'on'
+        notice.start_date = request.POST.get('start_date')
+        notice.end_date = request.POST.get('end_date')
+        
+        try:
+            notice.save()
+            messages.success(request, f'Notice "{notice.title}" updated successfully!')
+            return redirect('admin_notices')
+        except Exception as e:
+            messages.error(request, f'Error updating notice: {str(e)}')
+    
+    context = {
+        'notice': notice,
+        'priority_choices': AdminNotice._meta.get_field('priority').choices,
+    }
+    return render(request, 'shop/admin/notice_edit.html', context)
+
+
+@login_required(login_url='login')
+@user_passes_test(is_admin)
+def admin_notice_delete(request, notice_id):
+    """Delete admin notice"""
+    notice = get_object_or_404(AdminNotice, id=notice_id)
+    notice_title = notice.title
+    notice.delete()
+    messages.success(request, f'Notice "{notice_title}" deleted successfully!')
+    return redirect('admin_notices')

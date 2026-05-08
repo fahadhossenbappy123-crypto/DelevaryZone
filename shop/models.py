@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
+from django.utils import timezone
+from django.utils.text import slugify
 from decimal import Decimal
 
 # User Profile
@@ -56,17 +58,51 @@ class Zone(models.Model):
 
 # Category
 class Category(models.Model):
+    POSITION_CHOICES = [
+        ('top', 'উপরে'),
+        ('middle', 'মাঝখানে'),
+        ('bottom', 'নিচে'),
+    ]
+    
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True)
     image = models.ImageField(upload_to='category/', blank=True, null=True)
     description = models.TextField(blank=True)
+    position = models.CharField(max_length=10, choices=POSITION_CHOICES, default='middle', 
+                               help_text="ক্যাটেগরির অবস্থান (উপরে/মাঝখানে/নিচে)")
+    display_order = models.PositiveIntegerField(default=0, help_text="প্রদর্শনের ক্রম")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.name:
+            # Try to create a slug from the name
+            base_slug = slugify(self.name)
+            
+            # If slugify returns empty (for non-ASCII text), create a fallback
+            if not base_slug:
+                # Use a transliteration approach or fallback to english-like slug
+                import re
+                # Remove non-alphanumeric characters and convert spaces to hyphens
+                base_slug = re.sub(r'[^\w\s-]', '', self.name).strip().lower()
+                base_slug = re.sub(r'[-\s]+', '-', base_slug)
+                # If still empty, use a generic slug
+                if not base_slug:
+                    base_slug = f'category-{self.id}' if self.id else 'category'
+            
+            slug = base_slug
+            counter = 1
+            while Category.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
     class Meta:
         verbose_name_plural = "Categories"
+        ordering = ['display_order', 'name']
 
 
 # Product
@@ -92,6 +128,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/')
     stock = models.PositiveIntegerField(default=50)
     is_available = models.BooleanField(default=True)
+    delivery_time = models.PositiveIntegerField(default=45, help_text="ডেলিভারি সময় (মিনিটে)")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -110,6 +147,7 @@ class Order(models.Model):
         ('confirmed', 'নিশ্চিত'),         # Rider assigned
         ('picked', 'রাইডার নিয়েছে'),    # Rider picked up product
         ('delivered', 'ডেলিভার হয়েছে'),  # Delivered
+        ('return_requested', 'রিটার্ন অনুরোধ'),  # Rider requesting return
         ('cancelled', 'বাতিল'),           # Rejected or cancelled
     ]
 
@@ -182,9 +220,14 @@ class Notification(models.Model):
     # Simple notification types
     NOTIFICATION_TYPES = [
         ('order_confirmation', 'Order Confirmed'),
+        ('order_processing', 'Order Processing'),
+        ('order_picked', 'Order Picked'),
+        ('order_in_transit', 'Order In Transit'),
         ('order_delivered', 'Order Delivered'),
         ('order_cancelled', 'Order Cancelled'),
         ('rider_assigned', 'Rider Assigned'),
+        ('rider_near', 'Rider Near You'),
+        ('payment_reminder', 'Payment Reminder'),
         ('general', 'General'),
     ]
     
@@ -194,6 +237,9 @@ class Notification(models.Model):
     message = models.TextField()
     order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True, blank=True, related_name='notifications')
     is_read = models.BooleanField(default=False)
+    email_sent = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+    read_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
@@ -253,3 +299,110 @@ class HeroSlide(models.Model):
     
     def __str__(self):
         return f"{self.title} (Order: {self.order})"
+
+
+# User Behavior Tracking for Recommendations
+class ProductView(models.Model):
+    """Track which products users view"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    viewed_at = models.DateTimeField(auto_now_add=True)
+    session_id = models.CharField(max_length=100, blank=True, help_text="For anonymous users")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ['user', 'product', 'session_id']
+        ordering = ['-viewed_at']
+        verbose_name_plural = "Product Views"
+
+    def __str__(self):
+        user_info = self.user.username if self.user else f"Anonymous ({self.session_id})"
+        return f"{user_info} viewed {self.product.title}"
+
+
+class UserPreference(models.Model):
+    """Track user preferences for recommendations"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    preferred_categories = models.ManyToManyField(Category, blank=True)
+    preferred_zones = models.ManyToManyField(Zone, blank=True)
+    last_location_lat = models.FloatField(null=True, blank=True)
+    last_location_lng = models.FloatField(null=True, blank=True)
+    favorite_products = models.ManyToManyField(Product, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s preferences"
+
+    class Meta:
+        verbose_name_plural = "User Preferences"
+
+
+class ProductRecommendation(models.Model):
+    """Cache personalized recommendations"""
+    RECOMMENDATION_TYPES = [
+        ('location_based', 'Location Based'),
+        ('category_based', 'Category Based'),
+        ('purchase_history', 'Purchase History'),
+        ('popular', 'Popular Products'),
+        ('trending', 'Trending Now'),
+        ('similar_users', 'Similar Users'),
+        ('time_based', 'Time Based'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    score = models.FloatField(default=0.0, help_text="Recommendation score (0-1)")
+    reason = models.CharField(max_length=20, choices=RECOMMENDATION_TYPES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        unique_together = ['user', 'product']
+        ordering = ['-score', '-created_at']
+        verbose_name_plural = "Product Recommendations"
+
+    def __str__(self):
+        return f"{self.product.title} for {self.user.username} ({self.score:.2f})"
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+
+# Admin Notice/Announcement Model
+class AdminNotice(models.Model):
+    """Admin notices that display as marquee on user dashboard"""
+    title = models.CharField(max_length=200)
+    message = models.TextField(help_text="Marquee message for users")
+    icon = models.CharField(max_length=50, default='fas fa-bell', help_text="FontAwesome icon class")
+    
+    PRIORITY_CHOICES = [
+        ('low', '🟢 Low'),
+        ('medium', '🟡 Medium'),
+        ('high', '🔴 High'),
+        ('critical', '⚫ Critical'),
+    ]
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    
+    color_bg = models.CharField(max_length=20, default='#28a745', help_text="Background color (hex)")
+    color_text = models.CharField(max_length=20, default='#ffffff', help_text="Text color (hex)")
+    
+    is_active = models.BooleanField(default=True)
+    is_marquee = models.BooleanField(default=True, help_text="Show as scrolling marquee")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    start_date = models.DateTimeField(help_text="Notice visible from this date")
+    end_date = models.DateTimeField(help_text="Notice visible until this date")
+    
+    class Meta:
+        ordering = ['-priority', '-created_at']
+        verbose_name_plural = "Admin Notices"
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_priority_display()})"
+    
+    @property
+    def is_visible(self):
+        """Check if notice is visible based on date range"""
+        now = timezone.now()
+        return self.is_active and self.start_date <= now <= self.end_date

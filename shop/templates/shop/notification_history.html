@@ -55,7 +55,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         {% if notif.order %}
-                                        <a href="{% url 'order_detail' notif.order.order_id %}" class="btn btn-sm btn-primary">
+                                        <a href="{% url 'order_detail' notif.order.id %}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-arrow-right"></i> View Order #{{ notif.order.order_id }}
                                         </a>
                                         {% endif %}
@@ -142,9 +142,20 @@
 </div>
 
 <script>
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+           document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+           document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+}
+
 function deleteNotification(notifId) {
     if (confirm('Delete this notification?')) {
-        fetch(`/en/api/notification/${notifId}/delete/`, { method: 'POST' })
+        fetch(`/en/api/notification/${notifId}/delete/`, { 
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
@@ -157,7 +168,12 @@ function deleteNotification(notifId) {
 
 function clearAllNotifications() {
     if (confirm('Clear all notifications? This cannot be undone.')) {
-        fetch('/en/api/notifications/clear/', { method: 'POST' })
+        fetch('/en/api/notifications/clear/', { 
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            }
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {

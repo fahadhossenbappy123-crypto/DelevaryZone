@@ -261,7 +261,7 @@
                                 </div>
                                 
                                 <div class="customer-info mb-3">
-                                    <p class="mb-2"><i class="fas fa-user text-primary"></i> <strong>{{ order.customer.username }}</strong></p>
+                                    <p class="mb-2"><i class="fas fa-user text-primary"></i> <strong>{% if order.customer %}{{ order.customer.username }}{% else %}অজানা গ্রাহক ({{ order.customer_phone }}){% endif %}</strong></p>
                                     <p class="mb-2"><i class="fas fa-phone text-success"></i> {{ order.customer_phone }}</p>
                                     <p class="mb-2"><i class="fas fa-envelope text-info"></i> {{ order.customer_email }}</p>
                                     <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> {{ order.customer_address }}, {{ order.customer_city }}</p>
@@ -314,12 +314,12 @@
                                 </div>
 
                                 <div class="customer-info mb-3">
-                                    <p class="mb-2"><i class="fas fa-user text-primary"></i> <strong>{{ order.customer.username }}</strong></p>
+                                    <p class="mb-2"><i class="fas fa-user text-primary"></i> <strong>{% if order.customer %}{{ order.customer.username }}{% else %}অজানা গ্রাহক ({{ order.customer_phone }}){% endif %}</strong></p>
                                     <p class="mb-2"><i class="fas fa-phone text-success"></i> {{ order.customer_phone }}</p>
                                     <p class="mb-2"><i class="fas fa-map-marker-alt text-danger"></i> <strong>{{ order.customer_address }}, {{ order.customer_city }}</strong></p>
-                                    {% if order.customer_latitude and order.customer_longitude %}
+                                    {% if order.latitude and order.longitude %}
                                         <p class="mb-0"><i class="fas fa-location-dot"></i> 
-                                            <a href="https://maps.google.com/?q={{ order.customer_latitude }},{{ order.customer_longitude }}" target="_blank" class="text-decoration-none">
+                                            <a href="https://maps.google.com/?q={{ order.latitude }},{{ order.longitude }}" target="_blank" class="text-decoration-none">
                                                 গুগল ম্যাপে দেখুন
                                             </a>
                                         </p>
@@ -415,6 +415,14 @@
 <script>
 function acceptOrder(orderId) {
     if (confirm('এই অর্ডার গ্রহণ করতে চান?')) {
+        // BUG FIX #9: Disable all accept buttons to prevent duplicate submissions
+        const acceptButtons = document.querySelectorAll('[onclick*="acceptOrder"]');
+        acceptButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
+        });
+        
         const form = document.createElement('form');
         form.method = 'POST';
         form.innerHTML = `<input type="hidden" name="order_id" value="${orderId}">
@@ -428,6 +436,14 @@ function acceptOrder(orderId) {
 function updateOrderStatus(orderId, status) {
     const statusText = status === 'picked' ? 'পণ্য সংগ্রহ' : 'ডেলিভারি সম্পূর্ণ';
     if (confirm(statusText + ' চিহ্নিত করতে চান?')) {
+        // BUG FIX #9: Disable all status update buttons to prevent duplicate submissions
+        const statusButtons = document.querySelectorAll('[onclick*="updateOrderStatus"]');
+        statusButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.style.cursor = 'not-allowed';
+        });
+        
         const form = document.createElement('form');
         form.method = 'POST';
         form.innerHTML = `<input type="hidden" name="order_id" value="${orderId}">
@@ -441,6 +457,50 @@ function updateOrderStatus(orderId, status) {
 </script>
 
 <!-- Google Maps API -->
+<script>
+    // Check if API key exists
+    const googleMapsApiKey = '{{ google_maps_api_key }}';
+    if (!googleMapsApiKey || googleMapsApiKey.trim() === '') {
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapContainer = document.getElementById('riderMap');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5 class="text-danger">Google Maps API Key Missing</h5>
+                            <p class="text-muted">Please contact admin to configure Google Maps.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        // Set up Google Maps error handler
+        window.gm_authFailure = function() {
+            const mapContainer = document.getElementById('riderMap');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                            <h5 class="text-danger">Google Maps Authentication Failed</h5>
+                            <p class="text-muted mb-2">Possible causes:</p>
+                            <ul class="text-start mb-3" style="font-size: 0.9rem; max-width: 300px; margin: 0 auto;">
+                                <li>API key is invalid or expired</li>
+                                <li>API key has referrer restrictions</li>
+                                <li>Maps JavaScript API not enabled</li>
+                                <li>Billing not set up in Google Cloud</li>
+                            </ul>
+                            <p class="mb-0" style="font-size: 0.8rem;">API Key: <code>{{ google_maps_api_key|slice:":20" }}...</code></p>
+                        </div>
+                    </div>
+                `;
+            }
+            console.error('Google Maps authentication failed');
+        };
+    }
+</script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
 
 <script>
@@ -479,7 +539,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
     
     // Filter orders with valid coordinates
-    const validOrders = allOrders.filter(order => order.lat && order.lng);
+    const validOrders = allOrders.filter(order => order.lat !== null && order.lng !== null && !isNaN(order.lat) && !isNaN(order.lng));
     
     if (validOrders.length === 0) {
         // Show message if no orders
@@ -578,6 +638,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+        
+        // Handle hash navigation for rider dashboard tabs
+        function activateTabFromHash() {
+            const hash = window.location.hash;
+            if (hash) {
+                const tabId = hash.substring(1); // Remove '#'
+                const validTabs = ['map', 'available', 'active', 'completed'];
+                
+                if (validTabs.includes(tabId)) {
+                    // Get the tab button and click it
+                    const tabButton = document.getElementById(tabId + '-tab');
+                    if (tabButton) {
+                        const tab = new bootstrap.Tab(tabButton);
+                        tab.show();
+                        
+                        // Scroll to tabs after a small delay
+                        setTimeout(() => {
+                            const riderTabs = document.getElementById('riderTabs');
+                            if (riderTabs) {
+                                riderTabs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }, 100);
+                    }
+                }
+            }
+        }
+        
+        // Activate tab on page load
+        activateTabFromHash();
+        
+        // Handle hash changes (back/forward buttons)
+        window.addEventListener('hashchange', activateTabFromHash);
     });
 </script>
 

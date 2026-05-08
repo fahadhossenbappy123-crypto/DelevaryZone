@@ -239,6 +239,12 @@
             <span>Hero Slides</span>
         </a>
 
+        <!-- Admin Notices -->
+        <a href="{% url 'admin_notices' %}" class="nav-link {% if 'admin_notice' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fas fa-bell"></i>
+            <span>Notices</span>
+        </a>
+
         <!-- Profile -->
         <a href="{% url 'profile' %}" class="nav-link">
             <i class="fas fa-user-circle"></i>

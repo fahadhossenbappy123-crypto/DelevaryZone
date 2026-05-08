@@ -33,7 +33,7 @@
                     
                     <p class="mb-2">
                         <strong>নাম:</strong><br>
-                        {{ order.customer.username }}
+                        {% if order.customer %}{{ order.customer.username }}{% else %}অজানা গ্রাহক{% endif %}
                     </p>
                     
                     <p class="mb-2">
@@ -131,7 +131,7 @@
             </div>
 
             <!-- Status Update -->
-            {% if order.status in 'confirmed,picked' %}
+            {% if order.status == 'confirmed' or order.status == 'picked' %}
             <div class="card shadow-sm border-0" style="border-radius: 15px;">
                 <div class="card-header" style="background: #17a2b8; color: white; border-radius: 15px 15px 0 0;">
                     <h6 class="mb-0"><i class="fas fa-sync"></i> অর্ডার স্ট্যাটাস আপডেট</h6>
@@ -154,6 +154,21 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- Return Delivery Button -->
+            {% if order.status == 'confirmed' or order.status == 'picked' %}
+            <div class="card shadow-sm border-0 mt-3" style="border-radius: 15px; border: 2px solid #dc3545;">
+                <div class="card-header" style="background: #dc3545; color: white; border-radius: 13px 13px 0 0;">
+                    <h6 class="mb-0"><i class="fas fa-undo"></i> রিটার্ন অনুরোধ</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">যদি কোনো সমস্যা হয়, এখানে রিটার্ন অনুরোধ জানাতে পারেন।</p>
+                    <a href="{% url 'rider_return_delivery' order.id %}" class="btn btn-danger btn-lg w-100 fw-bold" style="box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);" onclick="return confirm('আপনি কি এই অর্ডারটি রিটার্ন করতে চান? ম্যানেজারকে অবহিত করা হবে।')">
+                        <i class="fas fa-reply"></i> রিটার্ন অনুরোধ করুন
+                    </a>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Location Map -->
@@ -162,7 +177,7 @@
             <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;"
                  data-customer-lat="{{ order.latitude }}"
                  data-customer-lng="{{ order.longitude }}"
-                 data-customer-name="{{ order.customer.username }}"
+                 data-customer-name="{% if order.customer %}{{ order.customer.username }}{% else %}Unknown{% endif %}"
                  data-customer-coords="{{ order.latitude|floatformat:6 }}, {{ order.longitude|floatformat:6 }}"
                  {% if order.zone.latitude and order.zone.longitude %}
                  data-zone-lat="{{ order.zone.latitude }}"
@@ -206,6 +221,50 @@
 </div>
 
 <!-- Google Maps API -->
+<script>
+    // Check if API key exists
+    const googleMapsApiKey = '{{ google_maps_api_key }}';
+    if (!googleMapsApiKey || googleMapsApiKey.trim() === '') {
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapContainer = document.getElementById('riderMap');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
+                        <div class="text-center p-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5 class="text-danger">Google Maps API Key Missing</h5>
+                            <p class="text-muted">Please contact admin to configure Google Maps.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+    } else {
+        // Set up Google Maps error handler
+        window.gm_authFailure = function() {
+            const mapContainer = document.getElementById('riderMap');
+            if (mapContainer) {
+                mapContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa;">
+                        <div class="text-center p-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                            <h5 class="text-danger">Google Maps Authentication Failed</h5>
+                            <p class="text-muted mb-2">Possible causes:</p>
+                            <ul class="text-start mb-3" style="font-size: 0.9rem; max-width: 300px; margin: 0 auto;">
+                                <li>API key is invalid or expired</li>
+                                <li>API key has referrer restrictions</li>
+                                <li>Maps JavaScript API not enabled</li>
+                                <li>Billing not set up in Google Cloud</li>
+                            </ul>
+                            <p class="mb-0" style="font-size: 0.8rem;">API Key: <code>{{ google_maps_api_key|slice:":20" }}...</code></p>
+                        </div>
+                    </div>
+                `;
+            }
+            console.error('Google Maps authentication failed');
+        };
+    }
+</script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
 
 <script>

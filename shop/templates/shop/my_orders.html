@@ -34,7 +34,7 @@
                             </td>
                             <td>{{ order.created_at|date:"d M, Y" }}</td>
                             <td>
-                                <a href="{% url 'order_detail' order.order_id %}" class="btn btn-sm btn-primary">
+                                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary">
                                     বিস্তারিত
                                 </a>
                             </td>
@@ -73,7 +73,7 @@
                                     <i class="fas fa-calendar"></i> {{ order.created_at|date:"d M, Y H:i" }}
                                 </small>
 
-                                <a href="{% url 'order_detail' order.order_id %}" class="btn btn-sm btn-primary w-100">
+                                <a href="{% url 'order_detail' order.id %}" class="btn btn-sm btn-primary w-100">
                                     <i class="fas fa-eye"></i> বিস্তারিত দেখুন
                                 </a>
                             </div>

@@ -38,6 +38,13 @@
                         <i class="fas fa-map-marker-alt"></i> {{ order.customer_address }}
                     </div>
 
+                    <!-- Location Map -->
+                    <h6 class="fw-bold mb-2">অর্ডার লোকেশন</h6>
+                    <div id="orderLocationMap" style="height: 320px; border-radius: 12px; overflow: hidden; margin-bottom: 12px;"></div>
+                    <div id="locationStatus" class="alert alert-secondary small mb-4">
+                        লোকেশন লোড করছে...
+                    </div>
+
                     <!-- Order Items -->
                     <h6 class="fw-bold mb-3">অর্ডার আইটেম</h6>
                     <div class="table-responsive">
@@ -158,6 +165,117 @@ document.querySelectorAll('form').forEach(form => {
         }
     });
 });
+</script>
+
+<script>
+    const managerOrderLocation = {
+        latitude: {{ order.latitude|default:'null' }},
+        longitude: {{ order.longitude|default:'null' }},
+        zone_latitude: {{ zone_data.latitude|default:'null' }},
+        zone_longitude: {{ zone_data.longitude|default:'null' }},
+        zone_radius: {{ zone_data.radius|default:'null' }},
+        zone_name: '{{ zone_data.name|default:""|escapejs }}',
+        customer_address: `{{ order.customer_address|escapejs }}`,
+        apiKey: '{{ google_maps_api_key|default:"" }}'
+    };
+
+    function showLocationStatus(message, type = 'secondary') {
+        const statusEl = document.getElementById('locationStatus');
+        if (!statusEl) return;
+        statusEl.className = `alert alert-${type} small mb-4`;
+        statusEl.innerHTML = message;
+    }
+
+    function initOrderLocationMap() {
+        const mapEl = document.getElementById('orderLocationMap');
+        if (!mapEl) return;
+
+        if (!managerOrderLocation.apiKey) {
+            showLocationStatus('Google Maps API key configured নেই। মানচিত্র দেখানো সম্ভব নয়।', 'danger');
+            return;
+        }
+
+        const customerLat = managerOrderLocation.latitude;
+        const customerLng = managerOrderLocation.longitude;
+        const zoneLat = managerOrderLocation.zone_latitude;
+        const zoneLng = managerOrderLocation.zone_longitude;
+        const zoneRadius = managerOrderLocation.zone_radius;
+
+        const defaultCenter = { lat: 23.8103, lng: 90.4125 };
+        const center = (customerLat && customerLng)
+            ? { lat: customerLat, lng: customerLng }
+            : (zoneLat && zoneLng)
+                ? { lat: zoneLat, lng: zoneLng }
+                : defaultCenter;
+
+        const map = new google.maps.Map(mapEl, {
+            zoom: customerLat && customerLng ? 15 : 12,
+            center: center,
+            mapTypeId: 'roadmap',
+            fullscreenControl: false,
+            streetViewControl: false,
+            zoomControl: true,
+        });
+
+        if (zoneLat && zoneLng && zoneRadius) {
+            const zoneCircle = new google.maps.Circle({
+                map: map,
+                center: { lat: zoneLat, lng: zoneLng },
+                radius: zoneRadius,
+                fillColor: '#52c77b',
+                fillOpacity: 0.12,
+                strokeColor: '#52c77b',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+            });
+
+            new google.maps.Marker({
+                map: map,
+                position: { lat: zoneLat, lng: zoneLng },
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: '#52c77b',
+                    fillOpacity: 1,
+                    strokeWeight: 1,
+                    strokeColor: '#ffffff',
+                },
+                title: `Zone: ${managerOrderLocation.zone_name}`,
+            });
+        }
+
+        if (customerLat && customerLng) {
+            const marker = new google.maps.Marker({
+                position: { lat: customerLat, lng: customerLng },
+                map: map,
+                title: 'Customer Location',
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<div style="font-size: 0.95rem;"><strong>Customer Location</strong><br>${managerOrderLocation.customer_address}</div>`
+            });
+            marker.addListener('click', () => infoWindow.open(map, marker));
+
+            showLocationStatus(`✅ অর্ডার লোকেশন লোড হয়েছে। ${managerOrderLocation.customer_address}`, 'success');
+        } else {
+            showLocationStatus('⚠️ অর্ডারের জন্য ল্যাট/লং ​​নিয়মিতভাবে পাওয়া যায়নি। মানচিত্র কেবল জোন কেন্দ্র দেখাচ্ছে।', 'warning');
+        }
+    }
+
+    function onGoogleMapsLoaded() {
+        initOrderLocationMap();
+    }
+
+    if (managerOrderLocation.apiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${managerOrderLocation.apiKey}&callback=onGoogleMapsLoaded`;
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+    } else {
+        showLocationStatus('Google Maps API key configured নেই। মানচিত্র দেখানো সম্ভব নয়।', 'danger');
+    }
 </script>
 
 {% load custom_filters %}

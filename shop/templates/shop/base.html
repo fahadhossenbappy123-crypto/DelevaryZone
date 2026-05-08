@@ -6,6 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}ZoneDelivery{% endblock %}</title>
     
     <!-- Bootstrap 5 CDN -->
@@ -341,7 +342,7 @@
         
         /* Category Card */
         .category-card {
-            height: 200px;
+            height: 150px;
             background-size: cover;
             background-position: center;
             border-radius: 15px;
@@ -383,6 +384,60 @@
             transform: scale(1.1);
         }
         
+        /* Category Card Modal */
+        .category-card-modal {
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-card-modal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        
+        .category-card-modal:hover::before {
+            background: rgba(0,0,0,0.1);
+        }
+        
+        .category-card-modal h6 {
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+        
+        .category-card-modal:hover h6 {
+            transform: scale(1.05);
+        }
+        
+        /* Mobile Responsive Category Cards */
+        @media (max-width: 768px) {
+            .category-card {
+                height: 70px !important;
+            }
+            
+            .category-card-modal {
+                height: 70px !important;
+            }
+        }
+        
         /* Messages */
         .alert {
             border-radius: 10px;
@@ -406,20 +461,25 @@
         footer {
             background: linear-gradient(135deg, #2E7D32 0%, #52C77B 100%);
             color: #fff;
-            margin-top: 5rem;
+            margin-top: 4rem;
+            padding: 1.5rem 0;
         }
         
         footer p {
-            margin: 0;
+            margin: 0.25rem 0;
         }
         
         /* Main Container */
         .main-container {
             min-height: calc(100vh - 200px);
+            padding-bottom: 0;
         }
         
         /* Footer styling for mobile with bottom nav */
         @media (max-width: 768px) {
+            .main-container {
+                padding-bottom: 120px;
+            }
             footer {
                 margin-bottom: 70px;
             }
@@ -880,6 +940,50 @@
             .navbar, footer, .btn-auth, .cart-btn { display: none; }
             .card { page-break-inside: avoid; }
         }
+
+        /* Google OAuth button style */
+        .google-btn {
+            background: #fff;
+            color: #202124 !important;
+            border: 1px solid #dadce0;
+            border-radius: 999px;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(60, 64, 67, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .google-btn:hover,
+        .google-btn:focus {
+            background: #f7f7f7;
+            border-color: #c6c6c6;
+            box-shadow: 0 2px 6px rgba(60, 64, 67, 0.15);
+            transform: translateY(-1px);
+            color: #202124 !important;
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            display: block;
+        }
+
+        input[type="checkbox"] {
+            width: 1.05rem;
+            height: 1.05rem;
+            transform: scale(0.95);
+            margin-top: 0.1rem;
+        }
+
+        /* Force cart toast to appear on the left so it cannot overlap the cart icon */
+        #toast-container {
+            position: fixed !important;
+            top: 20px !important;
+            left: 20px !important;
+            right: auto !important;
+            z-index: 9999 !important;
+        }
+
     </style>
     
     <!-- Extra CSS for child templates -->
@@ -939,6 +1043,15 @@
                     fetch(notificationsUrl)
                         .then(response => response.json())
                         .then(data => {
+                            // Check if there are new unread notifications and play sound
+                            if (data.unread_count > previousUnreadCount && data.unread_count > 0 && data.enable_sound) {
+                                // Play sound for the first unread notification
+                                const unreadNotif = data.notifications.find(n => !n.is_read);
+                                if (unreadNotif && unreadNotif.sound_file) {
+                                    playNotificationSound(unreadNotif.sound_file);
+                                }
+                            }
+                            previousUnreadCount = data.unread_count;
                             displayNotifications(data.notifications, data.unread_count);
                         })
                         .catch(error => console.error('Error:', error));
@@ -987,7 +1100,7 @@
                                             <small class="text-muted">${notif.created_at}</small>
                                         </div>
                                         <p class="mb-1 text-muted small">${notif.message}</p>
-                                        ${notif.order_id ? `<a href="/en/order/${notif.order_id}/" class="text-primary small">View Order →</a>` : ''}
+                                        ${notif.order_id ? `<a href="/order/${notif.order_id}/" class="text-primary small">View Order #${notif.order_number || notif.order_id} →</a>` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -1023,8 +1136,20 @@
                     return colors[type] || 'info';
                 }
                 
+                // Helper function to get CSRF token
+                function getCsrfToken() {
+                    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                           document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                           document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+                }
+                
                 function markNotificationRead(notifId) {
-                    fetch(`/en/api/notification/${notifId}/read/`, { method: 'POST' })
+                    fetch(`/api/notification/${notifId}/read/`, { 
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCsrfToken(),
+                        }
+                    })
                         .then(response => response.json())
                         .then(data => {
                             loadNotifications();
@@ -1033,7 +1158,12 @@
                 }
                 
                 function markAllRead() {
-                    fetch(markAllReadUrl, { method: 'POST' })
+                    fetch(markAllReadUrl, { 
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCsrfToken(),
+                        }
+                    })
                         .then(response => response.json())
                         .then(data => {
                             loadNotifications();
@@ -1042,45 +1172,22 @@
                 }
                 
                 // ============ SOUND NOTIFICATION FUNCTIONS ============
-                function playNotificationSound() {
-                    // Create audio context
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                let previousUnreadCount = 0;
+                let playedNotificationIds = new Set();
+                
+                function playNotificationSound(soundFile) {
+                    if (!soundFile) return;
                     
-                    // Create a simple beep sound
-                    const now = audioContext.currentTime;
-                    const duration = 0.3;
-                    
-                    // Create oscillator for beep
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.frequency.value = 800; // Frequency in Hz
-                    oscillator.type = 'sine';
-                    
-                    gainNode.gain.setValueAtTime(0.3, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
-                    
-                    oscillator.start(now);
-                    oscillator.stop(now + duration);
-                    
-                    // Second beep for better notification
-                    const oscillator2 = audioContext.createOscillator();
-                    const gainNode2 = audioContext.createGain();
-                    
-                    oscillator2.connect(gainNode2);
-                    gainNode2.connect(audioContext.destination);
-                    
-                    oscillator2.frequency.value = 1000;
-                    oscillator2.type = 'sine';
-                    
-                    gainNode2.gain.setValueAtTime(0.3, now + duration + 0.1);
-                    gainNode2.gain.exponentialRampToValueAtTime(0.01, now + duration + 0.4);
-                    
-                    oscillator2.start(now + duration + 0.1);
-                    oscillator2.stop(now + duration + 0.4);
+                    try {
+                        const soundPath = '/media/notify/' + soundFile;
+                        const audio = new Audio(soundPath);
+                        audio.volume = 0.7;
+                        audio.play().catch(err => {
+                            console.log('Could not play notification sound:', err);
+                        });
+                    } catch (e) {
+                        console.error('Error playing notification sound:', e);
+                    }
                 }
                 
                 // Load notification badge on page load
@@ -1122,32 +1229,6 @@
                         });
                     }
                 }
-                
-                // Enhanced displayNotifications to include browser notifications
-                const originalDisplayNotifications = displayNotifications;
-                window.displayNotifications = function(notifications, unreadCount) {
-                    originalDisplayNotifications(notifications, unreadCount);
-                    
-                    // Send browser notification for new unread notifications
-                    if (unreadCount > 0) {
-                        const firstNotif = notifications[0];
-                        if (firstNotif && !firstNotif.is_read) {
-                            // Play sound notification
-                            try {
-                                playNotificationSound();
-                            } catch (e) {
-                                console.log('Sound notification not available:', e);
-                            }
-                            
-                            // Send browser notification
-                            sendBrowserNotification(firstNotif.title, {
-                                body: firstNotif.message,
-                                tag: 'notification-' + firstNotif.id,
-                                requireInteraction: false
-                            });
-                        }
-                    }
-                };
             </script>
 
             <!-- Desktop Menu (Always Visible) -->

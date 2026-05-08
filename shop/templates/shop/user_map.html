@@ -96,6 +96,27 @@
                 `;
             }
         });
+    } else {
+        // Set up Google Maps error handler
+        window.gm_authFailure = function() {
+            const statusPanel = document.getElementById('statusPanel');
+            if (statusPanel) {
+                statusPanel.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        <strong>❌ Google Maps Authentication Failed</strong>
+                        <p class="mb-2 mt-2">Possible causes:</p>
+                        <ul class="mb-2" style="font-size: 0.9rem;">
+                            <li>API key is invalid or expired</li>
+                            <li>API key has referrer restrictions</li>
+                            <li>Maps JavaScript API not enabled</li>
+                            <li>Billing not set up in Google Cloud</li>
+                        </ul>
+                        <p class="mb-0" style="font-size: 0.9rem;">API Key: <code>{{ google_maps_api_key|slice:":20" }}...</code></p>
+                    </div>
+                `;
+            }
+            console.error('Google Maps authentication failed');
+        };
     }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places" async defer></script>
@@ -258,15 +279,31 @@ function updateMap(lat, lng) {
     map.setCenter(userLocation);
 }
 
+function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+           document.cookie.split('; ').find(row => row.trim().startsWith('csrftoken='))?.split('=')[1] || '';
+}
+
 function checkServiceZone(latitude, longitude) {
     const payload = JSON.stringify({latitude, longitude});
+    const csrfToken = getCsrfToken();
     
     fetch('/api/check-location/', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: payload
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: payload,
+        credentials: 'same-origin'
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+    })
     .then(data => {
         if (data.is_in_service) {
             const zone = data.zones.find(z => z.is_inside);
@@ -275,7 +312,10 @@ function checkServiceZone(latitude, longitude) {
             showStatus('❌ Outside all service zones', 'warning');
         }
     })
-    .catch(err => console.error('Error checking location:', err));
+    .catch(err => {
+        console.error('Error checking location:', err);
+        showStatus('❌ Failed to check delivery coverage. Please try again.', 'danger');
+    });
 }
 
 function showStatus(message, type = 'info') {

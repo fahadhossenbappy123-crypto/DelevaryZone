@@ -1,4 +1,5 @@
 {% extends 'shop/base.html' %}
+{% load static %}
 {% load translate_tags %}
 {% block title %}লগইন - ZoneDelivery{% endblock %}
 
@@ -29,11 +30,11 @@
                         {% csrf_token %}
                         
                         <div class="mb-3">
-                            <label class="form-label fw-bold small">ইউজারনেম</label>
-                            {{ form.username }}
-                            {% if form.username.errors %}
+                            <label class="form-label fw-bold small">Email বা মোবাইল নম্বর</label>
+                            {{ form.identifier }}
+                            {% if form.identifier.errors %}
                                 <div class="text-danger small mt-1">
-                                    {% for error in form.username.errors %}
+                                    {% for error in form.identifier.errors %}
                                         {{ error }}
                                     {% endfor %}
                                 </div>
@@ -50,6 +51,10 @@
                                     {% endfor %}
                                 </div>
                             {% endif %}
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="showLoginPassword" onchange="togglePassword('loginPassword')">
+                                <label class="form-check-label" for="showLoginPassword">পাসওয়ার্ড দেখাও</label>
+                            </div>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -57,7 +62,24 @@
                                 <i class="fas fa-sign-in-alt"></i> {% t 'Log In' %}
                             </button>
                         </div>
+
+                        {% if google_oauth_client_id %}
+                            <div class="d-grid gap-2 mt-3">
+                                <a href="{% url 'google_login' %}" class="btn btn-light google-btn d-flex align-items-center justify-content-center" style="padding: 0.75rem 1rem; gap: 0.75rem;">
+                                    <img src="{% static 'images/icons8-google-50.svg' %}" alt="Google" class="google-icon">
+                                    <span>Continue with Google</span>
+                                </a>
+                            </div>
+                        {% endif %}
                     </form>
+                    <script>
+                        function togglePassword(fieldId) {
+                            const input = document.getElementById(fieldId);
+                            if (!input) return;
+                            const isPassword = input.getAttribute('type') === 'password';
+                            input.setAttribute('type', isPassword ? 'text' : 'password');
+                        }
+                    </script>
 
                     <hr class="my-3">
 

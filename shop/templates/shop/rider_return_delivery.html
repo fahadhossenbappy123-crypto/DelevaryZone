@@ -1,0 +1,90 @@
+{% extends 'shop/base.html' %}
+{% block title %}রিটার্ন অনুরোধ - ZoneDelivery {% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0" style="border-radius: 15px; border: 2px solid #dc3545;">
+                <div class="card-header" style="background: #dc3545; color: white; border-radius: 13px 13px 0 0;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-undo"></i> রিটার্ন অনুরোধ
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Order Info -->
+                    <div class="alert alert-info mb-4" role="alert">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>অর্ডার #{{ order.order_id }}</strong> রিটার্নের জন্য অনুরোধ করছেন।
+                    </div>
+
+                    <!-- Order Details -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3" style="color: #dc3545;">অর্ডার বিস্তারিত</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>অর্ডার ID:</strong></td>
+                                        <td>{{ order.order_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>গ্রাহক:</strong></td>
+                                        <td>{{ order.customer.username }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>মোট পরিমাণ:</strong></td>
+                                        <td>৳{{ order.total_amount|add:order.delivery_charge }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>বর্তমান স্ট্যাটাস:</strong></td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Return Form -->
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">রিটার্নের কারণ *</label>
+                            <textarea name="reason" class="form-control" rows="5" placeholder="রিটার্নের কারণ লিখুন..." required style="border-radius: 8px; border: 2px solid #e9ecef; focus: border-color: #dc3545;"></textarea>
+                            <small class="text-muted d-block mt-2">
+                                উদাহরণ: গ্রাহক বাড়িতে নেই, পণ্য ক্ষতিগ্রস্ত, ভুল পণ্য ডেলিভার হয়েছে, ইত্যাদি।
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold" style="box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4); border-radius: 8px;">
+                                <i class="fas fa-send"></i> রিটার্ন অনুরোধ জমা দিন
+                            </button>
+                            <a href="{% url 'rider_order_detail' order.id %}" class="btn btn-outline-secondary btn-lg fw-bold" style="border-radius: 8px;">
+                                <i class="fas fa-arrow-left"></i> ফিরে যান
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Important Notice -->
+                    <div class="alert alert-warning mt-4" role="alert" style="border-radius: 8px;">
+                        <h6 class="fw-bold mb-2">
+                            <i class="fas fa-exclamation-circle"></i> গুরুত্বপূর্ণ
+                        </h6>
+                        <ul class="mb-0 ps-3">
+                            <li>রিটার্ন অনুরোধ সাবমিট করলে ম্যানেজারকে নোটিফিকেশন পাঠানো হবে।</li>
+                            <li>ম্যানেজার অনুরোধটি যাচাই করে অনুমোদন বা প্রত্যাখ্যান করবেন।</li>
+                            <li>সঠিক এবং বিস্তারিত কারণ প্রদান করুন যাতে অনুমোদন দ্রুত হয়।</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
